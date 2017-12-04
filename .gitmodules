@@ -1,0 +1,30 @@
+[submodule ".vim/vim-colors-solarized"]
+	path = vim/.vim/bundle/vim-colors-solarized
+	url = git://github.com/altercation/vim-colors-solarized.git
+[submodule ".vim/vim-surround"]
+	path = vim/.vim/bundle/vim-surround
+	url = https://github.com/tpope/vim-surround
+[submodule ".vim/vim-sneak"]
+	path = vim/.vim/bundle/vim-sneak
+	url = https://github.com/justinmk/vim-sneak
+[submodule ".vim/vim-hardtime"]
+	path = vim/.vim/bundle/vim-hardtime
+	url = https://github.com/takac/vim-hardtime
+[submodule ".vim/vim-gitgutter"]
+	path = vim/.vim/bundle/vim-gitgutter
+	url = https://github.com/airblade/vim-gitgutter
+[submodule ".vim/vim-commentary"]
+	path = vim/.vim/bundle/vim-commentary
+	url = https://github.com/tpope/vim-commentary
+[submodule ".vim/switch.vim"]
+	path = vim/.vim/bundle/switch
+	url = https://github.com/AndrewRadev/switch.vim
+[submodule ".vim/syntastic"]
+	path = vim/.vim/bundle/syntastic
+	url = https://github.com/vim-syntastic/syntastic
+[submodule ".vim/nerdtree"]
+	path = vim/.vim/bundle/nerdtree
+	url = https://github.com/scrooloose/nerdtree
+[submodule ".vim/ctrlp.vim"]
+	path = vim/.vim/bundle/ctrlp.vim
+	url = https://github.com/kien/ctrlp.vim
