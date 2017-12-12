@@ -1,7 +1,6 @@
 # This is Git's per-user configuration file.
-[user]
-  email = nathan.schwartz95@gmail.com
-  name = Nathan Schwartz
+[include]
+  path = ~/.gitconfig.local
 [push]
   default = simple
 [merge]

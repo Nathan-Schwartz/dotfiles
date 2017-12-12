@@ -4,6 +4,18 @@ This repo manages most of my dotfiles. GNU `stow` is used to manage the symlinks
 
 These instructions assume you are on a mac (only tested on high sierra), have iterm2 installed, and have brew installed.
 
+Gitconfig strategy is borrowed from: [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
+
+### ~/.gitconfig.local
+If the ~/.gitconfig.local file exists, it will be automatically included after the configurations from ~/.gitconfig, thus, allowing its content to overwrite or add to the existing git configurations.
+
+Note: Use ~/.gitconfig.local to store sensitive information such as the git user credentials, e.g.:
+```
+[user]
+  name = Nick Plekhanov
+  email = nick@example.com
+```
+
 ## Replication
 ```bash
 # clone repo and all submodules to home directory
