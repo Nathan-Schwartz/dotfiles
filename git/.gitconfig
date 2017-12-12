@@ -1,4 +1,4 @@
-# This is Git's per-user configuration file.
+# Include user settings from a file in the home directory
 [include]
   path = ~/.gitconfig.local
 [push]
