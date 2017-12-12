@@ -2,14 +2,15 @@
 execute pathogen#infect()
 
 " TODOS {{{
+" configure vim-fugitive 
+" configure repeat
+" configure leader
+" configure gitgutter
 " https://github.com/sjl/gundo.vim.git
 " https://github.com/Xuyuanp/nerdtree-git-plugin
-" https://dougblack.io/words/a-good-vimrc.html
-" Read section on backups, tmux, autogroups, and custom functions
-" configure gitgutter
+" https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
 " YouCompleteMe?
 " unimpaired.vim
-" Syntastic
 " }}}
 
 " MISC {{{
@@ -65,7 +66,10 @@ set expandtab       " tabs are spaces
 " UI Config {{{
 " set lazyredraw          " redraw only when we need to.
 " set showcmd             " show command in bottom bar
-set cursorline          " highlight current line
+
+" Only highlight current line for current window
+autocmd WinEnter,FocusGained * setlocal cursorline
+autocmd WinLeave,FocusLost   * setlocal nocursorline
 
 " Disable mouse
 set mouse-=a
