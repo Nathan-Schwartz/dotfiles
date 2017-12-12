@@ -1,13 +1,6 @@
 " Run Pathogen (vim package manager)
 execute pathogen#infect()
 
-let g:syntastic_shell='/bin/bash'
-
-" HardTime {{{
-let g:hardtime_default_on = 0
-let g:hardtime_timeout = 2000
-" }}}
-
 " TODOS {{{
 " https://github.com/sjl/gundo.vim.git
 " https://github.com/Xuyuanp/nerdtree-git-plugin
@@ -17,6 +10,17 @@ let g:hardtime_timeout = 2000
 " YouCompleteMe?
 " unimpaired.vim
 " Syntastic
+" }}}
+
+" MISC {{{
+set clipboard=unnamed
+set backspace=indent,eol,start " Allow backspacing over new lines and stuff
+set updatetime=250
+" }}}
+
+" HardTime {{{
+let g:hardtime_default_on = 0
+let g:hardtime_timeout = 2000
 " }}}
 
 " CtrlP {{{
@@ -38,12 +42,6 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
-" }}}
-
-" MISC {{{
-set clipboard=unnamed
-set backspace=indent,eol,start " Allow backspacing over new lines and stuff
-set updatetime=250
 " }}}
 
 " Colors {{{
@@ -101,8 +99,6 @@ set foldenable          " enable folding
 set foldlevelstart=10   " open most folds by default
 set foldnestmax=10      " 10 nested fold max
 set foldmethod=indent   " fold based on indent level
-" space open/closes folds
-" nnoremap <space> za
 " }}}
 
 " Movement {{{
@@ -118,14 +114,6 @@ nmap <c-k> 3k
 nmap <c-h> 3h
 nmap <c-l> 3l
 
-" " move to beginning/end of line
-" nnoremap B ^
-" nnoremap E $
-
-" " $/^ doesn't do anything
-" nnoremap $ <nop>
-" nnoremap ^ <nop>
-
 " Easier split navigation
 nmap gh <C-w>h
 nmap gj <C-w>j
@@ -137,15 +125,6 @@ nmap gl <C-w>l
 " }}}
 
 " NERDTree {{{
-" Visual tweaks
-" let NERDTreeMinimalUI = 1
-" let NERDTreeDirArrows = 1
-
-" Start automatically, unconditionally
-" autocmd vimenter * NERDTree
-
-" " Close if only window is NERDTree
-" autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 " Automatically delete the buffer of the file you just deleted with NerdTree:
 let NERDTreeAutoDeleteBuffer = 1
@@ -162,19 +141,14 @@ nnoremap <c-b> :NERDTreeToggle<CR>
 
 " switch.vim {{{
 nnoremap - :Switch<cr> 
-let g:switch_custom_definitions =
-    \ [
-    \   ['foo', 'bar', 'baz']
-    \ ]
 " }}}
 
 " Javascript {{{
 let g:javascript_plugin_jsdoc = 1
 let g:javascript_plugin_flow = 1
-" }}}
-
 
 let g:flow#enable = 0
+" }}}
 
 " vim:foldmethod=marker:foldlevel=0
 
