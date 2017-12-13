@@ -2,10 +2,9 @@
 execute pathogen#infect()
 
 " TODOS {{{
-" configure vim-fugitive 
+" configure vim-fugitive
 " configure repeat
 " configure leader
-" configure gitgutter
 " https://github.com/sjl/gundo.vim.git
 " https://github.com/Xuyuanp/nerdtree-git-plugin
 " https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
@@ -14,9 +13,20 @@ execute pathogen#infect()
 " }}}
 
 " MISC {{{
-set clipboard=unnamed
-set backspace=indent,eol,start " Allow backspacing over new lines and stuff
+
+" Use the clipboard as the default register
+set clipboard=unnamed "
+
+" Configure backspacing to work 'normally'
+set backspace=indent,eol,start
+
+" Delay after typing stops before checking again (used by gitgutter).
+" Can cause issues under 1000ms
 set updatetime=250
+
+" Trying to escape escape delays
+set noesckeys
+set timeout timeoutlen=1000 ttimeoutlen=100
 " }}}
 
 " HardTime {{{
@@ -25,16 +35,23 @@ let g:hardtime_timeout = 2000
 " }}}
 
 " CtrlP {{{
+
+" Display hidden files
 let g:ctrlp_show_hidden = 1
 " }}}
 
 " Git Gutter {{{
-let g:gitgutter_realtime = 0
-let g:gitgutter_eager = 0
+
+" Don't create any key mappings
+let g:gitgutter_map_keys = 0
 " }}}
 
 " Syntastic {{{
+
+" Set up for JS tools
 let g:syntastic_javascript_checkers = ['flow', 'eslint']
+
+" Recommended settings
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
@@ -51,16 +68,28 @@ if !exists("g:syntax_on")
     syntax enable
 endif
 
+" Setup a color theme
 set background=dark
 colorscheme solarized
 " }}}
 
 " Spaces and Tabs {{{
+
+" New lines start in better places
+set autoindent
 set smartindent
+
+" Change number of spaces when indenting
 set shiftwidth=2
-set tabstop=2       " number of visual spaces per TAB
-set softtabstop=2   " number of spaces in tab when editing
-set expandtab       " tabs are spaces
+
+" number of visual spaces per TAB
+set tabstop=2
+
+" number of spaces in tab when editing
+set softtabstop=2
+
+" tabs are spaces
+set expandtab
 " }}}
 
 " UI Config {{{
@@ -80,7 +109,8 @@ filetype plugin indent on " load filetype-specific indent files
 " set number
 set relativenumber
 
-set showmatch           " highlight matching [{()}]
+" highlight matching [{()}]
+set showmatch
 
 " wildmenu (visual autocomplete for command menu)
 set wildmenu
@@ -93,7 +123,7 @@ set wildmode=longest:full,full
 set incsearch           " search as characters are entered
 set hlsearch            " highlight matches
 " turn off search highlight
-"Vim will keep highlighted matches from searches until you either run a new one or manually stop highlighting the old search with :nohlsearch. I find myself running this all the time so I've mapped 
+"Vim will keep highlighted matches from searches until you either run a new one or manually stop highlighting the old search with :nohlsearch. I find myself running this all the time so I've mapped
 " nnoremap <leader><space> :nohlsearch<CR>
 " nnoremap <esc> :noh<return><esc>
 " }}}
@@ -136,6 +166,9 @@ let NERDTreeAutoDeleteBuffer = 1
 " Toggle visibility of hidden files using i and I
 let NERDTreeShowHidden=1
 
+" Don't open NERDTree by default
+let g:nerdtree_tabs_open_on_gui_startup=0
+
 " Close tree once file is selected
 let NERDTreeQuitOnOpen = 1
 
@@ -144,7 +177,7 @@ nnoremap <c-b> :NERDTreeToggle<CR>
 " }}}
 
 " switch.vim {{{
-nnoremap - :Switch<cr> 
+nnoremap - :Switch<cr>
 " }}}
 
 " Javascript {{{
