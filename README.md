@@ -6,6 +6,13 @@ These instructions assume you are on a mac (only tested on high sierra), have it
 
 Gitconfig strategy is borrowed from: [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
 
+
+To get vim-fugitive to work you may need to run the following after cloning.
+```bash
+vim -u NONE -c "helptags vim-fugitive/doc" -c q
+```
+
+
 ### ~/.gitconfig.local
 If the ~/.gitconfig.local file exists, it will be automatically included after the configurations from ~/.gitconfig, thus, allowing its content to overwrite or add to the existing git configurations.
 
