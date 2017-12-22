@@ -36,6 +36,8 @@ export HISTCONTROL='ignoreboth';
 # Aliases
 #
 
+alias lst='tree -I node_modules'
+
 # Use mvim, even in the terminal
 alias vim='mvim -v'
 
