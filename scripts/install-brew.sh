@@ -14,7 +14,7 @@ fi
 brew update
 
 # Upgrade any already-installed formulae.
-brew upgrade
+# brew upgrade
 
 # Install more recent versions of some macOS tools.
 brew install vim --with-override-system-vi
@@ -33,6 +33,7 @@ brew install node
 brew install stow
 brew install the_silver_searcher
 brew install thefuck
+brew install watchman
 
 
 # # DB installs
