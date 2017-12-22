@@ -36,6 +36,9 @@ let g:hardtime_timeout = 2000
 
 " CtrlP {{{
 
+" Ignore files & folders
+let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
+
 " Display hidden files
 let g:ctrlp_show_hidden = 1
 " }}}
@@ -58,8 +61,9 @@ set statusline+=%*
 
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 0
+nmap + :SyntasticCheck<CR>
 " }}}
 
 " Colors {{{
