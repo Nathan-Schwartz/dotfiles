@@ -36,7 +36,19 @@ export HISTCONTROL='ignoreboth';
 # Aliases
 #
 
+# Print out directory tree, but omit node_modules
 alias lst='tree -I node_modules'
+
+# Repeat a command a specified number of times.
+# Ex: repeat 5 ls
+repeat() {
+n=$1
+shift
+while [ $(( n -= 1 )) -ge 0 ]
+do
+    "$@"
+done
+}
 
 # Use mvim, even in the terminal
 alias vim='mvim -v'

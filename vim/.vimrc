@@ -1,6 +1,9 @@
 " Run Pathogen (vim package manager)
 execute pathogen#infect()
 
+" Work with crontabs
+au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
+
 " TODOS {{{
 " configure vim-fugitive
 " configure repeat
@@ -78,6 +81,9 @@ colorscheme solarized
 " }}}
 
 " Spaces and Tabs {{{
+
+" Remove trailing whitespace on save
+autocmd BufWritePre * %s/\s\+$//e
 
 " New lines start in better places
 set autoindent
