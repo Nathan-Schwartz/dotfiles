@@ -36,6 +36,12 @@ brew install stow
 brew install the_silver_searcher
 brew install thefuck
 brew install watchman
+brew install docker
+brew install docker-compose
+
+git -C "$(brew --repo homebrew/core)" fetch --unshallow
+
+brew install awscli
 
 # Install n for managing Node versions (using npm)
 npm i -g n
