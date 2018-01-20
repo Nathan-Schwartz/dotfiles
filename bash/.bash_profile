@@ -39,17 +39,6 @@ export HISTCONTROL='ignoreboth';
 # Print out directory tree, but omit node_modules
 alias lst='tree -I node_modules'
 
-# Repeat a command a specified number of times.
-# Ex: repeat 5 ls
-repeat() {
-n=$1
-shift
-while [ $(( n -= 1 )) -ge 0 ]
-do
-    "$@"
-done
-}
-
 # Use mvim, even in the terminal
 alias vim='mvim -v'
 
@@ -119,9 +108,6 @@ unset brewdir
 source ~/.bash-powerline.sh
 
 # Load this computer's additional configurations
-if [ -a ~/.custom_bash_profile ]; then
-  source ~/.custom_bash_profile
+if [ -a ~/.bash_profile.local ]; then
+  source ~/.bash_profile.local
 fi
-
-# cd ~
-
