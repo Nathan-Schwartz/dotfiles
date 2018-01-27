@@ -19,9 +19,6 @@
 [submodule ".vim/switch.vim"]
 	path = vim/.vim/bundle/switch
 	url = https://github.com/AndrewRadev/switch.vim
-[submodule ".vim/syntastic"]
-	path = vim/.vim/bundle/syntastic
-	url = https://github.com/vim-syntastic/syntastic
 [submodule ".vim/nerdtree"]
 	path = vim/.vim/bundle/nerdtree
 	url = https://github.com/scrooloose/nerdtree
@@ -34,3 +31,6 @@
 [submodule "vim/.vim/bundle/vim-fugitive"]
 	path = vim/.vim/bundle/vim-fugitive
 	url = https://github.com/tpope/vim-fugitive.git
+[submodule "vim/.vim/bundle/ale"]
+	path = vim/.vim/bundle/ale
+	url = https://github.com/w0rp/ale.git

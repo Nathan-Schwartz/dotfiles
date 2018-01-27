@@ -1,21 +1,37 @@
 " Run Pathogen (vim package manager)
 execute pathogen#infect()
 
-" Work with crontabs
-au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
-
 " TODOS {{{
 " configure vim-fugitive
-" configure repeat
-" configure leader
 " https://github.com/sjl/gundo.vim.git
-" https://github.com/Xuyuanp/nerdtree-git-plugin
 " https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
 " YouCompleteMe?
 " unimpaired.vim
 " }}}
 
+" Leaders {{{
+" Map space to leader
+let mapleader = " "
+
+" Make space leader behave the same as other keys would
+nnoremap <Space> <nop>
+
+" highlight last inserted text
+nnoremap <leader>v `[v`]
+
+" turn off search highlight
+nnoremap <leader>n :noh<cr>
+
+" Fix linting errors
+nnoremap <leader>f :ALEFix<cr>
+
+" Custom mapping for vim.switch
+nnoremap <leader>s :Switch<cr>
+"}}}
+
 " MISC {{{
+" Work with crontabs
+au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
 
 " Use the clipboard as the default register
 set clipboard=unnamed "
@@ -32,13 +48,16 @@ set noesckeys
 set timeout timeoutlen=1000 ttimeoutlen=100
 " }}}
 
+" Ale {{{
+let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
+" }}}
+
 " HardTime {{{
 let g:hardtime_default_on = 0
 let g:hardtime_timeout = 2000
 " }}}
 
 " CtrlP {{{
-
 " Ignore files & folders
 let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git\|dist\|coverage'
 
@@ -47,30 +66,8 @@ let g:ctrlp_show_hidden = 1
 " }}}
 
 " Git Gutter {{{
-
 " Don't create any key mappings
 let g:gitgutter_map_keys = 0
-" }}}
-
-" Syntastic {{{
-
-" Set up for JS tools
-let g:syntastic_javascript_checkers = ['flow', 'eslint']
-
-" For this to work as expected, a flow server should already be running
-let g:syntastic_javascript_flow_exe = 'flow'
-let g:syntastic_javascript_eslint_exe = '$(npm bin)/eslint'
-
-" Recommended settings
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 0
-let g:syntastic_check_on_wq = 0
-nmap + :SyntasticCheck<CR>
 " }}}
 
 " Colors {{{
@@ -85,7 +82,6 @@ colorscheme solarized
 " }}}
 
 " Spaces and Tabs {{{
-
 " Remove trailing whitespace on save
 autocmd BufWritePre * %s/\s\+$//e
 
@@ -136,10 +132,6 @@ set wildmode=longest:full,full
 " Searching {{{
 set incsearch           " search as characters are entered
 set hlsearch            " highlight matches
-" turn off search highlight
-"Vim will keep highlighted matches from searches until you either run a new one or manually stop highlighting the old search with :nohlsearch. I find myself running this all the time so I've mapped
-" nnoremap <leader><space> :nohlsearch<CR>
-" nnoremap <esc> :noh<return><esc>
 " }}}
 
 " Folding {{{
@@ -156,24 +148,14 @@ nnoremap k gk
 xnoremap j gj
 xnoremap k gk
 
-" Move fast with shift
-nmap <c-j> 3j
-nmap <c-k> 3k
-nmap <c-h> 3h
-nmap <c-l> 3l
-
 " Easier split navigation
 nmap gh <C-w>h
 nmap gj <C-w>j
 nmap gk <C-w>k
 nmap gl <C-w>l
-
-" highlight last inserted text
-" nnoremap gV `[v`]
 " }}}
 
 " NERDTree {{{
-
 " Automatically delete the buffer of the file you just deleted with NerdTree:
 let NERDTreeAutoDeleteBuffer = 1
 
@@ -190,16 +172,8 @@ let NERDTreeQuitOnOpen = 1
 nnoremap <c-b> :NERDTreeToggle<CR>
 " }}}
 
-" switch.vim {{{
-nnoremap - :Switch<cr>
-" }}}
-
 " Javascript {{{
 let g:javascript_plugin_jsdoc = 1
-let g:javascript_plugin_flow = 1
-
-let g:flow#enable = 0
 " }}}
 
 " vim:foldmethod=marker:foldlevel=0
-
