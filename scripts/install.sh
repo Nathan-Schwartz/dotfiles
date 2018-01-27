@@ -56,7 +56,7 @@ n prune
 brew uninstall --force node
 
 # Install some global packages
-npm i -g pult-cli yarn nodemon commitizen flow-bin
+npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype
 
 # # DB installs
 # brew install mongodb

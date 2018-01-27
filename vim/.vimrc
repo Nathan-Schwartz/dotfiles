@@ -57,6 +57,10 @@ let g:gitgutter_map_keys = 0
 " Set up for JS tools
 let g:syntastic_javascript_checkers = ['flow', 'eslint']
 
+" For this to work as expected, a flow server should already be running
+let g:syntastic_javascript_flow_exe = 'flow'
+let g:syntastic_javascript_eslint_exe = '$(npm bin)/eslint'
+
 " Recommended settings
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
