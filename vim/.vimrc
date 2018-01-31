@@ -50,6 +50,9 @@ set timeout timeoutlen=1000 ttimeoutlen=100
 
 " Ale {{{
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
+
+" Keep git/sign column open all the time so changes are less jarring
+let g:ale_sign_column_always = 1
 " }}}
 
 " HardTime {{{
