@@ -55,14 +55,15 @@ set timeout timeoutlen=1000 ttimeoutlen=100
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
 
-" Keep git/sign column open all the time so changes are less jarring
-let g:ale_sign_column_always = 1
-
 " Don't run linters on opening a file
 let g:ale_lint_on_enter = 0
 
 " Disable Ale by default
 let g:ale_enabled = 0
+
+" GitGutter has gutter enabled which makes this option unnecessary
+" Keep sign column open all the time so changes are less jarring
+" let g:ale_sign_column_always = 1
 " }}}
 
 " HardTime {{{
@@ -81,6 +82,15 @@ let g:ctrlp_show_hidden = 1
 " Git Gutter {{{
 " Don't create any key mappings
 let g:gitgutter_map_keys = 0
+
+" Keep gutter open
+if exists('&signcolumn')  " Vim 7.4.2201
+  set signcolumn=yes
+else
+  let g:gitgutter_sign_column_always = 1
+endif
+
+
 " }}}
 
 " Colors {{{
