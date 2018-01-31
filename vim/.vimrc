@@ -25,6 +25,9 @@ nnoremap <leader>n :noh<cr>
 " Fix linting errors
 nnoremap <leader>f :ALEFix<cr>
 
+" Toggle linting with a (for ale)
+nnoremap <leader>a :ALEToggle<cr>
+
 " Custom mapping for vim.switch
 nnoremap <leader>s :Switch<cr>
 "}}}
@@ -34,7 +37,7 @@ nnoremap <leader>s :Switch<cr>
 au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
 
 " Use the clipboard as the default register
-set clipboard=unnamed "
+set clipboard^=unnamed
 
 " Configure backspacing to work 'normally'
 set backspace=indent,eol,start
@@ -49,10 +52,17 @@ set timeout timeoutlen=1000 ttimeoutlen=100
 " }}}
 
 " Ale {{{
+" Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
 
 " Keep git/sign column open all the time so changes are less jarring
 let g:ale_sign_column_always = 1
+
+" Don't run linters on opening a file
+let g:ale_lint_on_enter = 0
+
+" Disable Ale by default
+let g:ale_enabled = 0
 " }}}
 
 " HardTime {{{
@@ -90,16 +100,12 @@ autocmd BufWritePre * %s/\s\+$//e
 
 " New lines start in better places
 set autoindent
-set smartindent
 
 " Change number of spaces when indenting
 set shiftwidth=2
 
 " number of visual spaces per TAB
 set tabstop=2
-
-" number of spaces in tab when editing
-set softtabstop=2
 
 " tabs are spaces
 set expandtab
