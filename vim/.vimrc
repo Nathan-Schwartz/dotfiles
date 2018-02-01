@@ -1,5 +1,4 @@
 " Run Pathogen (vim package manager)
-"
 execute pathogen#infect()
 
 " TODOS {{{
