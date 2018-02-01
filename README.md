@@ -7,10 +7,13 @@ These instructions assume you are on a mac (only tested on high sierra), have it
 Gitconfig strategy is borrowed from: [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
 
 
+### Vim
 To get vim-fugitive to work you may need to run the following after cloning.
 ```bash
 vim -u NONE -c "helptags vim-fugitive/doc" -c q
 ```
+
+Don't forget to generate helptags with `:Helptags`.
 
 
 ### ~/.gitconfig.local
@@ -37,8 +40,7 @@ stow vim bash git iterm
 ```
 
 ### Scripts
-- install-brew.sh: install brew, update brew, upgrade all packages, install some packages.
-- install-npm.sh: install n and use it to get latest lts release. Then install some global packages.
+- install.sh: install brew and node, update brew and node, upgrade all packages, install some packages.
 - configure-macosx.sh: Set some OS defaults.
 - uninstall-node.sh: Works, but don't use it. Checked in for my convenience.
 
