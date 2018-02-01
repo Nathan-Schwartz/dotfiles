@@ -23,6 +23,7 @@ let g:lightline = {
 \                [ 'fileformat', 'fileencoding', 'filetype' ] ]
 \   },
 \   'component_function': {
+\     'gitbranch': 'fugitive#head',
 \     'time': 'PrintTime'
 \   },
 \ }
