@@ -1,12 +1,37 @@
 " Run Pathogen (vim package manager)
+"
 execute pathogen#infect()
 
 " TODOS {{{
-" configure vim-fugitive
 " https://github.com/sjl/gundo.vim.git
 " https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
 " YouCompleteMe?
 " unimpaired.vim
+" }}}
+
+" Status Line {{{
+" Always show statusline
+set laststatus=2
+
+" Use defaults, but take out file percentage, and add a clock
+let g:lightline = {
+\   'colorscheme': 'wombat',
+\   'active': {
+\     'left': [ [ 'mode', 'paste' ],
+\               [ 'gitbranch', 'readonly', 'filename', 'modified' ] ],
+\     'right': [ [ 'time' ],
+\                [ 'lineinfo' ],
+\                [ 'fileformat', 'fileencoding', 'filetype' ] ]
+\   },
+\   'component_function': {
+\     'time': 'PrintTime'
+\   },
+\ }
+
+" Function used for printing clock in status line
+function! PrintTime()
+  return strftime('%H:%M')
+endfunction
 " }}}
 
 " Leaders {{{
