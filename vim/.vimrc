@@ -6,6 +6,8 @@ execute pathogen#infect()
 " https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
 " YouCompleteMe?
 " unimpaired.vim
+" https://github.com/skywind3000/asyncrun.vim
+" https://github.com/tpope/vim-abolish
 " }}}
 
 " Status Line {{{
