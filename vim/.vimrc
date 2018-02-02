@@ -19,16 +19,22 @@ let g:lightline = {
 \   'colorscheme': 'wombat',
 \   'active': {
 \     'left': [ [ 'mode', 'paste' ],
-\               [ 'gitbranch', 'readonly', 'filename', 'modified' ] ],
+\               [ 'gitbranch', 'readonly', 'filepath' ] ],
 \     'right': [ [ 'time' ],
 \                [ 'lineinfo' ],
-\                [ 'fileformat', 'fileencoding', 'filetype' ] ]
+\                [ 'modified', 'fileformat', 'fileencoding', 'filetype' ] ]
 \   },
 \   'component_function': {
+\     'filepath': 'PrintFilePath',
 \     'gitbranch': 'fugitive#head',
 \     'time': 'PrintTime'
 \   },
 \ }
+
+" Function used for printing relative file path
+function! PrintFilePath()
+  return fnamemodify(expand("%"), ":~:.")
+endfunction
 
 " Function used for printing clock in status line
 function! PrintTime()
