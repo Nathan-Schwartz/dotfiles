@@ -95,7 +95,9 @@ alias ls="command ls ${colorflag}"
 #
 
 # Correct failed commands using `pls`
-eval $(thefuck --alias pls)
+if test $(which thefuck); then
+  eval $(thefuck --alias pls)
+fi
 
 
 # Add tab completion for many Bash commands
