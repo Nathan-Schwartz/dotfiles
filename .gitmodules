@@ -37,3 +37,6 @@
 [submodule "vim/.vim/bundle/lightline.vim"]
 	path = vim/.vim/bundle/lightline.vim
 	url = https://github.com/itchyny/lightline.vim
+[submodule "vim/.vim/bundle/vim-javascript"]
+	path = vim/.vim/bundle/vim-javascript
+	url = https://github.com/pangloss/vim-javascript.git
