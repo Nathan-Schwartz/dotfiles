@@ -153,6 +153,7 @@ set expandtab
 " set showcmd             " show command in bottom bar
 
 " Only highlight current line for current window
+setlocal cursorline
 autocmd WinEnter,FocusGained * setlocal cursorline
 autocmd WinLeave,FocusLost   * setlocal nocursorline
 
