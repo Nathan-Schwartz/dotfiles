@@ -36,8 +36,14 @@ export HISTCONTROL='ignoreboth';
 # Aliases
 #
 
+# Conveniently edit vimrc
+alias evim='vim ~/.vimrc'
+
+# Conveniently edit bash_profile
+alias ebash='vim ~/.bash_profile'
+
 # Print out directory tree, but omit node_modules
-alias lst='tree -I node_modules'
+alias lst='tree -a -I "node_modules|.git|.next"'
 
 # Use mvim, even in the terminal
 alias vim='mvim -v'
@@ -58,8 +64,8 @@ alias downloads="cd ~/Downloads"
 alias desktop="cd ~/Desktop"
 alias projects="cd ~/Documents/projects"
 alias dotfiles="cd ~/dotfiles"
-alias g="git"
 alias notes="cd ~/Documents/notes"
+alias g="git"
 
 # Kill all the tabs in Chrome to free up memory
 # [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
@@ -88,7 +94,7 @@ else # macOS `ls`
 fi
 
 # Always use color output for `ls`
-alias ls="command ls ${colorflag}"
+alias ls="command ls -a ${colorflag}"
 
 #
 # MISC
