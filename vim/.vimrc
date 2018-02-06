@@ -71,7 +71,7 @@ set noshowmode
 
 " Use defaults, but take out file percentage, and add a clock
 let g:lightline = {
-\   'colorscheme': 'wombat',
+\   'colorscheme': 'solarized',
 \   'active': {
 \     'left': [ [ 'mode', 'paste' ],
 \               [ 'gitbranch', 'readonly', 'filepath' ] ],
