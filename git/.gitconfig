@@ -8,6 +8,7 @@
 [core]
   editor = vim
   ignorecase = false
+  excludesfile = ~/.gitignore_global
 [alias]
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /' | sort
   s = status
