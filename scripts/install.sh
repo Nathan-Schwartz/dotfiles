@@ -18,17 +18,13 @@ brew update
 # Upgrade any already-installed formulae.
 brew upgrade
 
-# Install more recent versions of some macOS tools.
+# Make not shallow
+git -C "$(brew --repo homebrew/core)" fetch --unshallow
+
 brew install vim --with-override-system-vi
-brew install screen
-
-# Install other useful binaries.
-brew install ack
+brew install tmux
 brew install git
-brew install imagemagick --with-webp
 brew install tree
-
-# things I actually care about installing
 brew install bash-completion
 brew install macvim
 brew install node
@@ -39,30 +35,26 @@ brew install watchman
 brew install docker
 brew install docker-compose
 
-git -C "$(brew --repo homebrew/core)" fetch --unshallow
-
-brew install awscli
-
 # Install n for managing Node versions (using npm)
 npm i -g n
 
-# upgrade node
+# Upgrade node
 n lts
 
-# remove unused versions of node
+# Remove unused versions of node
 n prune
 
-# remove brew installed node
+# Remove brew installed node
 brew uninstall --force node
 
 # Install some global packages
 npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype
 
-# # DB installs
+# # Skip least used installs
 # brew install mongodb
 # brew install postgresql
+# brew install awscli
+# brew install imagemagick --with-webp
 
 # Remove outdated versions from the cellar.
 brew cleanup
-
-
