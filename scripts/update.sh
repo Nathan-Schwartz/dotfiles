@@ -1,22 +1,20 @@
 #!/usr/bin/env bash
 
-set -x
-
-# Apple updates
+printf "\n>> Apple updates\n"
 sudo softwareupdate -i -a
 
-# Brew updates
+printf "\n>> Brew updates\n"
 brew update
 brew upgrade
 brew cleanup
 brew prune
 
-# n update
+printf "\n>> n update\n"
 n-update -y
 
-# Node update
+printf "\n>> Node update\n"
 n lts
 
-# Npm update
+printf "\n>> Npm update\n"
 npm install npm -g
 npm update -g;

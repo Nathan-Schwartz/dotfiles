@@ -1,26 +1,28 @@
 #!/usr/bin/env bash
 
-set -x
-
 # Ask for the administrator password upfront
 sudo -v
 
 # Check for Homebrew and install it if missing
 if test ! $(which brew)
 then
-  echo "Installing Homebrew..."
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  printf "\n>> Installing Homebrew...\n"
+  echo 'y' | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
 
 # Make sure we’re using the latest Homebrew.
+printf "\n>> Update Brew\n"
 brew update
 
 # Upgrade any already-installed formulae.
+printf "\n>> Upgrade Brew\n"
 brew upgrade
 
 # Make not shallow
+printf "\n>> Make homebrew not shallow\n"
 git -C "$(brew --repo homebrew/core)" fetch --unshallow
 
+printf "\n>> Install brew packages\n"
 brew install vim --with-override-system-vi
 brew install tmux
 brew install git
@@ -35,19 +37,22 @@ brew install docker
 brew install docker-compose
 
 # Install n for managing Node versions (using npm)
-# curl -L https://git.io/n-install | bash
-curl -L https://git.io/n-install | bash -s -- -y
+printf "\n>> Install n\n"
+# -y automates installation, -n avoids modifying bash_profile
+curl -L https://git.io/n-install | bash -s -- -n -y
 
 # n requires resourcing or reloading before first use
 source ~/.bash_profile
 
 # Upgrade node
+printf "\n>> Install Node LTS using n\n"
 n lts
 
 # Remove unused versions of node
 n prune
 
 # Install some global packages
+printf "\n>> Install global npm packages\n"
 npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype
 
 # # Skip least used installs
@@ -57,4 +62,8 @@ npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-pl
 # brew install imagemagick --with-webp
 
 # Remove outdated versions from the cellar.
+printf "\n>> Cleanup brew\n"
 brew cleanup
+
+printf "\n>> Check Brew health\n"
+brew doctor
