@@ -41,8 +41,8 @@ stow vim bash git iterm
 
 ### Scripts
 - install.sh: install brew and node, update brew and node, upgrade all packages, install some packages.
+- update.sh: install mac, brew, n, node, and npm updates
 - configure-macosx.sh: Set some OS defaults.
-- uninstall-node.sh: Works, but don't use it. Checked in for my convenience.
 
 ### Teardown
 ```bash
