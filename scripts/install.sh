@@ -27,7 +27,6 @@ brew install git
 brew install tree
 brew install bash-completion
 brew install macvim
-brew install node
 brew install stow
 brew install the_silver_searcher
 brew install thefuck
@@ -36,16 +35,17 @@ brew install docker
 brew install docker-compose
 
 # Install n for managing Node versions (using npm)
-npm i -g n
+# curl -L https://git.io/n-install | bash
+curl -L https://git.io/n-install | bash -s -- -y
+
+# n requires resourcing or reloading before first use
+source ~/.bash_profile
 
 # Upgrade node
 n lts
 
 # Remove unused versions of node
 n prune
-
-# Remove brew installed node
-brew uninstall --force node
 
 # Install some global packages
 npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype
