@@ -89,7 +89,7 @@ alias reload="exec ${SHELL} -l"
 alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 
 # Get macOS Software Updates, and update installed Homebrew and npm packages
-alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup; npm install npm -g; npm update -g;'
+alias update='bash ~/dotfiles/scripts/update.sh'
 
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
