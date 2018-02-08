@@ -274,3 +274,10 @@ nmap gj <C-w>j
 nmap gk <C-w>k
 nmap gl <C-w>l
 " }}}
+
+" Fix Cursor rendering issue
+set ttyfast
+set norelativenumber
+set number
+set nocursorline
+set noshowcmd
