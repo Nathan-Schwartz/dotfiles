@@ -12,6 +12,8 @@ then
   printf "\n>> Installing Rustup... Hit '1'\n"
 
   curl https://sh.rustup.rs -sSf | sh
+
+  source ~/.bash_profile
 fi
 
 
