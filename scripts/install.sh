@@ -35,7 +35,6 @@ brew install thefuck
 brew install watchman
 brew install docker
 brew install docker-compose
-brew install rust
 
 # Install n for managing Node versions (using npm)
 printf "\n>> Install n\n"

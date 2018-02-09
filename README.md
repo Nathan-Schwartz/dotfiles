@@ -36,7 +36,7 @@ Gitconfig strategy is borrowed from: [nicksp's dotfiles](https://github.com/nick
 
 If the `~/.gitconfig.local` file exists, it will be automatically be included after the configurations from `~/.gitconfig`. This allows its content to overwrite or add to the existing git configurations.
 
-Example contents of `~/.gitconfg.local`:
+Example contents of `~/.gitconfig.local`:
 ```
 [user]
   name = Nick Plekhanov
