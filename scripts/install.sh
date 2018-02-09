@@ -23,18 +23,19 @@ printf "\n>> Make homebrew not shallow\n"
 git -C "$(brew --repo homebrew/core)" fetch --unshallow
 
 printf "\n>> Install brew packages\n"
-brew install vim --with-override-system-vi
-brew install tmux
-brew install git
-brew install tree
 brew install bash-completion
-brew install macvim
+brew install git
 brew install stow
+brew install vim --with-override-system-vi
+brew install macvim
+brew install tmux
+brew install tree
 brew install the_silver_searcher
 brew install thefuck
 brew install watchman
 brew install docker
 brew install docker-compose
+brew install rust
 
 # Install n for managing Node versions (using npm)
 printf "\n>> Install n\n"
