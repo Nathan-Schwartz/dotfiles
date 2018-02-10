@@ -39,6 +39,7 @@ brew install bash-completion
 brew install git
 brew install stow
 brew install vim --with-override-system-vi
+brew install mosh
 brew install tmux
 brew install tree
 brew install the_silver_searcher
