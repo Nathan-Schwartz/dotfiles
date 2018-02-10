@@ -5,6 +5,12 @@ if [ -a ~/.env ]; then
   source ~/.env
 fi
 
+# Determine if we are in OSX (Linux is assumed otherwise)
+case "$OSTYPE" in
+  darwin*) isMac=true ;;
+  *) isMac=false ;;
+esac
+
 #
 # Exports
 #
@@ -34,11 +40,17 @@ export HISTCONTROL='ignoreboth';
 #
 # PATH extensions
 #
-export PATH="/usr/local/opt/sqlite/bin:$PATH"
-export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-
 # Added by n-install (see http://git.io/n-install-repo).
 export N_PREFIX="$HOME/n"; [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"
+
+if [ "$isMac" = true ] ; then
+  export PATH="/usr/local/opt/sqlite/bin:$PATH"
+  export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+else
+  export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"
+  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
+  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+fi
 
 #
 # Aliases
@@ -53,8 +65,10 @@ alias ebash='vim ~/.bash_profile'
 # Print out directory tree, but omit node_modules
 alias lst='tree -a -I "node_modules|.git|.next"'
 
-# Use mvim, even in the terminal
-alias vim='mvim -v'
+# Use mvim, even in the terminal (in OSX)
+if [ "$isMac" = true ] ; then
+  alias vim='mvim -v'
+fi
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
@@ -68,11 +82,14 @@ alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
 # Shortcuts
-alias downloads="cd ~/Downloads"
-alias desktop="cd ~/Desktop"
-alias projects="cd ~/Documents/projects"
+if [ "$isMac" = true ] ; then
+  alias downloads="cd ~/Downloads"
+  alias desktop="cd ~/Desktop"
+  alias projects="cd ~/Documents/projects"
+  alias notes="cd ~/Documents/notes"
+fi
+
 alias dotfiles="cd ~/dotfiles"
-alias notes="cd ~/Documents/notes"
 alias g="git"
 
 # Kill all the tabs in Chrome to free up memory
@@ -96,9 +113,9 @@ alias sudo='sudo '
 
 # Detect which `ls` flavor is in use
 if ls --color > /dev/null 2>&1; then # GNU `ls`
-	colorflag="--color"
+  colorflag="--color"
 else # macOS `ls`
-	colorflag="-G"
+  colorflag="-G"
 fi
 
 # Always use color output for `ls`
@@ -127,3 +144,5 @@ source ~/.bash-powerline.sh
 if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
 fi
+
+unset isMac

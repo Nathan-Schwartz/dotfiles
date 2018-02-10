@@ -3,11 +3,23 @@
 # Ask for the administrator password upfront
 sudo -v
 
-# Check for Homebrew and install it if missing
+# Determine if we are in OSX (Linux is assumed otherwise)
+case "$OSTYPE" in
+  darwin*) isMac=true ;;
+  *) isMac=false ;;
+esac
+
+# Check for brew and install it if missing
 if test ! $(which brew)
 then
-  printf "\n>> Installing Homebrew...\n"
-  echo 'y' | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  if [ "$isMac" = true ] ; then
+    printf "\n>> Installing Homebrew...\n"
+    echo 'y' | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  else
+    printf "\n>> Installing Linuxbrew...\n"
+    sudo apt-get install build-essential curl file git python-setuptools
+    echo '\r' | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+  fi
 fi
 
 # Make sure we’re using the latest Homebrew.
@@ -27,7 +39,6 @@ brew install bash-completion
 brew install git
 brew install stow
 brew install vim --with-override-system-vi
-brew install macvim
 brew install tmux
 brew install tree
 brew install the_silver_searcher
@@ -35,6 +46,10 @@ brew install thefuck
 brew install watchman
 brew install docker
 brew install docker-compose
+
+if [ "$isMac" = true ] ; then
+  brew install macvim
+fi
 
 # Install n for managing Node versions (using npm)
 printf "\n>> Install n\n"
@@ -67,3 +82,5 @@ brew cleanup
 
 printf "\n>> Check Brew health\n"
 brew doctor
+
+unset isMac
