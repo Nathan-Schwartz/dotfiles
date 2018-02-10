@@ -75,9 +75,9 @@ let g:lightline = {
 \   'active': {
 \     'left': [ [ 'mode', 'paste' ],
 \               [ 'gitbranch', 'readonly', 'filepath' ] ],
-\     'right': [ [ 'time' ],
+\     'right': [ [],
 \                [ 'lineinfo' ],
-\                [ 'modified', 'fileformat', 'fileencoding', 'filetype' ] ]
+\                [ 'modified', 'fileencoding', 'filetype' ] ]
 \   },
 \   'component_function': {
 \     'filepath': 'PrintFilePath',
@@ -89,11 +89,6 @@ let g:lightline = {
 " Function used for printing relative file path
 function! PrintFilePath()
   return fnamemodify(expand("%"), ":~:.")
-endfunction
-
-" Function used for printing clock in status line
-function! PrintTime()
-  return strftime('%H:%M')
 endfunction
 " }}}
 
