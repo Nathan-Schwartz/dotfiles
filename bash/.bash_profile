@@ -65,11 +65,6 @@ alias ebash='vim ~/.bash_profile'
 # Print out directory tree, but omit node_modules
 alias lst='tree -a -I "node_modules|.git|.next"'
 
-# Use mvim, even in the terminal (in OSX)
-if [ "$isMac" = true ] ; then
-  alias vim='mvim -v'
-fi
-
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
 
