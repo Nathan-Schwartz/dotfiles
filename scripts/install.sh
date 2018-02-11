@@ -41,6 +41,7 @@ brew install stow
 brew install vim --with-override-system-vi
 brew install mosh
 brew install tmux
+brew install tmate
 brew install tree
 brew install the_silver_searcher
 brew install thefuck
