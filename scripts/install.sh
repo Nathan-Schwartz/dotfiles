@@ -42,6 +42,7 @@ brew install vim --with-override-system-vi
 brew install mosh
 brew install tmux
 brew install tmate
+brew install reattach-to-user-namespace
 brew install tree
 brew install the_silver_searcher
 brew install thefuck
