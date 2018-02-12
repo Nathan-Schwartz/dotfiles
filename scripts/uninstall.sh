@@ -5,13 +5,8 @@
 # Ask for the administrator password upfront
 sudo -v
 
-cd ~/dotfiles
-
 printf "\n>> Removing stowed dotfiles\n"
-stow --delete vim git bash iterm
-
-# This may be necessary as a fallback since iterm will replace the config file instead of modifying it
-# stow --delete --ignore com.googlecode.iterm2.plist vim git bash iterm
+stow --delete -t ~ -d ~/dotfiles tmux vim bash git iterm
 
 printf "\n>> Uninstall n\n"
 n-uninstall
@@ -22,5 +17,5 @@ brew cleanup
 brew prune
 
 printf "\n>> Uninstall HomeBrew\n"
-echo "y" | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
+yes | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall)"
 

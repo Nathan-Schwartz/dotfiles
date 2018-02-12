@@ -1,3 +1,6 @@
+# Persisted vim sessions
+Session.vim
+
 # Project folders #
 node_modules
 dist

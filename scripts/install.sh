@@ -14,11 +14,11 @@ if test ! $(which brew)
 then
   if [ "$isMac" = true ] ; then
     printf "\n>> Installing Homebrew...\n"
-    echo 'y' | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    yes | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   else
     printf "\n>> Installing Linuxbrew...\n"
     sudo apt-get install build-essential curl file git python-setuptools
-    echo '\r' | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+    yes | sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
   fi
 fi
 
