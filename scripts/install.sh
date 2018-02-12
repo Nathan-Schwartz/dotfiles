@@ -42,7 +42,6 @@ brew install vim --with-override-system-vi
 brew install mosh
 brew install tmux
 brew install tmate
-brew install reattach-to-user-namespace
 brew install tree
 brew install the_silver_searcher
 brew install watchman
@@ -51,6 +50,7 @@ brew install docker-compose
 
 if [ "$isMac" = true ] ; then
   brew install macvim
+  brew install reattach-to-user-namespace
 fi
 
 # Install n for managing Node versions (using npm)
