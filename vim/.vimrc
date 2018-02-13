@@ -228,6 +228,10 @@ nnoremap <leader>a :ALEToggle<cr>
 
 " Custom mapping for vim.switch
 nnoremap <leader>s :Switch<cr>
+"
+" Apply last operation to a range of lines
+vnoremap <leader>. : normal .<cr>
+
 "}}}
 
 " Spaces and Tabs {{{
