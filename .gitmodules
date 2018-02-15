@@ -43,3 +43,6 @@
 [submodule "tmux/.tmux/plugins/resurrect"]
 	path = tmux/.tmux/plugins/resurrect
 	url = https://github.com/tmux-plugins/tmux-resurrect
+[submodule "vim/.vim/bundle/vim-obsession"]
+	path = vim/.vim/bundle/vim-obsession
+	url = https://github.com/tpope/vim-obsession
