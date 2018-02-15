@@ -13,21 +13,34 @@ git clone --recursive https://github.com/Nathan-Schwartz/dotfiles.git ~/dotfiles
 
 cd ~/dotfiles
 
-brew install stow
+# Install stow if you don't have it
 
-# Specify configurations to by used
-stow vim bash git
+stow vim bash git tmux
 ```
 
 
 #### Vim
 
-To get vim-fugitive to work you may need to run the following after cloning.
-```bash
-vim -u NONE -c "helptags vim-fugitive/doc" -c q
-```
+Key features
+- fuzzy file search with CtrlP
+- browse directories with NERDTree
+- linting and selective autofix support with ALE
+- Restore vim sessions with vim-obsession
+- Solarized dark theme
+- Relatively light weight
 
 Don't forget to generate helptags with `:Helptags`.
+
+
+#### Tmux
+
+Tmux and Tmate support for Mac and Linux.
+
+Can resurrect tmux sessions after reboot.
+
+Vim inspired key bindings.
+
+Solarized dark theme to match vim.
 
 
 #### Git
@@ -63,7 +76,7 @@ To remove this repos configurations:
 
 ```bash
 # remove symlinks
-stow --delete vim bash git iterm
+stow --delete vim bash git iterm tmux
 ```
 
 After this, the repo can be safely deleted.
