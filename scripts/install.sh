@@ -70,7 +70,7 @@ n prune
 
 # Install some global packages
 printf "\n>> Install global npm packages\n"
-npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype
+npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype jest
 
 # # Skip least used installs
 # brew install mongodb
