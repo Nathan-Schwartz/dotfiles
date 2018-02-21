@@ -12,7 +12,7 @@ if [ "$isMac" = true ] ; then
 else
   printf "\n>> Debian updates\n"
   sudo apt-get update
-  sudo apt-get upgrade
+  sudo apt-get upgrade -y
 fi
 
 printf "\n>> Brew updates\n"
