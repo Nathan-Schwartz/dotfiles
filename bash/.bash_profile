@@ -62,6 +62,11 @@ alias evim='vim ~/.vimrc'
 # Conveniently edit bash_profile
 alias ebash='vim ~/.bash_profile'
 
+# Common typos
+alias vmi='vim'
+alias gti='git'
+alias sl='ls'
+
 # Print out directory tree, but omit node_modules
 alias lst='tree -a -I "node_modules|.git|.next"'
 
