@@ -91,6 +91,7 @@ fi
 
 alias dotfiles="cd ~/dotfiles"
 alias g="git"
+alias e="exit"
 
 # Kill all the tabs in Chrome to free up memory
 # [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
