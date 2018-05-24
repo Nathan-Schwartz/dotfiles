@@ -5,6 +5,7 @@ execute pathogen#infect()
 " vim:foldmethod=marker:foldlevel=0
 
 " TODOS {{{
+" https://github.com/rking/ag.vim/issues/124#issuecomment-227038003
 " https://github.com/sjl/gundo.vim.git
 " https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
 " YouCompleteMe?
@@ -53,7 +54,7 @@ endif
 " }}}
 
 " HardTime {{{
-let g:hardtime_default_on = 0
+let g:hardtime_default_on = 1
 let g:hardtime_timeout = 2000
 " }}}
 
@@ -220,6 +221,9 @@ nnoremap <leader>v `[v`]
 " turn off search highlight
 nnoremap <leader>n :noh<cr>
 
+" Easily toggle Hard Time
+nnoremap <leader>h :HardTimeToggle<cr>
+
 " Fix linting errors
 nnoremap <leader>f :ALEFix<cr>
 
@@ -228,9 +232,12 @@ nnoremap <leader>a :ALEToggle<cr>
 
 " Custom mapping for vim.switch
 nnoremap <leader>s :Switch<cr>
-"
+
 " Apply last operation to a range of lines
 vnoremap <leader>. : normal .<cr>
+
+" Clear CtrlP Caches
+nnoremap <leader>p :CtrlPClearAllCaches<cr>
 
 "}}}
 
