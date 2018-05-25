@@ -239,6 +239,47 @@ vnoremap <leader>. : normal .<cr>
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<cr>
 
+" Mappings that use custom functions
+nnoremap <leader>b :call UseBottomDiff()<cr>
+nnoremap <leader>t :call UseTopDiff()<cr>
+nnoremap <leader>r :call JsRequire()<cr>
+nnoremap <leader>c :call JsLog()<cr>
+
+" Custom functions {{{
+" Picks the bottom section of a git conflict
+function! UseBottomDiff()
+  normal /<<<
+  normal d/===
+  normal dd
+  normal />>>
+  normal dd
+endfunction
+
+" Picks the top section of a git conflict
+function! UseTopDiff()
+  normal /<<<
+  normal dd
+  normal /===
+  normal d/>>>
+  normal dd
+endfunction
+
+" Creates a variable and require statement, uses z registry
+function! JsRequire()
+  normal "zciWconst 
+  normal "zp
+  normal a = require('
+  normal "zp
+  normal a');
+endfunction
+
+" Creates a labelled console.log, uses z registry
+function! JsLog()
+  normal "zciWconsole.log('
+  normal "zpa', 
+  normal "zpa);
+endfunction
+"}}}
 "}}}
 
 " Spaces and Tabs {{{
@@ -279,20 +320,6 @@ nmap gh <C-w>h
 nmap gj <C-w>j
 nmap gk <C-w>k
 nmap gl <C-w>l
-" }}}
-
-" Macros {{{
-" Picks the bottom section of a git conflict
-let @b='/<<<d/===dd/>>>dd'
-
-" Picks the top section of a git conflict
-let @t='/<<<dd/===d/>>>dd'
-
-" Creates a variable and require statement, uses z registry
-let @r='"zciWconst "zpA = require(''"zpa'');'
-
-" Creates a labelled console.log, uses z registry
-let @c='"zciWconsole.log(''"zpa'', "zpa);'
 " }}}
 
 " Fix Cursor rendering issue
