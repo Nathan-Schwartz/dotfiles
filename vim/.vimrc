@@ -281,6 +281,20 @@ nmap gk <C-w>k
 nmap gl <C-w>l
 " }}}
 
+" Macros {{{
+" Picks the bottom section of a git conflict
+let @b='/<<<d/===dd/>>>dd'
+
+" Picks the top section of a git conflict
+let @t='/<<<dd/===d/>>>dd'
+
+" Creates a variable and require statement, uses z registry
+let @r='"zciWconst "zpA = require(''"zpa'');'
+
+" Creates a labelled console.log, uses z registry
+let @c='"zciWconsole.log(''"zpa'', "zpa);'
+" }}}
+
 " Fix Cursor rendering issue
 set ttyfast
 set norelativenumber
