@@ -219,33 +219,58 @@ nnoremap <Space> <nop>
 nnoremap <leader>v `[v`]
 
 " turn off search highlight
-nnoremap <leader>n :noh<cr>
+nnoremap <leader>n :noh<CR>
 
 " Easily toggle Hard Time
-nnoremap <leader>h :HardTimeToggle<cr>
+nnoremap <leader>h :HardTimeToggle<CR>
 
 " Fix linting errors
-nnoremap <leader>f :ALEFix<cr>
+nnoremap <leader>f :ALEFix<CR>
 
 " Toggle linting with a (for ale)
-nnoremap <leader>a :ALEToggle<cr>
+nnoremap <leader>a :ALEToggle<CR>
 
 " Custom mapping for vim.switch
-nnoremap <leader>s :Switch<cr>
+nnoremap <leader>s :Switch<CR>
 
 " Apply last operation to a range of lines
-vnoremap <leader>. : normal .<cr>
+vnoremap <leader>. : normal .<CR>
+
+" Fix indentation for the whole file
+map <leader>= :% normal ==<CR>
 
 " Clear CtrlP Caches
-nnoremap <leader>p :CtrlPClearAllCaches<cr>
+nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
-" Mappings that use custom functions
-nnoremap <leader>b :call UseBottomDiff()<cr>
-nnoremap <leader>t :call UseTopDiff()<cr>
-nnoremap <leader>r :call JsRequire()<cr>
-nnoremap <leader>c :call JsLog()<cr>
+" Snippets {{{
+" Generate js function
+nnoremap <leader>fun :-1read $HOME/.vim/snippets/function.js<CR>f(a
+
+" Generate new Promise, and then/catch blocks
+nnoremap <leader>prom :read $HOME/.vim/snippets/promise.js<CR>kJo
+nnoremap <leader>then :read $HOME/.vim/snippets/then.js<CR>f(la
+nnoremap <leader>catch :read $HOME/.vim/snippets/catch.js<CR>o
+
+" Generate conditional blocks
+nnoremap <leader>if :-1read $HOME/.vim/snippets/if.js<CR>f(a
+nnoremap <leader>else :read $HOME/.vim/snippets/else.js<CR>kJo
+nnoremap <leader>elif :read $HOME/.vim/snippets/elif.js<CR>kJf(a
+
+" Generate try-catch block
+nnoremap <leader>try :-1read $HOME/.vim/snippets/try.js<CR>o
+
+" Generate loops
+nnoremap <leader>forof :-1read $HOME/.vim/snippets/forof.js<CR>f)i
+nnoremap <leader>forin :-1read $HOME/.vim/snippets/forin.js<CR>f)i
+" }}}
 
 " Custom functions {{{
+" Mappings that use custom functions
+nnoremap <leader>b :call UseBottomDiff()<CR>
+nnoremap <leader>top :call UseTopDiff()<CR>
+nnoremap <leader>r :call JsRequire()<CR>
+nnoremap <leader>c :call JsLog()<CR>
+
 " Picks the bottom section of a git conflict
 function! UseBottomDiff()
   normal /<<<
