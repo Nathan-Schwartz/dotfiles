@@ -17,7 +17,63 @@ execute pathogen#infect()
 " https://github.com/liangxianzhe/oh-my-vim
 " }}}
 
-" Plugin Config {{{
+" General {{{
+" Delete comment characters when joining lines
+set formatoptions+=j
+
+" Maximum number of tab pages that can be opened from CLI
+set tabpagemax=50
+
+" Disable beep on errors
+set noerrorbells
+
+" redraw only when we need to.
+set lazyredraw
+
+"Wrap lines at words when possible
+set linebreak
+
+" show command in bottom bar
+set showcmd
+
+" load filetype-specific indent files
+filetype plugin indent on
+
+" Turn on line numbers
+" set number
+set relativenumber
+
+" highlight matching [{()}]
+set showmatch
+
+" Store lots of :cmdline history
+set history=1000
+
+" No sounds
+set visualbell
+
+" Reload files changed outside vim
+set autoread
+
+" Work with crontabs
+au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
+
+" Use the clipboard as the default register
+set clipboard^=unnamed
+
+" Configure backspacing to work 'normally'
+set backspace=indent,eol,start
+
+" Delay after typing stops before checking again (used by gitgutter).
+" Can cause issues under 1000ms
+set updatetime=250
+
+" Remove escape delays (This breaks arrow keys in insert mode)
+set noesckeys
+set timeout timeoutlen=1000 ttimeoutlen=100
+" }}}
+
+" Plugin {{{
 " Ale {{{
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
@@ -111,7 +167,6 @@ nnoremap <c-b> :NERDTreeToggle<CR>
 " }}}
 " }}}
 
-" UI Config {{{
 " Colors {{{
 " enable syntax processing
 if !exists("g:syntax_on")
@@ -156,56 +211,6 @@ set guicursor=a:blinkon0
 setlocal cursorline
 autocmd WinEnter,FocusGained * setlocal cursorline
 autocmd WinLeave,FocusLost   * setlocal nocursorline
-" }}}
-
-" MISC {{{
-" redraw only when we need to.
-set lazyredraw
-
-"Wrap lines at words when possible
-set linebreak
-
-" show command in bottom bar
-set showcmd
-
-" load filetype-specific indent files
-filetype plugin indent on
-
-" Turn on line numbers
-" set number
-set relativenumber
-
-" highlight matching [{()}]
-set showmatch
-" }}}
-" }}}
-
-" General Config {{{
-" Store lots of :cmdline history
-set history=1000
-
-" No sounds
-set visualbell
-
-" Reload files changed outside vim
-set autoread
-
-" Work with crontabs
-au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
-
-" Use the clipboard as the default register
-set clipboard^=unnamed
-
-" Configure backspacing to work 'normally'
-set backspace=indent,eol,start
-
-" Delay after typing stops before checking again (used by gitgutter).
-" Can cause issues under 1000ms
-set updatetime=250
-
-" Remove escape delays (This breaks arrow keys in insert mode)
-set noesckeys
-set timeout timeoutlen=1000 ttimeoutlen=100
 " }}}
 
 " Leader Mappings {{{
