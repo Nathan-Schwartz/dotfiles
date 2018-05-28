@@ -18,6 +18,14 @@ execute pathogen#infect()
 " }}}
 
 " General {{{
+" Save undos after file closes
+set undofile
+" Number of undos to save
+set undolevels=1000
+" Number of lines to save for undo
+set undoreload=10000
+
+set undodir=~/.vim/cache/undo
 set backupdir=~/.vim/cache/backup
 set dir=~/.vim/cache/swap
 
