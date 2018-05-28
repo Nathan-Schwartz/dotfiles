@@ -18,6 +18,9 @@ execute pathogen#infect()
 " }}}
 
 " General {{{
+set backupdir=~/.vim/cache/backup
+set dir=~/.vim/cache/swap
+
 " Delete comment characters when joining lines
 set formatoptions+=j
 
@@ -164,6 +167,10 @@ let NERDTreeQuitOnOpen = 1
 
 " Toggle Nerd Tree with control + b
 nnoremap <c-b> :NERDTreeToggle<CR>
+" }}}
+
+" Startify {{{
+let g:startify_session_dir = '~/.vim/cache/session'
 " }}}
 " }}}
 
