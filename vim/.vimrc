@@ -139,20 +139,20 @@ set noshowmode
 
 " Use defaults, but take out file percentage, and add a clock
 let g:lightline = {
-\   'colorscheme': 'solarized',
-\   'active': {
-\     'left': [ [ 'mode', 'paste' ],
-\               [ 'gitbranch', 'readonly', 'filepath' ] ],
-\     'right': [ [],
-\                [ 'lineinfo' ],
-\                [ 'modified', 'fileencoding', 'filetype' ] ]
-\   },
-\   'component_function': {
-\     'filepath': 'PrintFilePath',
-\     'gitbranch': 'fugitive#head',
-\     'time': 'PrintTime'
-\   },
-\ }
+      \   'colorscheme': 'solarized',
+      \   'active': {
+      \     'left': [ [ 'mode', 'paste' ],
+      \               [ 'gitbranch', 'readonly', 'filepath' ] ],
+      \     'right': [ [],
+      \                [ 'lineinfo' ],
+      \                [ 'modified', 'fileencoding', 'filetype' ] ]
+      \   },
+      \   'component_function': {
+      \     'filepath': 'PrintFilePath',
+      \     'gitbranch': 'fugitive#head',
+      \     'time': 'PrintTime'
+      \   },
+      \ }
 
 " Function used for printing relative file path
 function! PrintFilePath()
@@ -185,7 +185,7 @@ let g:startify_session_dir = '~/.vim/cache/session'
 " Colors {{{
 " enable syntax processing
 if !exists("g:syntax_on")
-    syntax enable
+  syntax enable
 endif
 
 " Setup a color theme
@@ -257,39 +257,46 @@ nnoremap <leader>s :Switch<CR>
 vnoremap <leader>. : normal .<CR>
 
 " Fix indentation for the whole file
-map <leader>= :% normal ==<CR>
+map <leader>= gg=G''
 
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
 " Snippets {{{
+function! LocalReindent()
+  normal mz
+  normal 10k
+  normal 20==
+  normal 'z
+endfunction
+
 " Generate js function
-nnoremap <leader>fun :-1read $HOME/.vim/snippets/function.js<CR>f(a
+nnoremap <leader>fun :-1read $HOME/.vim/snippets/function.js<CR>:call LocalReindent()<CR>f(a
 
 " Generate new Promise, and then/catch blocks
-nnoremap <leader>prom :read $HOME/.vim/snippets/promise.js<CR>kJo
-nnoremap <leader>then :read $HOME/.vim/snippets/then.js<CR>f(la
-nnoremap <leader>catch :read $HOME/.vim/snippets/catch.js<CR>o
+nnoremap <leader>prom :read $HOME/.vim/snippets/promise.js<CR>:call LocalReindent()<CR>kJo
+nnoremap <leader>then :read $HOME/.vim/snippets/then.js<CR>:call LocalReindent()<CR>f(la
+nnoremap <leader>catch :read $HOME/.vim/snippets/catch.js<CR>:call LocalReindent()<CR>o
 
 " Generate conditional blocks
-nnoremap <leader>if :-1read $HOME/.vim/snippets/if.js<CR>f(a
-nnoremap <leader>else :read $HOME/.vim/snippets/else.js<CR>kJo
-nnoremap <leader>elif :read $HOME/.vim/snippets/elif.js<CR>kJf(a
+nnoremap <leader>if :-1read $HOME/.vim/snippets/if.js<CR>:call LocalReindent()<CR>f(a
+nnoremap <leader>else :read $HOME/.vim/snippets/else.js<CR>:call LocalReindent()<CR>kJo
+nnoremap <leader>elif :read $HOME/.vim/snippets/elif.js<CR>:call LocalReindent()<CR>kJf(a
 
 " Generate try-catch block
-nnoremap <leader>try :-1read $HOME/.vim/snippets/try.js<CR>o
+nnoremap <leader>try :-1read $HOME/.vim/snippets/try.js<CR>:call LocalReindent()<CR>o
 
 " Generate loops
-nnoremap <leader>forof :-1read $HOME/.vim/snippets/forof.js<CR>f)i
-nnoremap <leader>forin :-1read $HOME/.vim/snippets/forin.js<CR>f)i
+nnoremap <leader>forof :-1read $HOME/.vim/snippets/forof.js<CR>:call LocalReindent()<CR>f)i
+nnoremap <leader>forin :-1read $HOME/.vim/snippets/forin.js<CR>:call LocalReindent()<CR>f)i
 " }}}
 
 " Custom functions {{{
 " Mappings that use custom functions
-nnoremap <leader>b :call UseBottomDiff()<CR>
+nnoremap <leader>bot :call UseBottomDiff()<CR>
 nnoremap <leader>top :call UseTopDiff()<CR>
-nnoremap <leader>r :call JsRequire()<CR>
-nnoremap <leader>c :call JsLog()<CR>
+nnoremap <leader>req :call JsRequire()<CR>
+nnoremap <leader>log :call JsLog()<CR>
 
 " Picks the bottom section of a git conflict
 function! UseBottomDiff()
@@ -311,18 +318,12 @@ endfunction
 
 " Creates a variable and require statement, uses z registry
 function! JsRequire()
-  normal "zciWconst 
-  normal "zp
-  normal a = require('
-  normal "zp
-  normal a');
+  normal "zciWconst z = require('z');
 endfunction
 
 " Creates a labelled console.log, uses z registry
 function! JsLog()
-  normal "zciWconsole.log('
-  normal "zpa', 
-  normal "zpa);
+  normal "zciWconsole.log('z', z);
 endfunction
 "}}}
 "}}}
