@@ -177,6 +177,13 @@ let NERDTreeQuitOnOpen = 1
 nnoremap <c-b> :NERDTreeToggle<CR>
 " }}}
 
+" Sneak {{{
+map f <Plug>Sneak_f
+map F <Plug>Sneak_F
+map t <Plug>Sneak_t
+map T <Plug>Sneak_T
+" }}}
+
 " Startify {{{
 let g:startify_session_dir = '~/.vim/cache/session'
 " }}}
