@@ -56,6 +56,12 @@ fi
 # Aliases
 #
 
+# Easily fix git conflicts
+alias conflicts="vim -p \$(git conflicts)"
+
+# Conveniently edit vimrc
+alias egit='vim ~/.gitconfig'
+
 # Conveniently edit vimrc
 alias evim='vim ~/.vimrc'
 
