@@ -101,8 +101,8 @@ let g:ale_enabled = 0
 " }}}
 
 " CtrlP {{{
-" Ignore files & folders
-let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git\|dist'
+" Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
+let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 
 " Display hidden files
 let g:ctrlp_show_hidden = 1
@@ -121,7 +121,7 @@ endif
 " }}}
 
 " HardTime {{{
-let g:hardtime_default_on = 1
+let g:hardtime_default_on = 0
 let g:hardtime_timeout = 2000
 " }}}
 
@@ -198,6 +198,33 @@ endif
 " Setup a color theme
 set background=dark
 colorscheme solarized
+
+command! ToggleBackground :call ToggleBackground()
+
+" Toggle iterm and vim between dark and light
+function! ToggleBackground()
+  if &background == "dark"
+    set background=light
+    normal :!echo -e "\033]50;SetProfile=Light\a"
+  elseif &background == "light"
+    set background=dark
+    normal :!echo -e "\033]50;SetProfile=Dark\a"
+  endif
+
+  if !exists('g:loaded_lightline')
+    return
+  endif
+
+  try
+    if g:colors_name =~# 'solarized'
+      runtime autoload/lightline/colorscheme/solarized.vim
+      call lightline#init()
+      call lightline#colorscheme()
+      call lightline#update()
+    endif
+  catch
+  endtry
+endfunction
 " }}}
 
 " Folding {{{
@@ -266,6 +293,9 @@ vnoremap <leader>. : normal .<CR>
 " Fix indentation for the whole file
 map <leader>= gg=G''
 
+" Reload vimrc
+nnoremap <leader>rel :source ~/.vimrc<CR>
+
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
@@ -304,6 +334,7 @@ nnoremap <leader>bot :call UseBottomDiff()<CR>
 nnoremap <leader>top :call UseTopDiff()<CR>
 nnoremap <leader>req :call JsRequire()<CR>
 nnoremap <leader>log :call JsLog()<CR>
+nnoremap <leader>js  :call JsStringify()<CR>
 
 " Picks the bottom section of a git conflict
 function! UseBottomDiff()
@@ -331,6 +362,11 @@ endfunction
 " Creates a labelled console.log, uses z registry
 function! JsLog()
   normal "zciWconsole.log('z', z);
+endfunction
+
+" Json stringify Word using z registry
+function! JsStringify()
+  normal "zciwJSON.stringify(z, null, 2)
 endfunction
 "}}}
 "}}}
@@ -360,7 +396,7 @@ set incsearch
 set hlsearch
 
 "Start scrolling when we're 10 lines away
-set scrolloff=10
+set scrolloff=25
 
 " Don't skip visual lines (wrapped text)
 nnoremap j gj
