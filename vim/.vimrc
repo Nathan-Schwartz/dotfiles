@@ -4,6 +4,8 @@ execute pathogen#infect()
 " Set up folding based on markers in the file. `za` toggles folds
 " vim:foldmethod=marker:foldlevel=0
 
+" These functions clobber "z 'z and 'Z on the reg, beware.
+
 " TODOS {{{
 " https://github.com/rking/ag.vim/issues/124#issuecomment-227038003
 " https://github.com/sjl/gundo.vim.git
@@ -85,6 +87,78 @@ set timeout timeoutlen=1000 ttimeoutlen=100
 " }}}
 
 " Plugin {{{
+" Ack {{{
+" Use ag instead of ack
+let g:ackprg = 'ag --vimgrep --smart-case'
+
+" Highlight hits
+let g:ackhighlight = 1
+
+" This naming convention is bad, but I type Ag out of habbit.
+" Both :Ag and :Ack use ag, the difference between Ack and Ag
+" commands is that Ag will keep your original file open
+command! -nargs=+ Ag :call BetterAck(<f-args>)
+
+function! BetterAck(...)
+  " Close qf list to prevent mark errors
+  normal :cclose
+
+  " Set mark
+  normal mZ
+
+  " Run query using :Ack, forwarding all arguments
+  execute "normal :Ack " . join(a:000) . "\<CR>"
+
+  " Move out of quickfix list
+  normal :cclose
+
+  " Move to mark
+  normal `Z
+
+  " Disable folds to show where cursor is
+  normal zi
+
+  " Move back into quickfix list
+  normal :copen
+endfunction
+
+command! OpenQFTabs :call OpenQuickFixInTabs()
+
+function! OpenQuickFixInTabs()
+  " Close qf list to prevent mark errors
+  normal :cclose
+
+  " Save our spot so we can come back
+  let current_file = expand('%:p')
+  normal mz
+
+  " Building a hash ensures we get each buffer only once
+  let buffer_numbers = {}
+  for quickfix_item in getqflist()
+    let bufnr = quickfix_item['bufnr']
+    " Lines without files will appear as bufnr=0
+    if bufnr > 0
+      " Get absolute path for each buffer
+      let buffer_numbers[bufnr] = trim(fnameescape(expand("#" . bufnr . ":p")). ' ')
+    endif
+  endfor
+
+  execute "normal :silent!$tab drop " . join(values(buffer_numbers)) . "\<CR>"
+  " for qf_file in values(buffer_numbers)
+  "   " Ignore Errors. Escape filepath strings. Open existing buffer or append new tab.
+  "   execute "normal :silent!$tab drop " . qf_file . "\<CR>"
+  " endfor
+
+  normal :redraw!
+
+  " Jump back to original file.
+  execute "normal :silent!tab drop " . current_file . "\<CR>"
+  normal `z
+
+  normal :copen
+endfunction
+" }}}
+
 " Ale {{{
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }

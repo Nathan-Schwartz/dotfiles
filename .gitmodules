@@ -49,3 +49,6 @@
 [submodule "vim/.vim/bundle/vim-startify"]
 	path = vim/.vim/bundle/vim-startify
 	url = https://github.com/mhinz/vim-startify.git
+[submodule "vim/.vim/bundle/ack.vim"]
+	path = vim/.vim/bundle/ack.vim
+	url = https://github.com/mileszs/ack.vim
