@@ -11,6 +11,9 @@ case "$OSTYPE" in
   *) isMac=false ;;
 esac
 
+# Put readline in vi mode
+set -o vi
+
 #
 # Exports
 #
