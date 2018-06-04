@@ -84,6 +84,11 @@ set updatetime=250
 " Remove escape delays (This breaks arrow keys in insert mode)
 set noesckeys
 set timeout timeoutlen=1000 ttimeoutlen=100
+
+" Autocorrect some typos when trying to quit
+abbrev W w
+abbrev Wq wq
+abbrev Q q
 " }}}
 
 " Plugin {{{
