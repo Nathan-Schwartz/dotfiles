@@ -62,14 +62,11 @@ fi
 # Easily fix git conflicts
 alias conflicts="vim -p \$(git conflicts)"
 
-# Conveniently edit vimrc
-alias egit='vim ~/.gitconfig'
-
-# Conveniently edit vimrc
+# Conveniently edit config files
 alias evim='vim ~/.vimrc'
-
-# Conveniently edit bash_profile
 alias ebash='vim ~/.bash_profile'
+alias egit='vim ~/.gitconfig'
+alias etmux='vim ~/.tmux.conf'
 
 # Common typos
 alias vmi='vim'
