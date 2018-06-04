@@ -21,31 +21,33 @@ stow vim bash git tmux
 
 #### Vim
 
-Key features
-- fuzzy file search with CtrlP
-- browse directories with NERDTree
-- linting and selective autofix support with ALE
-- Restore vim sessions with vim-obsession
-- Solarized dark theme
-- Relatively light weight
+Features
+- Fuzzy file search with CtrlP (using ag)
+- Project search with Ack.vim (using ag)
+- Browse directories with NERDTree
+- Linting and selective autofix support with ALE
+- Quick access to MRU files + sessions on startup with vim-startify
+- Solarized theme w/ vim command to change light<->dark
+- Tmux panes and vim windows share key binding (vim-tmux navigator)
+- Simple snippet solution using :read
+- Some niceties like multiline f and t, visual j/k movement, smooth scroll, etc
+- I try to keep my config free of bloat and (generally) avoid breaking changes.
 
 Don't forget to generate helptags with `:Helptags`.
 
 
 #### Tmux
 
-Tmux and Tmate support for Mac and Linux.
-
-Can resurrect tmux sessions after reboot.
-
-Vim inspired key bindings.
-
-Solarized dark theme to match vim.
+Features
+- Tmux and Tmate support for Mac and Linux
+- Can resurrect tmux sessions
+- Vim inspired key bindings
+- Solarized dark theme to match vim
 
 
 #### Git
 
-Gitconfig strategy is borrowed from: [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
+My approach to .gitconfig is borrowed from: [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
 
 If the `~/.gitconfig.local` file exists, it will be automatically be included after the configurations from `~/.gitconfig`. This allows its content to overwrite or add to the existing git configurations.
 
@@ -60,6 +62,8 @@ Example contents of `~/.gitconfig.local`:
 My bash profile automatically sources environment variables from `~/.env` right away (if it exists).
 
 At the end of my bash profile `~/.bash_profile.local` is sourced (if it exists).
+
+Includes aliases to quickly edit config files, and sets readline to vi mode.
 
 This makes it easy to use computer-specific configurations and keep credentials private.
 
