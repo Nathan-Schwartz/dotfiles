@@ -99,33 +99,10 @@ let g:ackprg = 'ag --vimgrep --smart-case'
 " Highlight hits
 let g:ackhighlight = 1
 
-" This naming convention is bad, but I type Ag out of habbit.
-" Both :Ag and :Ack use ag, the difference between Ack and Ag
-" commands is that Ag will keep your original file open
-command! -nargs=+ Ag :call BetterAck(<f-args>)
-
-function! BetterAck(...)
-  " Close qf list to prevent mark errors
-  normal :cclose
-
-  " Set mark
-  normal mZ
-
-  " Run query using :Ack, forwarding all arguments
-  execute "normal :Ack " . join(a:000) . "\<CR>"
-
-  " Move out of quickfix list
-  normal :cclose
-
-  " Move to mark
-  normal `Z
-
-  " Disable folds to show where cursor is
-  normal zi
-
-  " Move back into quickfix list
-  normal :copen
-endfunction
+" I type Ag out of habbit. The ! prevents jumping to the first hit
+abbrev Ag Ack!
+abbrev AG Ack!
+abbrev ag Ack!
 
 command! OpenQFTabs :call OpenQuickFixInTabs()
 
