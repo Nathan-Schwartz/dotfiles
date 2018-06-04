@@ -251,6 +251,13 @@ let NERDTreeQuitOnOpen = 1
 nnoremap <c-b> :NERDTreeToggle<CR>
 " }}}
 
+" Smooth Scroll {{{
+noremap <silent> <c-u> :call smooth_scroll#up(float2nr(&scroll * 0.75), 15, 2)<CR>
+noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)<CR>
+noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
+noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
+" }}}
+
 " Sneak {{{
 map f <Plug>Sneak_f
 map F <Plug>Sneak_F
