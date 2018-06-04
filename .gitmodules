@@ -55,3 +55,6 @@
 [submodule "vim/.vim/bundle/vim-smooth-scroll"]
 	path = vim/.vim/bundle/vim-smooth-scroll
 	url = https://github.com/terryma/vim-smooth-scroll
+[submodule "vim/.vim/bundle/vim-tmux-navigator"]
+	path = vim/.vim/bundle/vim-tmux-navigator
+	url = https://github.com/christoomey/vim-tmux-navigator

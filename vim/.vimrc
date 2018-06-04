@@ -485,11 +485,13 @@ nnoremap k gk
 xnoremap j gj
 xnoremap k gk
 
-" Easier split navigation
-nmap gh <C-w>h
-nmap gj <C-w>j
-nmap gk <C-w>k
-nmap gl <C-w>l
+" " Easier split navigation
+" NOTE: These have been deprecated in favor of C-h, C-j, C-k, and C-l for
+" compatibility with vim-tmux-navigator
+" nmap gh <C-w>h
+" nmap gj <C-w>j
+" nmap gk <C-w>k
+" nmap gl <C-w>l
 " }}}
 
 " Fix Cursor rendering issue
