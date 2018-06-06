@@ -6,20 +6,18 @@ execute pathogen#infect()
 
 " These functions clobber "z 'z and 'Z on the reg, beware.
 
-" TODOS {{{
-" https://github.com/rking/ag.vim/issues/124#issuecomment-227038003
+" TODOS {{{1
+" Plugin I am considering:
 " https://github.com/sjl/gundo.vim.git
-" https://dougblack.io/words/a-good-vimrc.html Read section on backups, tmux, autogroups, and custom functions
-" YouCompleteMe?
-" unimpaired.vim
+" https://github.com/tpope/unimpaired.vim
 " https://github.com/skywind3000/asyncrun.vim
 " https://github.com/tpope/vim-abolish
-" https://github.com/skwp/dotfiles/blob/master/vimrc
-" https://medium.com/@lah.data/and-five-years-later-9db30e8c0ae3
-" https://github.com/liangxianzhe/oh-my-vim
-" }}}
 
-" General {{{
+" General {{{1
+" Override Y to behave like C and D
+map Y y$
+
+""" Undo
 " Save undos after file closes
 set undofile
 " Number of undos to save
@@ -27,9 +25,13 @@ set undolevels=1000
 " Number of lines to save for undo
 set undoreload=10000
 
+""" Set dirs so we don't litter all over
 set undodir=~/.vim/cache/undo
 set backupdir=~/.vim/cache/backup
 set dir=~/.vim/cache/swap
+
+" Prompt to save instead of erroring
+set confirm
 
 " Delete comment characters when joining lines
 set formatoptions+=j
@@ -53,7 +55,6 @@ set showcmd
 filetype plugin indent on
 
 " Turn on line numbers
-" set number
 set relativenumber
 
 " highlight matching [{()}]
@@ -69,7 +70,10 @@ set visualbell
 set autoread
 
 " Work with crontabs
-au BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
+augroup CrontabConfig
+  autocmd!
+  autocmd BufNewFile,BufRead crontab.* set nobackup | set nowritebackup
+augroup END
 
 " Use the clipboard as the default register
 set clipboard^=unnamed
@@ -89,10 +93,9 @@ set timeout timeoutlen=1000 ttimeoutlen=100
 abbrev W w
 abbrev Wq wq
 abbrev Q q
-" }}}
 
-" Plugin {{{
-" Ack {{{
+" Plugin {{{1
+" Ack {{{2
 " Use ag instead of ack
 let g:ackprg = 'ag --vimgrep --smart-case'
 
@@ -106,7 +109,7 @@ abbrev ag Ack!
 
 command! OpenQFTabs :call OpenQuickFixInTabs()
 
-function! OpenQuickFixInTabs()
+function! OpenQuickFixInTabs() abort
   " Close qf list to prevent mark errors
   normal :cclose
 
@@ -139,9 +142,8 @@ function! OpenQuickFixInTabs()
 
   normal :copen
 endfunction
-" }}}
 
-" Ale {{{
+" Ale {{{2
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
 
@@ -154,17 +156,15 @@ let g:ale_enabled = 0
 " GitGutter has gutter enabled which makes this option unnecessary
 " Keep sign column open all the time so changes are less jarring
 " let g:ale_sign_column_always = 1
-" }}}
 
-" CtrlP {{{
+" CtrlP {{{2
 " Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 
 " Display hidden files
 let g:ctrlp_show_hidden = 1
-" }}}
 
-" Git Gutter {{{
+" Git Gutter {{{2
 " Don't create any key mappings
 let g:gitgutter_map_keys = 0
 
@@ -174,19 +174,16 @@ if exists('&signcolumn')  " Vim 7.4.2201
 else
   let g:gitgutter_sign_column_always = 1
 endif
-" }}}
 
-" HardTime {{{
+" HardTime {{{2
 let g:hardtime_default_on = 0
 let g:hardtime_timeout = 2000
-" }}}
 
-" Javascript {{{
+" Javascript {{{2
 " let g:javascript_plugin_jsdoc = 0
 let g:javascript_plugin_flow = 1
-" }}}
 
-" LightLine {{{
+" LightLine {{{2
 " Always show statusline
 set laststatus=2
 "
@@ -211,12 +208,11 @@ let g:lightline = {
       \ }
 
 " Function used for printing relative file path
-function! PrintFilePath()
+function! PrintFilePath() abort
   return fnamemodify(expand("%"), ":~:.")
 endfunction
-" }}}
 
-" NERDTree {{{
+" NERDTree {{{2
 " Automatically delete the buffer of the file you just deleted with NerdTree:
 let NERDTreeAutoDeleteBuffer = 1
 
@@ -231,28 +227,23 @@ let NERDTreeQuitOnOpen = 1
 
 " Toggle Nerd Tree with control + b
 nnoremap <c-b> :NERDTreeToggle<CR>
-" }}}
 
-" Smooth Scroll {{{
+" Smooth Scroll {{{2
 noremap <silent> <c-u> :call smooth_scroll#up(float2nr(&scroll * 0.75), 15, 2)<CR>
 noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)<CR>
 noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
 noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
-" }}}
 
-" Sneak {{{
+" Sneak {{{2
 map f <Plug>Sneak_f
 map F <Plug>Sneak_F
 map t <Plug>Sneak_t
 map T <Plug>Sneak_T
-" }}}
 
-" Startify {{{
+" Startify {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
-" }}}
-" }}}
 
-" Colors {{{
+" Colors {{{1
 " enable syntax processing
 if !exists("g:syntax_on")
   syntax enable
@@ -265,7 +256,7 @@ colorscheme solarized
 command! ToggleBackground :call ToggleBackground()
 
 " Toggle iterm and vim between dark and light
-function! ToggleBackground()
+function! ToggleBackground() abort
   if &background == "dark"
     set background=light
     normal :!echo -e "\033]50;SetProfile=Light\a"
@@ -288,9 +279,8 @@ function! ToggleBackground()
   catch
   endtry
 endfunction
-" }}}
 
-" Folding {{{
+" Folding {{{1
 " enable folding
 set foldenable
 
@@ -302,30 +292,30 @@ set foldnestmax=10
 
 " fold based on indent level
 set foldmethod=indent
-" }}}
 
-" Wildmenu {{{
+" Wildmenu {{{1
 " configure visual autocomplete for command menu
 set wildmenu
 set wildignorecase
 set completeopt+=longest
 set wildmode=longest:full,full
-" }}}
 
-" Cursor {{{
-" Disable mouse
-set mouse-=a
+" Cursor {{{1
+" Enable mouse
+set mouse=a
 
 " Disable cursor blink
 set guicursor=a:blinkon0
 
 " Only highlight current line for current window
-setlocal cursorline
-autocmd WinEnter,FocusGained * setlocal cursorline
-autocmd WinLeave,FocusLost   * setlocal nocursorline
-" }}}
+" setlocal cursorline
+" augroup CursorLineGroup
+"   autocmd!
+"   autocmd WinEnter,FocusGained * setlocal cursorline
+"   autocmd WinLeave,FocusLost   * setlocal nocursorline
+" augroup END
 
-" Leader Mappings {{{
+" Leader: General {{{1
 " Map space to leader
 let mapleader = " "
 
@@ -362,8 +352,8 @@ nnoremap <leader>rel :source ~/.vimrc<CR>
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
-" Snippets {{{
-function! LocalReindent()
+" Leader: Snippets {{{1
+function! LocalReindent() abort
   normal mz
   normal 10k
   normal 20==
@@ -389,9 +379,8 @@ nnoremap <leader>try :-1read $HOME/.vim/snippets/try.js<CR>:call LocalReindent()
 " Generate loops
 nnoremap <leader>forof :-1read $HOME/.vim/snippets/forof.js<CR>:call LocalReindent()<CR>f)i
 nnoremap <leader>forin :-1read $HOME/.vim/snippets/forin.js<CR>:call LocalReindent()<CR>f)i
-" }}}
 
-" Custom functions {{{
+" Leader: Custom Functions {{{1
 " Mappings that use custom functions
 nnoremap <leader>bot :call UseBottomDiff()<CR>
 nnoremap <leader>top :call UseTopDiff()<CR>
@@ -400,7 +389,7 @@ nnoremap <leader>log :call JsLog()<CR>
 nnoremap <leader>js  :call JsStringify()<CR>
 
 " Picks the bottom section of a git conflict
-function! UseBottomDiff()
+function! UseBottomDiff() abort
   normal /<<<
   normal d/===
   normal dd
@@ -409,7 +398,7 @@ function! UseBottomDiff()
 endfunction
 
 " Picks the top section of a git conflict
-function! UseTopDiff()
+function! UseTopDiff() abort
   normal /<<<
   normal dd
   normal /===
@@ -418,45 +407,45 @@ function! UseTopDiff()
 endfunction
 
 " Creates a variable and require statement, uses z registry
-function! JsRequire()
+function! JsRequire() abort
   normal "zciWconst z = require('z');
 endfunction
 
 " Creates a labelled console.log, uses z registry
-function! JsLog()
+function! JsLog() abort
   normal "zciWconsole.log('z', z);
 endfunction
 
 " Json stringify Word using z registry
-function! JsStringify()
+function! JsStringify() abort
   normal "zciwJSON.stringify(z, null, 2)
 endfunction
-"}}}
-"}}}
 
-" Spaces and Tabs {{{
+" Spaces and Tabs {{{1
 " Remove trailing whitespace on save
-autocmd BufWritePre * %s/\s\+$//e
+augroup RemoveTrailingWhitespaceGroup
+  autocmd!
+  autocmd BufWritePre * %s/\s\+$//e
+augroup END
 
 " New lines start in better places
 set autoindent
 
-" Change number of spaces when indenting
+" Indentation settings for using 4 spaces instead of tabs.
+set softtabstop=2
 set shiftwidth=2
-
-" number of visual spaces per TAB
-set tabstop=2
-
-" tabs are spaces
 set expandtab
-" }}}
 
-" Movement & Searching {{{
+" Movement & Searching {{{1
 " search as characters are entered
 set incsearch
 
 " highlight matches
 set hlsearch
+
+" Case insensitive unless a capital character is included
+set ignorecase
+set smartcase
 
 "Start scrolling when we're 10 lines away
 set scrolloff=25
@@ -474,11 +463,10 @@ xnoremap k gk
 " nmap gj <C-w>j
 " nmap gk <C-w>k
 " nmap gl <C-w>l
-" }}}
 
+" Perf fix {{{1
 " Fix Cursor rendering issue
 set ttyfast
 set norelativenumber
 set number
-set nocursorline
 set noshowcmd
