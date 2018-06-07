@@ -93,7 +93,44 @@ abbrev W w
 abbrev Wq wq
 abbrev Q q
 
-" ---------- Plugin ---------- {{{1
+" ---------- Colors ---------- {{{1
+" enable syntax processing
+if !exists("g:syntax_on")
+  syntax enable
+endif
+
+" Setup a color theme
+set background=dark
+colorscheme solarized
+
+command! ToggleBackground :call ToggleBackground()
+
+" Toggle iterm and vim between dark and light
+function! ToggleBackground() abort
+  if &background == "dark"
+    set background=light
+    normal :!echo -e "\033]50;SetProfile=Light\a"
+  elseif &background == "light"
+    set background=dark
+    normal :!echo -e "\033]50;SetProfile=Dark\a"
+  endif
+
+  if !exists('g:loaded_lightline')
+    return
+  endif
+
+  try
+    if g:colors_name =~# 'solarized'
+      runtime autoload/lightline/colorscheme/solarized.vim
+      call lightline#init()
+      call lightline#colorscheme()
+      call lightline#update()
+    endif
+  catch
+  endtry
+endfunction
+
+" ---------- Plugins ---------- {{{1
 " Ack {{{2
 " Use ag instead of ack
 let g:ackprg = 'ag --vimgrep --smart-case'
@@ -101,7 +138,7 @@ let g:ackprg = 'ag --vimgrep --smart-case'
 " Highlight hits
 let g:ackhighlight = 1
 
-" I type Ag out of habbit. The ! prevents jumping to the first hit
+" I type Ag out of habit. The ! prevents jumping to the first hit
 abbrev Ag Ack!
 abbrev AG Ack!
 abbrev ag Ack!
@@ -242,106 +279,6 @@ map T <Plug>Sneak_T
 " ---------- Startify ---------- {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
 
-" ---------- Colors ---------- {{{1
-" enable syntax processing
-if !exists("g:syntax_on")
-  syntax enable
-endif
-
-" Setup a color theme
-set background=dark
-colorscheme solarized
-
-command! ToggleBackground :call ToggleBackground()
-
-" Toggle iterm and vim between dark and light
-function! ToggleBackground() abort
-  if &background == "dark"
-    set background=light
-    normal :!echo -e "\033]50;SetProfile=Light\a"
-  elseif &background == "light"
-    set background=dark
-    normal :!echo -e "\033]50;SetProfile=Dark\a"
-  endif
-
-  if !exists('g:loaded_lightline')
-    return
-  endif
-
-  try
-    if g:colors_name =~# 'solarized'
-      runtime autoload/lightline/colorscheme/solarized.vim
-      call lightline#init()
-      call lightline#colorscheme()
-      call lightline#update()
-    endif
-  catch
-  endtry
-endfunction
-
-" ---------- Folding ---------- {{{1
-" enable folding
-set foldenable
-
-" open most folds by default
-set foldlevelstart=10
-
-" 10 nested fold max
-set foldnestmax=10
-
-" fold based on indent level
-set foldmethod=marker
-
-" Custom Folding Colors
-augroup FoldColorGroup
-  highlight Folded cterm=NONE term=bold ctermfg=white
-augroup END
-
-" Custom Fold Content
-set foldtext=FoldText()
-
-function! FoldText()
-  let line = getline(v:foldstart)
-
-  let nucolwidth = &fdc + &number * &numberwidth
-  let windowwidth = winwidth(0) - nucolwidth - 3
-  let foldedlinecount = v:foldend - v:foldstart
-  let line = trim(substitute(substitute(substitute(substitute(line, '\d', '', 'g'), '-', '', 'g'), '{', '', 'g'), '"', '', 'g'))
-  let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
-
-  if windowwidth > 100
-    let maxtitlelength = 50
-    let titlepadding = maxtitlelength - len(line)
-    let fillcharcount = windowwidth - maxtitlelength - len(foldedlinecount) - (v:foldlevel * 2)
-    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ', titlepadding - 3) . 'L# ' . foldedlinecount . repeat(' ', fillcharcount) . ' '
-  else
-    let fillcharcount = windowwidth - len(line) - len(foldedlinecount) - (v:foldlevel * 2)
-    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ',fillcharcount) . foldedlinecount . '  '
-  endif
-endfunction
-
-" ---------- Wildmenu ---------- {{{1
-" configure visual autocomplete for command menu
-set wildmenu
-set wildignorecase
-set completeopt+=longest
-set wildmode=longest:full,full
-
-" ---------- Cursor ---------- {{{1
-" Enable mouse
-set mouse=a
-
-" Disable cursor blink
-set guicursor=a:blinkon0
-
-" Only highlight current line for current window
-" setlocal cursorline
-" augroup CursorLineGroup
-"   autocmd!
-"   autocmd WinEnter,FocusGained * setlocal cursorline
-"   autocmd WinLeave,FocusLost   * setlocal nocursorline
-" augroup END
-
 " ---------- Leader: General ---------- {{{1
 " Map space to leader
 let mapleader = " "
@@ -448,21 +385,6 @@ function! JsStringify() abort
   normal "zciwJSON.stringify(z, null, 2)
 endfunction
 
-" ---------- Spaces and Tabs ---------- {{{1
-" Remove trailing whitespace on save
-augroup RemoveTrailingWhitespaceGroup
-  autocmd!
-  autocmd BufWritePre * %s/\s\+$//e
-augroup END
-
-" New lines start in better places
-set autoindent
-
-" Indentation settings for using 4 spaces instead of tabs.
-set softtabstop=2
-set shiftwidth=2
-set expandtab
-
 " ---------- Movement & Searching ---------- {{{1
 " search as characters are entered
 set incsearch
@@ -490,6 +412,84 @@ xnoremap k gk
 " nmap gj <C-w>j
 " nmap gk <C-w>k
 " nmap gl <C-w>l
+
+" ---------- Folding ---------- {{{1
+" enable folding
+set foldenable
+
+" open most folds by default
+set foldlevelstart=10
+
+" 10 nested fold max
+set foldnestmax=10
+
+" fold based on indent level
+set foldmethod=marker
+
+" Custom Folding Colors
+augroup FoldColorGroup
+  highlight Folded cterm=NONE term=bold ctermfg=white
+augroup END
+
+" Custom Fold Content
+set foldtext=FoldText()
+
+function! FoldText()
+  let line = getline(v:foldstart)
+
+  let nucolwidth = &fdc + &number * &numberwidth
+  let windowwidth = winwidth(0) - nucolwidth - 3
+  let foldedlinecount = v:foldend - v:foldstart
+  let line = trim(substitute(substitute(substitute(substitute(line, '\d', '', 'g'), '-', '', 'g'), '{', '', 'g'), '"', '', 'g'))
+  let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
+
+  if windowwidth > 100
+    let maxtitlelength = 50
+    let titlepadding = maxtitlelength - len(line)
+    let fillcharcount = windowwidth - maxtitlelength - len(foldedlinecount) - (v:foldlevel * 2)
+    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ', titlepadding - 3) . 'L# ' . foldedlinecount . repeat(' ', fillcharcount) . ' '
+  else
+    let fillcharcount = windowwidth - len(line) - len(foldedlinecount) - (v:foldlevel * 2)
+    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ',fillcharcount) . foldedlinecount . '  '
+  endif
+endfunction
+
+" ---------- Wildmenu ---------- {{{1
+" configure visual autocomplete for command menu
+set wildmenu
+set wildignorecase
+set completeopt+=longest
+set wildmode=longest:full,full
+
+" ---------- Cursor ---------- {{{1
+" Enable mouse
+set mouse=a
+
+" Disable cursor blink
+set guicursor=a:blinkon0
+
+" Only highlight current line for current window
+" setlocal cursorline
+" augroup CursorLineGroup
+"   autocmd!
+"   autocmd WinEnter,FocusGained * setlocal cursorline
+"   autocmd WinLeave,FocusLost   * setlocal nocursorline
+" augroup END
+
+" ---------- Spaces and Tabs ---------- {{{1
+" Remove trailing whitespace on save
+augroup RemoveTrailingWhitespaceGroup
+  autocmd!
+  autocmd BufWritePre * %s/\s\+$//e
+augroup END
+
+" New lines start in better places
+set autoindent
+
+" Indentation settings for using 4 spaces instead of tabs.
+set softtabstop=2
+set shiftwidth=2
+set expandtab
 
 " ---------- Perf fix ---------- {{{1
 " Fix Cursor rendering issue
