@@ -6,18 +6,17 @@ execute pathogen#infect()
 
 " These functions clobber "z 'z and 'Z on the reg, beware.
 
-" TODOS {{{1
+" ---------- TODOS ---------- {{{1
 " Plugin I am considering:
 " https://github.com/sjl/gundo.vim.git
 " https://github.com/tpope/unimpaired.vim
 " https://github.com/skywind3000/asyncrun.vim
 " https://github.com/tpope/vim-abolish
 
-" General {{{1
+" ---------- General ---------- {{{1
 " Override Y to behave like C and D
 map Y y$
 
-""" Undo
 " Save undos after file closes
 set undofile
 " Number of undos to save
@@ -25,7 +24,7 @@ set undolevels=1000
 " Number of lines to save for undo
 set undoreload=10000
 
-""" Set dirs so we don't litter all over
+" Set dirs so we don't litter all over
 set undodir=~/.vim/cache/undo
 set backupdir=~/.vim/cache/backup
 set dir=~/.vim/cache/swap
@@ -94,7 +93,7 @@ abbrev W w
 abbrev Wq wq
 abbrev Q q
 
-" Plugin {{{1
+" ---------- Plugin ---------- {{{1
 " Ack {{{2
 " Use ag instead of ack
 let g:ackprg = 'ag --vimgrep --smart-case'
@@ -143,7 +142,7 @@ function! OpenQuickFixInTabs() abort
   normal :copen
 endfunction
 
-" Ale {{{2
+" ---------- Ale ---------- {{{2
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
 
@@ -157,14 +156,14 @@ let g:ale_enabled = 0
 " Keep sign column open all the time so changes are less jarring
 " let g:ale_sign_column_always = 1
 
-" CtrlP {{{2
+" ---------- CtrlP ---------- {{{2
 " Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 
 " Display hidden files
 let g:ctrlp_show_hidden = 1
 
-" Git Gutter {{{2
+" ---------- Git Gutter ---------- {{{2
 " Don't create any key mappings
 let g:gitgutter_map_keys = 0
 
@@ -175,15 +174,15 @@ else
   let g:gitgutter_sign_column_always = 1
 endif
 
-" HardTime {{{2
+" ---------- HardTime ---------- {{{2
 let g:hardtime_default_on = 0
 let g:hardtime_timeout = 2000
 
-" Javascript {{{2
+" ---------- Javascript ---------- {{{2
 " let g:javascript_plugin_jsdoc = 0
 let g:javascript_plugin_flow = 1
 
-" LightLine {{{2
+" ---------- LightLine ---------- {{{2
 " Always show statusline
 set laststatus=2
 "
@@ -212,7 +211,7 @@ function! PrintFilePath() abort
   return fnamemodify(expand("%"), ":~:.")
 endfunction
 
-" NERDTree {{{2
+" ---------- NERDTree ---------- {{{2
 " Automatically delete the buffer of the file you just deleted with NerdTree:
 let NERDTreeAutoDeleteBuffer = 1
 
@@ -228,22 +227,22 @@ let NERDTreeQuitOnOpen = 1
 " Toggle Nerd Tree with control + b
 nnoremap <c-b> :NERDTreeToggle<CR>
 
-" Smooth Scroll {{{2
+" ---------- Smooth Scroll ---------- {{{2
 noremap <silent> <c-u> :call smooth_scroll#up(float2nr(&scroll * 0.75), 15, 2)<CR>
 noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)<CR>
 noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
 noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
 
-" Sneak {{{2
+" ---------- Sneak ---------- {{{2
 map f <Plug>Sneak_f
 map F <Plug>Sneak_F
 map t <Plug>Sneak_t
 map T <Plug>Sneak_T
 
-" Startify {{{2
+" ---------- Startify ---------- {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
 
-" Colors {{{1
+" ---------- Colors ---------- {{{1
 " enable syntax processing
 if !exists("g:syntax_on")
   syntax enable
@@ -280,7 +279,7 @@ function! ToggleBackground() abort
   endtry
 endfunction
 
-" Folding {{{1
+" ---------- Folding ---------- {{{1
 " enable folding
 set foldenable
 
@@ -291,16 +290,44 @@ set foldlevelstart=10
 set foldnestmax=10
 
 " fold based on indent level
-set foldmethod=indent
+set foldmethod=marker
 
-" Wildmenu {{{1
+" Custom Folding Colors
+augroup FoldColorGroup
+  highlight Folded cterm=NONE term=bold ctermfg=white
+augroup END
+
+" Custom Fold Content
+set foldtext=FoldText()
+
+function! FoldText()
+  let line = getline(v:foldstart)
+
+  let nucolwidth = &fdc + &number * &numberwidth
+  let windowwidth = winwidth(0) - nucolwidth - 3
+  let foldedlinecount = v:foldend - v:foldstart
+  let line = trim(substitute(substitute(substitute(substitute(line, '\d', '', 'g'), '-', '', 'g'), '{', '', 'g'), '"', '', 'g'))
+  let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
+
+  if windowwidth > 100
+    let maxtitlelength = 50
+    let titlepadding = maxtitlelength - len(line)
+    let fillcharcount = windowwidth - maxtitlelength - len(foldedlinecount) - (v:foldlevel * 2)
+    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ', titlepadding - 3) . 'L# ' . foldedlinecount . repeat(' ', fillcharcount) . ' '
+  else
+    let fillcharcount = windowwidth - len(line) - len(foldedlinecount) - (v:foldlevel * 2)
+    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ',fillcharcount) . foldedlinecount . '  '
+  endif
+endfunction
+
+" ---------- Wildmenu ---------- {{{1
 " configure visual autocomplete for command menu
 set wildmenu
 set wildignorecase
 set completeopt+=longest
 set wildmode=longest:full,full
 
-" Cursor {{{1
+" ---------- Cursor ---------- {{{1
 " Enable mouse
 set mouse=a
 
@@ -315,7 +342,7 @@ set guicursor=a:blinkon0
 "   autocmd WinLeave,FocusLost   * setlocal nocursorline
 " augroup END
 
-" Leader: General {{{1
+" ---------- Leader: General ---------- {{{1
 " Map space to leader
 let mapleader = " "
 
@@ -352,7 +379,7 @@ nnoremap <leader>rel :source ~/.vimrc<CR>
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
-" Leader: Snippets {{{1
+" ---------- Leader: Snippets ---------- {{{1
 function! LocalReindent() abort
   normal mz
   normal 10k
@@ -380,7 +407,7 @@ nnoremap <leader>try :-1read $HOME/.vim/snippets/try.js<CR>:call LocalReindent()
 nnoremap <leader>forof :-1read $HOME/.vim/snippets/forof.js<CR>:call LocalReindent()<CR>f)i
 nnoremap <leader>forin :-1read $HOME/.vim/snippets/forin.js<CR>:call LocalReindent()<CR>f)i
 
-" Leader: Custom Functions {{{1
+" ---------- Leader: Custom Functions ---------- {{{1
 " Mappings that use custom functions
 nnoremap <leader>bot :call UseBottomDiff()<CR>
 nnoremap <leader>top :call UseTopDiff()<CR>
@@ -421,7 +448,7 @@ function! JsStringify() abort
   normal "zciwJSON.stringify(z, null, 2)
 endfunction
 
-" Spaces and Tabs {{{1
+" ---------- Spaces and Tabs ---------- {{{1
 " Remove trailing whitespace on save
 augroup RemoveTrailingWhitespaceGroup
   autocmd!
@@ -436,7 +463,7 @@ set softtabstop=2
 set shiftwidth=2
 set expandtab
 
-" Movement & Searching {{{1
+" ---------- Movement & Searching ---------- {{{1
 " search as characters are entered
 set incsearch
 
@@ -464,7 +491,7 @@ xnoremap k gk
 " nmap gk <C-w>k
 " nmap gl <C-w>l
 
-" Perf fix {{{1
+" ---------- Perf fix ---------- {{{1
 " Fix Cursor rendering issue
 set ttyfast
 set norelativenumber
