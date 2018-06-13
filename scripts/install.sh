@@ -77,7 +77,6 @@ npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-pl
 # brew install postgresql
 # brew install awscli
 # brew install imagemagick --with-webp
-# brew install thefuck
 
 # Remove outdated versions from the cellar.
 printf "\n>> Cleanup brew\n"

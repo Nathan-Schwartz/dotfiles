@@ -17,6 +17,16 @@ set -o vi
 #
 # Exports
 #
+
+# Set directory env vars
+if [ "$isMac" = true ] ; then
+  export NOTES_DIR="$HOME/Documents/notes"
+  export PROJECTS_DIR="$HOME/Documents/projects"
+else
+  export NOTES_DIR="$HOME/notes"
+  export PROJECTS_DIR="$HOME/projects"
+fi
+
 export GIT_EDITOR=vim
 export EDITOR=vim
 
@@ -70,6 +80,7 @@ alias etmux='vim ~/.tmux.conf'
 
 # Common typos
 alias vmi='vim'
+alias g="git"
 alias gti='git'
 alias sl='ls'
 
@@ -79,25 +90,27 @@ alias lst='tree -a -I "node_modules|.git|.next"'
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
 
-# Easier navigation: .., ..., ...., ....., ~ and -
+# Easier navigation
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
-alias ~="cd ~" # `cd` is probably faster to type though
+alias ~="cd ~"
 alias -- -="cd -"
 
-# Shortcuts
-if [ "$isMac" = true ] ; then
-  alias downloads="cd ~/Downloads"
-  alias desktop="cd ~/Desktop"
-  alias projects="cd ~/Documents/projects"
-  alias notes="cd ~/Documents/notes"
-fi
+# Create directories if they don't exist
+mkdir ${NOTES_DIR} 2> /dev/null
+mkdir ${PROJECTS_DIR} 2> /dev/null
 
+# Shortcuts to custom dirs
 alias dotfiles="cd ~/dotfiles"
-alias g="git"
-alias e="exit"
+alias notes="cd $NOTES_DIR"
+alias projects="cd $PROJECTS_DIR"
+
+# Utility to making a new note (takes a file name)
+newnote () {
+  vim "${NOTES_DIR}/$1"
+}
 
 # Kill all the tabs in Chrome to free up memory
 # [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
@@ -133,12 +146,6 @@ alias ls="command ls -a ${colorflag}"
 # MISC
 #
 
-# Correct failed commands using `pls`
-if test $(which thefuck); then
-  eval $(thefuck --alias pls)
-fi
-
-
 # Add tab completion for many Bash commands
 if test $(which brew)
 then
@@ -155,5 +162,3 @@ source ~/.bash-powerline.sh
 if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
 fi
-
-unset isMac
