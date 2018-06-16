@@ -27,11 +27,11 @@ Features
 - Browse directories with NERDTree
 - Linting and selective autofix support with ALE
 - Quick access to MRU files + sessions on startup with vim-startify
+- Multi cursor
 - Solarized theme w/ vim command to change light<->dark
 - Tmux panes and vim windows share key binding (vim-tmux navigator)
 - Simple snippet solution using :read
 - Some niceties like multiline f and t, visual j/k movement, smooth scroll, etc
-- I try to keep my config free of bloat and (generally) avoid breaking changes.
 
 Don't forget to generate helptags with `:Helptags`.
 
