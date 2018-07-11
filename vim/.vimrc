@@ -211,10 +211,6 @@ else
   let g:gitgutter_sign_column_always = 1
 endif
 
-" ---------- HardTime ---------- {{{2
-let g:hardtime_default_on = 0
-let g:hardtime_timeout = 2000
-
 " ---------- Javascript ---------- {{{2
 " let g:javascript_plugin_jsdoc = 0
 let g:javascript_plugin_flow = 1
@@ -291,9 +287,6 @@ nnoremap <leader>v `[v`]
 
 " turn off search highlight
 nnoremap <leader>n :noh<CR>
-
-" Easily toggle Hard Time
-nnoremap <leader>h :HardTimeToggle<CR>
 
 " Fix linting errors
 nnoremap <leader>f :ALEFix<CR>

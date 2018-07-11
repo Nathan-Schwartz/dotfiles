@@ -7,9 +7,6 @@
 [submodule ".vim/vim-sneak"]
 	path = vim/.vim/bundle/vim-sneak
 	url = https://github.com/justinmk/vim-sneak.git
-[submodule ".vim/vim-hardtime"]
-	path = vim/.vim/bundle/vim-hardtime
-	url = https://github.com/takac/vim-hardtime.git
 [submodule ".vim/vim-gitgutter"]
 	path = vim/.vim/bundle/vim-gitgutter
 	url = https://github.com/airblade/vim-gitgutter.git
