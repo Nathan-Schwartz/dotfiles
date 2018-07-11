@@ -271,13 +271,13 @@ let g:nerdtree_tabs_open_on_gui_startup=0
 let NERDTreeQuitOnOpen = 1
 
 " Toggle Nerd Tree with control + b
-nnoremap <c-b> :NERDTreeToggle<CR>
+nnoremap <c-b> :NERDTreeFind<CR>
 
 " ---------- Smooth Scroll ---------- {{{2
 noremap <silent> <c-u> :call smooth_scroll#up(float2nr(&scroll * 0.75), 15, 2)<CR>
 noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)<CR>
-noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
-noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
+" noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
+" noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
 
 " ---------- Sneak ---------- {{{2
 map f <Plug>Sneak_f
