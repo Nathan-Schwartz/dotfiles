@@ -82,7 +82,7 @@ set backspace=indent,eol,start
 
 " Delay after typing stops before checking again (used by gitgutter).
 " Can cause issues under 1000ms
-set updatetime=250
+set updatetime=50
 
 " Remove escape delays (This breaks arrow keys in insert mode)
 set noesckeys
@@ -182,12 +182,25 @@ endfunction
 " ---------- Ale ---------- {{{2
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
+let g:ale_linters = { 'javascript': ['flow', 'eslint'] }
 
-" Don't run linters on opening a file
+let g:ale_lint_delay = 50
+let g:ale_completion_enabled = 1
+let g:ale_set_balloons = 1
+
+let g:ale_sign_error = 'X' " could use emoji
+let g:ale_sign_warning = '?' " could use emoji
+let g:ale_statusline_format = ['X %d', '? %d', '']
+" %linter% is the name of the linter that provided the message
+" %s is the error or warning message
+let g:ale_echo_msg_format = '%linter% says %s'
+
+" Run linters on opening a file
 let g:ale_lint_on_enter = 0
 
-" Disable Ale by default
-let g:ale_enabled = 0
+" :help ale-reasonml-ols
+let g:ale_reason_ols_use_global = 1
+
 
 " GitGutter has gutter enabled which makes this option unnecessary
 " Keep sign column open all the time so changes are less jarring
@@ -288,11 +301,15 @@ nnoremap <leader>v `[v`]
 " turn off search highlight
 nnoremap <leader>n :noh<CR>
 
-" Fix linting errors
-nnoremap <leader>f :ALEFix<CR>
-
 " Toggle linting with a (for ale)
 nnoremap <leader>a :ALEToggle<CR>
+
+" Fix linting errors
+nnoremap <leader>af :ALEFix<CR>
+
+" Map keys to navigate between lines with errors and warnings.
+nnoremap <leader>an :ALENextWrap<cr>
+nnoremap <leader>ap :ALEPreviousWrap<cr>
 
 " Custom mapping for vim.switch
 nnoremap <leader>s :Switch<CR>

@@ -70,7 +70,15 @@ n prune
 
 # Install some global packages
 printf "\n>> Install global npm packages\n"
-npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype jest
+npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype jest bs-platform ocaml-language-server flow-language-server
+
+printf "\n>> Installing Reason...\n"
+if [ "$isMac" = true ] ; then
+  npm install -g reason-cli@3.2.0-darwin
+else
+  npm install -g reason-cli@3.2.0-linux
+fi
+
 
 # # Skip least used installs
 # brew install mongodb
