@@ -183,6 +183,7 @@ endfunction
 " Set up auto fixers
 let g:ale_fixers = { 'javascript': ['eslint', 'prettier-eslint'] }
 let g:ale_linters = { 'javascript': ['flow', 'eslint'] }
+let g:ale_yaml_yamllint_options='-d "{extends: relaxed, rules: {line-length: disable}}"'
 
 let g:ale_lint_delay = 50
 let g:ale_completion_enabled = 1
@@ -194,9 +195,6 @@ let g:ale_statusline_format = ['X %d', '? %d', '']
 " %linter% is the name of the linter that provided the message
 " %s is the error or warning message
 let g:ale_echo_msg_format = '%linter% says %s'
-
-" Run linters on opening a file
-let g:ale_lint_on_enter = 0
 
 " :help ale-reasonml-ols
 let g:ale_reason_ols_use_global = 1

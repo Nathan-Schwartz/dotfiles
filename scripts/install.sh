@@ -47,6 +47,7 @@ brew install the_silver_searcher
 brew install watchman
 brew install docker
 brew install docker-compose
+brew install yamllint
 
 if [ "$isMac" = true ] ; then
   brew install macvim
