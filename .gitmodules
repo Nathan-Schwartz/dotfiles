@@ -55,3 +55,6 @@
 [submodule "vim/.vim/bundle/vim-multiple-cursors"]
 	path = vim/.vim/bundle/vim-multiple-cursors
 	url = https://github.com/terryma/vim-multiple-cursors.git
+[submodule "vim/.vim/bundle/CamelCaseMotion.vim"]
+	path = vim/.vim/bundle/CamelCaseMotion.vim
+	url = https://github.com/bkad/CamelCaseMotion

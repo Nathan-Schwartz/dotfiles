@@ -108,7 +108,7 @@ alias notes="cd $NOTES_DIR"
 alias projects="cd $PROJECTS_DIR"
 
 # Utility to making a new note (takes a file name)
-newnote () {
+note () {
   vim "${NOTES_DIR}/$1"
 }
 

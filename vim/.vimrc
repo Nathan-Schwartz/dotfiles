@@ -204,6 +204,17 @@ let g:ale_reason_ols_use_global = 1
 " Keep sign column open all the time so changes are less jarring
 " let g:ale_sign_column_always = 1
 
+" ---------- CamelCaseMotion ----------{{{2
+" Make w and e respect camel (and snake, ironically) case
+map <silent> w <Plug>CamelCaseMotion_w
+map <silent> b <Plug>CamelCaseMotion_b
+map <silent> e <Plug>CamelCaseMotion_e
+map <silent> ge <Plug>CamelCaseMotion_ge
+sunmap w
+sunmap b
+sunmap e
+sunmap ge
+
 " ---------- CtrlP ---------- {{{2
 " Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
 let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
@@ -394,6 +405,8 @@ function! JsStringify() abort
 endfunction
 
 " ---------- Movement & Searching ---------- {{{1
+" I override b,w,e, and ge in plugins > CamelCaseMotion
+
 " search as characters are entered
 set incsearch
 
