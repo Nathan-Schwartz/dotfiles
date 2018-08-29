@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "demo": "node index.js --dont-save"
+  },
+  "dependencies": {
+    "commander": "^2.18.0",
+    "inquirer": "^6.2.0"
+  }
+}
