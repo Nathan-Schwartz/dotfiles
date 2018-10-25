@@ -44,7 +44,7 @@ set noerrorbells
 " redraw only when we need to.
 set lazyredraw
 
-"Wrap lines at words when possible
+" Wrap lines at words when possible
 set linebreak
 
 " show command in bottom bar
@@ -303,9 +303,6 @@ let mapleader = " "
 
 " Make space leader behave the same as other keys would
 nnoremap <Space> <nop>
-
-" highlight last inserted text
-nnoremap <leader>v `[v`]
 
 " turn off search highlight
 nnoremap <leader>n :noh<CR>

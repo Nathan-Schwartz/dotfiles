@@ -85,7 +85,7 @@ alias gti='git'
 alias sl='ls'
 
 # Print out directory tree, but omit node_modules
-alias lst='tree -a -I "node_modules|.git|.next"'
+alias lst='tree -a -I "node_modules|.git|.next|dist|__generated__"'
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'

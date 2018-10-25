@@ -17,10 +17,10 @@
   d = diff
   co = checkout
   cob = checkout -b
-  wip = !git add -A && git commit -m 'wip'
-  cm = commit -m
+  wip = !git add -A && git commit
   ca = commit --amend
   cae = commit --amend --no-edit
+  todo = commit --allow-empty --no-verify -m
   pushhard = push --no-verify -f
   l = log --graph --pretty=format:'%Cred%h%Creset - %Cblue%an%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
   wtf = "! git log --pretty=tformat:\"%C(auto,yellow)%h%C(auto)%d%C(auto,reset) by %C(auto,blue)%cn%C(auto,reset), %C(auto,cyan)%ar%C(auto,reset)%n %s%n\" --stat"
