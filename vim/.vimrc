@@ -370,20 +370,24 @@ nnoremap <leader>js  :call JsStringify()<CR>
 
 " Picks the bottom section of a git conflict
 function! UseBottomDiff() abort
-  normal /<<<
-  normal d/===
+  normal kmzj0
+  normal /<<<<
+  normal d/====
   normal dd
-  normal />>>
+  normal />>>>
   normal dd
+  normal 'z
 endfunction
 
 " Picks the top section of a git conflict
 function! UseTopDiff() abort
-  normal /<<<
+  normal kmzj0
+  normal /<<<<
   normal dd
-  normal /===
-  normal d/>>>
+  normal /====
+  normal d/>>>>
   normal dd
+  normal 'z
 endfunction
 
 " Creates a variable and require statement, uses z registry
