@@ -7,22 +7,24 @@
   tool = vimdiff
 [core]
   editor = vim
-  ignorecase = false
   excludesfile = ~/.gitignore_global
+  ignorecase = false
 [alias]
   # Source of conflicts script: https://gist.github.com/jacobvosmaer/3187346
-  conflicts = !git diff --name-only --diff-filter=U --relative -z | xargs -0
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /' | sort
-  s = status
-  d = diff
-  co = checkout
-  cob = checkout -b
-  wip = !git add -A && git commit
   ca = commit --amend
   cae = commit --amend --no-edit
-  todo = commit --allow-empty --no-verify -m
-  pushhard = push --no-verify -f
+  co = checkout
+  cob = checkout -b
+  conflicts = !git diff --name-only --diff-filter=U --relative -z | xargs -0
+  d = diff
+  exec = "!exec "
   l = log --graph --pretty=format:'%Cred%h%Creset - %Cblue%an%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
+  pushhard = push --no-verify -f
+  root = "!git rev-parse --show-toplevel"
+  s = status
+  todo = commit --allow-empty --no-verify -m
+  wip = !git add -A && git commit
   wtf = "! git log --pretty=tformat:\"%C(auto,yellow)%h%C(auto)%d%C(auto,reset) by %C(auto,blue)%cn%C(auto,reset), %C(auto,cyan)%ar%C(auto,reset)%n %s%n\" --stat"
 [credential]
   helper = osxkeychain
