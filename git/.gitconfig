@@ -5,6 +5,10 @@
   default = simple
 [merge]
   tool = vimdiff
+[difftool]
+  trustExitCode = true
+[commit]
+  verbose = true
 [core]
   editor = vim
   excludesfile = ~/.gitignore_global
