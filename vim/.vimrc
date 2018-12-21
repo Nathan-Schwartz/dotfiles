@@ -105,6 +105,9 @@ colorscheme solarized
 
 command! ToggleBackground :call ToggleBackground()
 
+" Red Git conflict highlighting
+match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
+
 " Toggle iterm and vim between dark and light
 function! ToggleBackground() abort
   if &background == "dark"
