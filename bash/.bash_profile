@@ -70,7 +70,7 @@ fi
 #
 
 # Easily fix git conflicts
-alias conflicts="vim -p \$(git conflicts)"
+alias conflicts="git exec vim -p \$(git conflicts)"
 
 # Conveniently edit config files
 alias evim='vim ~/.vimrc'
