@@ -26,6 +26,7 @@
   l = log --graph --pretty=format:'%Cred%h%Creset - %Cblue%an%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' --abbrev-commit --date=relative
   pushhard = push --no-verify -f
   root = "!git rev-parse --show-toplevel"
+  git = "!git"
   s = status
   todo = commit --allow-empty --no-verify -m
   wip = !git add -A && git commit
