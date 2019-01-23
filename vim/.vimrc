@@ -310,9 +310,6 @@ nnoremap <Space> <nop>
 " turn off search highlight
 nnoremap <leader>n :noh<CR>
 
-" Toggle linting with a (for ale)
-nnoremap <leader>a :ALEToggle<CR>
-
 " Fix linting errors
 nnoremap <leader>af :ALEFix<CR>
 
@@ -334,6 +331,9 @@ nnoremap <leader>rel :source ~/.vimrc<CR>
 
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
+
+nnoremap gf <C-w>gf
+nnoremap <leader>gf gd$hhh<C-w>gfn<CR>
 
 " ---------- Leader: Snippets ---------- {{{1
 function! LocalReindent() abort
@@ -429,8 +429,6 @@ nnoremap j gj
 nnoremap k gk
 xnoremap j gj
 xnoremap k gk
-
-nnoremap gf <C-w>gf
 
 " " Easier split navigation
 " NOTE: These have been deprecated in favor of C-h, C-j, C-k, and C-l for
