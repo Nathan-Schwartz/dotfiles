@@ -59,6 +59,9 @@ set relativenumber
 " highlight matching [{()}]
 set showmatch
 
+" Show tabs even if its just one file
+set showtabline=2
+
 " Store lots of :cmdline history
 set history=1000
 
@@ -332,8 +335,15 @@ nnoremap <leader>rel :source ~/.vimrc<CR>
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
+" Go to file in new tab
 nnoremap gf <C-w>gf
+
+" Go to import and open source file in new tab (if import is in a single line)
 nnoremap <leader>gf gd$hhh<C-w>gfn<CR>
+
+" Search for highlighted text
+vnoremap <leader>/ "zy/<C-R>z<CR>
+
 
 " ---------- Leader: Snippets ---------- {{{1
 function! LocalReindent() abort
