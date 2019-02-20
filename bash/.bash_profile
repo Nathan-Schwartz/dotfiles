@@ -33,6 +33,9 @@ export EDITOR=vim
 # Highlight section titles in manual pages.
 export LESS_TERMCAP_md="${yellow}";
 
+# Bash history, don't store dupes
+export HISTCONTROL=ignoredups:erasedups
+
 # Prefer US English and use UTF-8.
 export LANG='en_US.UTF-8';
 export LC_ALL='en_US.UTF-8';
