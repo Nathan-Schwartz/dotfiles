@@ -19,7 +19,6 @@ printf "\n>> Brew updates\n"
 brew update
 brew upgrade
 brew cleanup
-brew prune
 
 printf "\n>> n update\n"
 n-update -y
