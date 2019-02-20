@@ -32,6 +32,9 @@ set dir=~/.vim/cache/swap
 " Prompt to save instead of erroring
 set confirm
 
+" Open horizontal splits below existing windows
+set splitbelow
+
 " Delete comment characters when joining lines
 set formatoptions+=j
 
@@ -343,6 +346,11 @@ nnoremap <leader>gf gd$hhh<C-w>gfn<CR>
 
 " Search for highlighted text
 vnoremap <leader>/ "zy/<C-R>z<CR>
+
+" Custom bash function
+abbrev bash Bash
+command! Bash :terminal ++rows=15
+nnoremap <leader>bash :Bash<CR>
 
 
 " ---------- Leader: Snippets ---------- {{{1
