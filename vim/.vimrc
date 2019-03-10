@@ -35,12 +35,6 @@ set confirm
 " Open horizontal splits below existing windows
 set splitbelow
 
-" Delete comment characters when joining lines
-set formatoptions+=j
-
-" Maximum number of tab pages that can be opened from CLI
-set tabpagemax=50
-
 " Disable beep on errors
 set noerrorbells
 
@@ -53,9 +47,6 @@ set linebreak
 " show command in bottom bar
 set showcmd
 
-" load filetype-specific indent files
-filetype plugin indent on
-
 " Turn on line numbers
 set relativenumber
 
@@ -65,14 +56,8 @@ set showmatch
 " Show tabs even if its just one file
 set showtabline=2
 
-" Store lots of :cmdline history
-set history=1000
-
 " No sounds
 set visualbell
-
-" Reload files changed outside vim
-set autoread
 
 " Work with crontabs
 augroup CrontabConfig
@@ -83,16 +68,12 @@ augroup END
 " Use the clipboard as the default register
 set clipboard^=unnamed
 
-" Configure backspacing to work 'normally'
-set backspace=indent,eol,start
-
 " Delay after typing stops before checking again (used by gitgutter).
 " Can cause issues under 1000ms
 set updatetime=50
 
 " Remove escape delays (This breaks arrow keys in insert mode)
 set noesckeys
-set timeout timeoutlen=1000 ttimeoutlen=100
 
 " Autocorrect some typos when trying to quit
 abbrev W w
@@ -100,10 +81,6 @@ abbrev Wq wq
 abbrev Q q
 
 " ---------- Colors ---------- {{{1
-" enable syntax processing
-if !exists("g:syntax_on")
-  syntax enable
-endif
 
 " Setup a color theme
 set background=dark
@@ -247,9 +224,6 @@ endif
 let g:javascript_plugin_flow = 1
 
 " ---------- LightLine ---------- {{{2
-" Always show statusline
-set laststatus=2
-"
 " Don't show current mode since it is in status bar
 set noshowmode
 
@@ -429,9 +403,6 @@ endfunction
 " ---------- Movement & Searching ---------- {{{1
 " I override b,w,e, and ge in plugins > CamelCaseMotion
 
-" search as characters are entered
-set incsearch
-
 " highlight matches
 set hlsearch
 
@@ -499,7 +470,6 @@ endfunction
 
 " ---------- Wildmenu ---------- {{{1
 " configure visual autocomplete for command menu
-set wildmenu
 set wildignorecase
 set completeopt+=longest
 set wildmode=longest:full,full
@@ -525,9 +495,6 @@ augroup RemoveTrailingWhitespaceGroup
   autocmd!
   autocmd BufWritePre * %s/\s\+$//e
 augroup END
-
-" New lines start in better places
-set autoindent
 
 " Indentation settings for using 4 spaces instead of tabs.
 set softtabstop=2
