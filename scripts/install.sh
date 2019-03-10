@@ -35,6 +35,7 @@ printf "\n>> Make homebrew not shallow\n"
 git -C "$(brew --repo homebrew/core)" fetch --unshallow
 
 printf "\n>> Install brew packages\n"
+brew install bash
 brew install bash-completion
 brew install git
 brew install stow
@@ -71,21 +72,7 @@ n prune
 
 # Install some global packages
 printf "\n>> Install global npm packages\n"
-npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype jest bs-platform ocaml-language-server flow-language-server
-
-printf "\n>> Installing Reason...\n"
-if [ "$isMac" = true ] ; then
-  npm install -g reason-cli@3.2.0-darwin
-else
-  npm install -g reason-cli@3.2.0-linux
-fi
-
-
-# # Skip least used installs
-# brew install mongodb
-# brew install postgresql
-# brew install awscli
-# brew install imagemagick --with-webp
+npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype jest flow-language-server
 
 # Remove outdated versions from the cellar.
 printf "\n>> Cleanup brew\n"
