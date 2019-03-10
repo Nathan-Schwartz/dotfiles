@@ -1,2 +1,0 @@
-for (const cur of ) {
-}

@@ -35,8 +35,9 @@ set confirm
 " Open horizontal splits below existing windows
 set splitbelow
 
-" Disable beep on errors
-set noerrorbells
+" No sounds or bells
+set visualbell
+set belloff=all
 
 " redraw only when we need to.
 set lazyredraw
@@ -44,11 +45,8 @@ set lazyredraw
 " Wrap lines at words when possible
 set linebreak
 
-" show command in bottom bar
-set showcmd
-
 " Turn on line numbers
-set relativenumber
+set number
 
 " highlight matching [{()}]
 set showmatch
@@ -56,8 +54,6 @@ set showmatch
 " Show tabs even if its just one file
 set showtabline=2
 
-" No sounds
-set visualbell
 
 " Work with crontabs
 augroup CrontabConfig
@@ -81,6 +77,12 @@ abbrev Wq wq
 abbrev Q q
 
 " ---------- Colors ---------- {{{1
+" This is included in vim-sensible but for some reason even though my vim
+" install has syntax support, has("syntax") must be evaluating to false,
+" causing the plugin to not enable syntax
+if !exists("g:syntax_on")
+  syntax enable
+endif
 
 " Setup a color theme
 set background=dark
@@ -173,7 +175,6 @@ let g:ale_yaml_yamllint_options='-d "{extends: relaxed, rules: {line-length: dis
 
 let g:ale_lint_delay = 50
 let g:ale_completion_enabled = 1
-let g:ale_set_balloons = 1
 
 let g:ale_sign_error = 'X' " could use emoji
 let g:ale_sign_warning = '?' " could use emoji
@@ -240,7 +241,6 @@ let g:lightline = {
       \   'component_function': {
       \     'filepath': 'PrintFilePath',
       \     'gitbranch': 'fugitive#head',
-      \     'time': 'PrintTime'
       \   },
       \ }
 
@@ -297,9 +297,6 @@ nnoremap <leader>af :ALEFix<CR>
 nnoremap <leader>an :ALENextWrap<cr>
 nnoremap <leader>ap :ALEPreviousWrap<cr>
 
-" Custom mapping for vim.switch
-nnoremap <leader>s :Switch<CR>
-
 " Apply last operation to a range of lines
 vnoremap <leader>. : normal .<CR>
 
@@ -327,33 +324,6 @@ command! Bash :terminal ++rows=15
 nnoremap <leader>bash :Bash<CR>
 
 
-" ---------- Leader: Snippets ---------- {{{1
-function! LocalReindent() abort
-  normal mz
-  normal 10k
-  normal 20==
-  normal 'z
-endfunction
-
-" Generate js function
-nnoremap <leader>fun :-1read $HOME/.vim/snippets/function.js<CR>:call LocalReindent()<CR>f(a
-
-" Generate new Promise, and then/catch blocks
-nnoremap <leader>prom :read $HOME/.vim/snippets/promise.js<CR>:call LocalReindent()<CR>kJo
-nnoremap <leader>then :read $HOME/.vim/snippets/then.js<CR>:call LocalReindent()<CR>f(la
-nnoremap <leader>catch :read $HOME/.vim/snippets/catch.js<CR>:call LocalReindent()<CR>o
-
-" Generate conditional blocks
-nnoremap <leader>if :-1read $HOME/.vim/snippets/if.js<CR>:call LocalReindent()<CR>f(a
-nnoremap <leader>else :read $HOME/.vim/snippets/else.js<CR>:call LocalReindent()<CR>kJo
-nnoremap <leader>elif :read $HOME/.vim/snippets/elif.js<CR>:call LocalReindent()<CR>kJf(a
-
-" Generate try-catch block
-nnoremap <leader>try :-1read $HOME/.vim/snippets/try.js<CR>:call LocalReindent()<CR>o
-
-" Generate loops
-nnoremap <leader>forof :-1read $HOME/.vim/snippets/forof.js<CR>:call LocalReindent()<CR>f)i
-nnoremap <leader>forin :-1read $HOME/.vim/snippets/forin.js<CR>:call LocalReindent()<CR>f)i
 
 " ---------- Leader: Custom Functions ---------- {{{1
 " Mappings that use custom functions
@@ -411,7 +381,8 @@ set ignorecase
 set smartcase
 
 "Start scrolling when we're 10 lines away
-set scrolloff=25
+set scrolloff=10
+set sidescrolloff=10
 
 " Don't skip visual lines (wrapped text)
 nnoremap j gj
@@ -501,9 +472,5 @@ set softtabstop=2
 set shiftwidth=2
 set expandtab
 
-" ---------- Perf fix ---------- {{{1
-" Fix Cursor rendering issue
-set ttyfast
-set norelativenumber
-set number
-set noshowcmd
+" ---------- Perf ---------- {{{1
+" set ttyfast
