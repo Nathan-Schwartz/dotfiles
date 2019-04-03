@@ -149,6 +149,9 @@ alias ls="command ls -a ${colorflag}"
 # Let z.sh have our history
 . /usr/local/etc/profile.d/z.sh
 
+# Enable typing a directory name to go there
+shopt -s autocd
+
 # Add tab completion for many Bash commands
 if test $(which brew)
 then
