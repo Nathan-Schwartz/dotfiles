@@ -49,6 +49,7 @@ brew install watchman
 brew install docker
 brew install docker-compose
 brew install yamllint
+brew install z
 
 if [ "$isMac" = true ] ; then
   brew install macvim
