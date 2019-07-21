@@ -99,8 +99,6 @@ alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
-alias ~="cd ~"
-alias -- -="cd -"
 
 # Create directories if they don't exist
 mkdir ${NOTES_DIR} 2> /dev/null
@@ -118,9 +116,6 @@ note () {
 
 # Reload the shell (i.e. invoke as a login shell)
 alias reload="exec ${SHELL} -l"
-
-# Recursively delete `.DS_Store` files
-alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
 
 # Get macOS Software Updates, and update installed Homebrew and npm packages
 alias update='bash ~/dotfiles/scripts/update.sh'

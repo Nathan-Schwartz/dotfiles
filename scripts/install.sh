@@ -49,9 +49,9 @@ brew install watchman
 brew install docker
 brew install docker-compose
 brew install yamllint
+brew install jsonlint
 
 if [ "$isMac" = true ] ; then
-  brew install macvim
   brew install reattach-to-user-namespace
 fi
 
@@ -72,7 +72,7 @@ n prune
 
 # Install some global packages
 printf "\n>> Install global npm packages\n"
-npm i -g pult-cli yarn nodemon commitizen flow-bin eslint babel-eslint eslint-plugin-flowtype jest flow-language-server
+npm i -g yarn nodemon flow-bin eslint babel-eslint eslint-plugin-flowtype jest flow-language-server prettier
 
 # Remove outdated versions from the cellar.
 printf "\n>> Cleanup brew\n"
