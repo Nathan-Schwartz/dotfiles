@@ -91,9 +91,6 @@ alias sl='ls'
 alias lst='tree -a -I "node_modules|.git|.next|dist|__generated__"'
 alias agi='ag --ignore node_modules --ignore dist --ignore coverage --ignore test --ignore tests --ignore __test__ --ignore __mocks__'
 
-# use f instead of z for jumping around
-alias f='z'
-
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
 
@@ -145,9 +142,6 @@ alias ls="command ls -a ${colorflag}"
 #
 # MISC
 #
-
-# Let z.sh have our history
-. /usr/local/etc/profile.d/z.sh
 
 # Enable typing a directory name to go there
 shopt -s autocd

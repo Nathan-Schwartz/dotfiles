@@ -39,9 +39,6 @@ set splitbelow
 set visualbell
 set belloff=all
 
-" redraw only when we need to.
-set lazyredraw
-
 " Wrap lines at words when possible
 set linebreak
 
@@ -271,11 +268,6 @@ noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)
 " noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
 " noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
 
-" ---------- Sneak ---------- {{{2
-map f <Plug>Sneak_f
-map F <Plug>Sneak_F
-map t <Plug>Sneak_t
-map T <Plug>Sneak_T
 
 " ---------- Startify ---------- {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
@@ -357,17 +349,17 @@ endfunction
 
 " Creates a variable and require statement, uses z registry
 function! JsRequire() abort
-  normal "zciWconst z = require('z');
+  normal "zciWconst z = require('z');==
 endfunction
 
 " Creates a labelled console.log, uses z registry
 function! JsLog() abort
-  normal "zciWconsole.log('z', z);
+  normal "zciWconsole.log('z', z);==
 endfunction
 
 " Json stringify Word using z registry
 function! JsStringify() abort
-  normal "zciwJSON.stringify(z, null, 2)
+  normal "zciwJSON.stringify(z, null, 2)==
 endfunction
 
 " ---------- Movement & Searching ---------- {{{1
@@ -472,5 +464,3 @@ set softtabstop=2
 set shiftwidth=2
 set expandtab
 
-" ---------- Perf ---------- {{{1
-" set ttyfast

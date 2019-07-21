@@ -4,18 +4,12 @@
 [submodule ".vim/vim-surround"]
 	path = vim/.vim/bundle/vim-surround
 	url = https://github.com/tpope/vim-surround.git
-[submodule ".vim/vim-sneak"]
-	path = vim/.vim/bundle/vim-sneak
-	url = https://github.com/justinmk/vim-sneak.git
 [submodule ".vim/vim-gitgutter"]
 	path = vim/.vim/bundle/vim-gitgutter
 	url = https://github.com/airblade/vim-gitgutter.git
 [submodule ".vim/vim-commentary"]
 	path = vim/.vim/bundle/vim-commentary
 	url = https://github.com/tpope/vim-commentary.git
-[submodule ".vim/switch.vim"]
-	path = vim/.vim/bundle/switch
-	url = https://github.com/AndrewRadev/switch.vim.git
 [submodule ".vim/nerdtree"]
 	path = vim/.vim/bundle/nerdtree
 	url = https://github.com/scrooloose/nerdtree.git
