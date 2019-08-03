@@ -81,6 +81,7 @@ alias ebash='vim ~/.bash_profile'
 alias egit='vim ~/.gitconfig'
 alias etmux='vim ~/.tmux.conf'
 
+
 # Common typos
 alias vmi='vim'
 alias g="git"
@@ -113,6 +114,32 @@ alias projects="cd $PROJECTS_DIR"
 note () {
   vim "${NOTES_DIR}/$1"
 }
+
+# Print out files with the most commits in the codebase
+# Used env vars instead of arguments because I didn't want to mess with flag parsing
+hotgitfiles () {
+  printf 'USAGE: Can set $AUTHOR_PATTERN, $COMMIT_MSG_PATTERN, $FILE_LIMIT, and $FILE_PATH_PATTERN\n\n';
+  # Regex patterns  to narrow results
+  file_pattern=${FILE_PATH_PATTERN:-'.'}
+  author_pattern=${AUTHOR_PATTERN:-'.'}
+  commit_msg_pattern=${COMMIT_MSG_PATTERN:-'.'}
+
+  # Number of files to be printed
+  file_limit=${FILE_LIMIT:-30}
+
+  git log --name-status --author="$author_pattern" --grep="$commit_msg_pattern" |\
+    grep -E '^[A-Z]\s+'    |\
+    cut -c3-500            |\
+    sort                   |\
+    uniq -c                |\
+    grep -vE '^ {6}1 '     |\
+    grep -E $file_pattern  |\
+    sort -n                |\
+    tail -n $file_limit    |\
+    sort -n -r             |\
+    awk 'BEGIN {print "commits\t\tfiles"} { print $1 "\t\t" $2; }'
+}
+
 
 # Reload the shell (i.e. invoke as a login shell)
 alias reload="exec ${SHELL} -l"
