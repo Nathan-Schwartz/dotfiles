@@ -49,7 +49,7 @@ brew install watchman
 brew install docker
 brew install docker-compose
 brew install yamllint
-brew install jsonlint
+brew install jsonlint --ignore-dependencies node
 
 if [ "$isMac" = true ] ; then
   brew install reattach-to-user-namespace
