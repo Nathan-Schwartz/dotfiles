@@ -69,9 +69,10 @@ set updatetime=50
 set noesckeys
 
 " Autocorrect some typos when trying to quit
-abbrev W w
-abbrev Wq wq
-abbrev Q q
+command! W w
+command! Wq wq
+command! Q q
+command! WQ wq
 
 " ---------- Colors ---------- {{{1
 " This is included in vim-sensible but for some reason even though my vim
@@ -123,10 +124,18 @@ let g:ackprg = 'ag --vimgrep --smart-case'
 " Highlight hits
 let g:ackhighlight = 1
 
-" I type Ag out of habit. The ! prevents jumping to the first hit
-abbrev Ag Ack!
-abbrev AG Ack!
-abbrev ag Ack!
+" Command and function that run Ack.vim from the root of the repo
+command! -nargs=+ AgFn :call AgFromRoot(<f-args>)
+function! AgFromRoot(...)
+  let git_root = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+  " The ! prevents jumping to the first hit
+  execute "Ack! " . join(a:000) . " " . git_root
+endfunction
+
+" I type Ag out of habit
+abbrev Ag AgFn
+abbrev AG AgFn
+abbrev ag AgFn
 
 command! OpenQFTabs :call OpenQuickFixInTabs()
 
@@ -311,7 +320,6 @@ nnoremap <leader>gf gd$hhh<C-w>gfn<CR>
 vnoremap <leader>/ "zy/<C-R>z<CR>
 
 " Custom bash function
-abbrev bash Bash
 command! Bash :terminal ++rows=15
 nnoremap <leader>bash :Bash<CR>
 
