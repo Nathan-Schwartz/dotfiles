@@ -50,10 +50,14 @@ brew install docker
 brew install docker-compose
 brew install yamllint
 brew install jsonlint --ignore-dependencies node
+brew install python
 
 if [ "$isMac" = true ] ; then
   brew install reattach-to-user-namespace
 fi
+
+printf "\n>> Install python packages\n"
+pip install pylint autopep8
 
 # Install n for managing Node versions (using npm)
 printf "\n>> Install n\n"
