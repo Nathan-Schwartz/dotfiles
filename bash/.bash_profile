@@ -30,6 +30,9 @@ fi
 export GIT_EDITOR=vim
 export EDITOR=vim
 
+# Don't show zsh warning on Catalina
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
 # Highlight section titles in manual pages.
 export LESS_TERMCAP_md="${yellow}";
 

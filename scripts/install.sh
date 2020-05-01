@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Switch to bash as primary shell
+chsh -s /bin/bash
+
 # Ask for the administrator password upfront
 sudo -v
 
@@ -39,7 +42,7 @@ brew install bash
 brew install bash-completion
 brew install git
 brew install stow
-brew install vim --with-override-system-vi
+brew install vim
 brew install mosh
 brew install tmux
 brew install tmate
@@ -50,6 +53,7 @@ brew install docker
 brew install docker-compose
 brew install yamllint
 brew install jsonlint --ignore-dependencies node
+brew install icu4c
 brew install python
 
 if [ "$isMac" = true ] ; then

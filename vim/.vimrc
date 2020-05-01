@@ -2,7 +2,7 @@
 execute pathogen#infect()
 
 " Set up folding based on markers in the file. `za` toggles folds
-" vim:foldmethod=marker:foldlevel=0
+" vim: foldmethod=marker foldlevel=0
 
 " These functions clobber "z 'z and 'Z on the reg, beware.
 
@@ -264,6 +264,9 @@ let NERDTreeShowHidden=1
 
 " Don't open NERDTree by default
 let g:nerdtree_tabs_open_on_gui_startup=0
+
+" Don't show ^G before file names
+let g:NERDTreeNodeDelimiter = "\u00a0"
 
 " Close tree once file is selected
 let NERDTreeQuitOnOpen = 1
