@@ -52,7 +52,6 @@ brew install watchman
 brew install docker
 brew install docker-compose
 brew install yamllint
-brew install jsonlint --ignore-dependencies node
 brew install icu4c
 brew install python
 
@@ -81,6 +80,9 @@ n prune
 # Install some global packages
 printf "\n>> Install global npm packages\n"
 npm i -g yarn nodemon flow-bin eslint babel-eslint eslint-plugin-flowtype jest flow-language-server prettier
+
+# Install after node so it actually ignores the dependency
+brew install jsonlint --ignore-dependencies node
 
 # Remove outdated versions from the cellar.
 printf "\n>> Cleanup brew\n"
