@@ -1,6 +1,8 @@
 " Run Pathogen (vim package manager)
 execute pathogen#infect()
 
+" Generate helptags with `:Helptags` or `execute pathogen#helptags()`
+
 " Set up folding based on markers in the file. `za` toggles folds
 " vim: foldmethod=marker foldlevel=0
 
@@ -8,14 +10,22 @@ execute pathogen#infect()
 
 " ---------- TODOS ---------- {{{1
 " Plugin I am considering:
-" https://github.com/sjl/gundo.vim.git
-" https://github.com/tpope/unimpaired.vim
-" https://github.com/skywind3000/asyncrun.vim
-" https://github.com/tpope/vim-abolish
+" - https://github.com/sjl/gundo.vim.git
+" - https://github.com/tpope/unimpaired.vim
+" - https://github.com/skywind3000/asyncrun.vim
+" - https://github.com/tpope/vim-abolish
+"
+" Things to get better at:
+" - vim regex
+" - recursive macros
+" - multi-file find&replace workflows
 
 " ---------- General ---------- {{{1
 " Override Y to behave like C and D
 map Y y$
+
+" Go to file in new tab
+nnoremap gf <C-w>gf
 
 " Save undos after file closes
 set undofile
@@ -272,14 +282,11 @@ let g:NERDTreeNodeDelimiter = "\u00a0"
 let NERDTreeQuitOnOpen = 1
 
 " Toggle Nerd Tree with control + b
-nnoremap <c-b> :NERDTreeFind<CR>
+nnoremap <silent> <c-b> :NERDTreeVCS <BAR> NERDTreeClose <BAR> NERDTreeFind<CR>
 
 " ---------- Smooth Scroll ---------- {{{2
 noremap <silent> <c-u> :call smooth_scroll#up(float2nr(&scroll * 0.75), 15, 2)<CR>
 noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)<CR>
-" noremap <silent> <c-b> :call smooth_scroll#up(float2nr(&scroll* 1.5), 15, 2)<CR>
-" noremap <silent> <c-f> :call smooth_scroll#down(float2nr(&scroll* 1.5), 15, 2)<CR>
-
 
 " ---------- Startify ---------- {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
@@ -304,6 +311,9 @@ nnoremap <leader>ap :ALEPreviousWrap<cr>
 " Apply last operation to a range of lines
 vnoremap <leader>. : normal .<CR>
 
+" Apply "o" macro operation to the selected lines
+vnoremap <leader>o : normal @o<CR>
+
 " Fix indentation for the whole file
 map <leader>= gg=G''
 
@@ -313,20 +323,11 @@ nnoremap <leader>rel :source ~/.vimrc<CR>
 " Clear CtrlP Caches
 nnoremap <leader>p :CtrlPClearAllCaches<CR>
 
-" Go to file in new tab
-nnoremap gf <C-w>gf
-
 " Go to import and open source file in new tab (if import is in a single line)
 nnoremap <leader>gf gd$hhh<C-w>gfn<CR>
 
 " Search for highlighted text
 vnoremap <leader>/ "zy/<C-R>z<CR>
-
-" Custom bash function
-command! Bash :terminal ++rows=15
-nnoremap <leader>bash :Bash<CR>
-
-
 
 " ---------- Leader: Custom Functions ---------- {{{1
 " Mappings that use custom functions
@@ -373,6 +374,7 @@ function! JsStringify() abort
   normal "zciwJSON.stringify(z, null, 2)==
 endfunction
 
+
 " ---------- Movement & Searching ---------- {{{1
 " I override b,w,e, and ge in plugins > CamelCaseMotion
 
@@ -392,14 +394,6 @@ nnoremap j gj
 nnoremap k gk
 xnoremap j gj
 xnoremap k gk
-
-" " Easier split navigation
-" NOTE: These have been deprecated in favor of C-h, C-j, C-k, and C-l for
-" compatibility with vim-tmux-navigator
-" nmap gh <C-w>h
-" nmap gj <C-w>j
-" nmap gk <C-w>k
-" nmap gl <C-w>l
 
 " ---------- Folding ---------- {{{1
 " enable folding
@@ -454,14 +448,6 @@ set mouse=a
 
 " Disable cursor blink
 set guicursor=a:blinkon0
-
-" Only highlight current line for current window
-" setlocal cursorline
-" augroup CursorLineGroup
-"   autocmd!
-"   autocmd WinEnter,FocusGained * setlocal cursorline
-"   autocmd WinLeave,FocusLost   * setlocal nocursorline
-" augroup END
 
 " ---------- Spaces and Tabs ---------- {{{1
 " Remove trailing whitespace on save

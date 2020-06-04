@@ -173,6 +173,9 @@ alias ls="command ls -a ${colorflag}"
 # Enable typing a directory name to go there
 shopt -s autocd
 
+# Turn on globstar
+# shopt -s globstar
+
 # Add tab completion for many Bash commands
 if test $(which brew)
 then
