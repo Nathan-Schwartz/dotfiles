@@ -34,6 +34,10 @@ Features
 
 Don't forget to generate helptags with `:Helptags`.
 
+Install additional plugins with:
+```bash
+git submodule add -f https://github.com/foo/bar.git ./vim/.vim/bundle/bar
+```
 
 #### Tmux
 
