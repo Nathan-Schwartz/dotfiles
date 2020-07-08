@@ -13,9 +13,6 @@
 [submodule ".vim/nerdtree"]
 	path = vim/.vim/bundle/nerdtree
 	url = https://github.com/scrooloose/nerdtree.git
-[submodule ".vim/ctrlp.vim"]
-	path = vim/.vim/bundle/ctrlp.vim
-	url = https://github.com/kien/ctrlp.vim.git
 [submodule "vim/.vim/bundle/vim-repeat"]
 	path = vim/.vim/bundle/vim-repeat
 	url = git://github.com/tpope/vim-repeat.git
@@ -58,3 +55,6 @@
 [submodule "vim/.vim/bundle/vim-abolish"]
 	path = vim/.vim/bundle/vim-abolish
 	url = https://github.com/tpope/vim-abolish.git
+[submodule "vim/.vim/bundle/ctrlp.vim"]
+	path = vim/.vim/bundle/ctrlp.vim
+	url = https://github.com/ctrlpvim/ctrlp.vim.git
