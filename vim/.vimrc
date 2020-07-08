@@ -13,7 +13,7 @@ execute pathogen#infect()
 " - https://github.com/sjl/gundo.vim.git
 " - https://github.com/tpope/unimpaired.vim
 " - https://github.com/skywind3000/asyncrun.vim
-" - https://github.com/tpope/vim-abolish
+" - matchit
 "
 " Things to get better at:
 " - vim regex

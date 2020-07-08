@@ -19,25 +19,41 @@ stow vim bash git tmux
 ```
 
 
-#### Vim
-
-Features
-- Fuzzy file search with CtrlP (using ag)
-- Project search with Ack.vim (using ag)
-- Browse directories with NERDTree
-- Linting and selective autofix support with ALE
-- Quick access to MRU files + sessions on startup with vim-startify
-- Multi cursor editing
-- Solarized theme
-- Tmux panes and vim windows share key binding (vim-tmux navigator)
-- Some niceties like multiline f and t, visual j/k movement, smooth scroll, etc
-
-Don't forget to generate helptags with `:Helptags`.
-
-Install additional plugins with:
+##### Install additional plugins with:
 ```bash
 git submodule add -f https://github.com/foo/bar.git ./vim/.vim/bundle/bar
 ```
+
+##### Update all submodules with:
+```bash
+git submodule foreach --recursive git pull --rebase origin master
+```
+
+##### Update one submodule
+```bash
+cd mySubmodule
+git pull --rebase origin master
+```
+
+
+#### Vim
+
+Feature highlights:
+- File Navigation
+  - Fuzzy file search with CtrlP (using ag)
+  - Project search with Ack.vim (using ag)
+  - Browse directories with NERDTree
+- Integrations
+  - linter, typecheck, autocomplete, and autofix support with ALE
+  - Tmux panes and vim windows share key binding (vim-tmux-navigator)
+- Editing
+  - Multi-cursor editing with vim-multi-cursor
+  - camelcase support, persistent undo, repeat, vim-surround, and more
+- UI
+  - Quick access to MRU files & sessions on startup with vim-startify
+  - Solarized theme, lightline, polyglot syntax highlighting, inertia scroll
+
+Don't forget to generate helptags with `:Helptags`.
 
 #### Tmux
 
