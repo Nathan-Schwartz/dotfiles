@@ -203,6 +203,8 @@ let g:ale_echo_msg_format = '%linter% says %s'
 let g:ale_reason_ols_use_global = 1
 
 
+
+
 " GitGutter has gutter enabled which makes this option unnecessary
 " Keep sign column open all the time so changes are less jarring
 " let g:ale_sign_column_always = 1
@@ -225,9 +227,17 @@ let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
 " Display hidden files
 let g:ctrlp_show_hidden = 1
 
+"
 " ---------- Git Gutter ---------- {{{2
 " Don't create any key mappings
 let g:gitgutter_map_keys = 0
+
+" Colors
+highlight clear SignColumn
+highlight GitGutterAdd ctermfg=2
+highlight GitGutterChange ctermfg=3
+highlight GitGutterDelete ctermfg=1
+highlight GitGutterChangeDelete ctermfg=4
 
 " Keep gutter open
 if exists('&signcolumn')  " Vim 7.4.2201
