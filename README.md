@@ -13,9 +13,22 @@ git clone --recursive https://github.com/Nathan-Schwartz/dotfiles.git ~/dotfiles
 
 cd ~/dotfiles
 
+git submodule update --init --recursive
+
 # Install stow if you don't have it
 
 stow vim bash git tmux
+```
+
+
+##### Install additional plugins with:
+```bash
+git submodule add -f https://github.com/foo/bar.git ./vim/.vim/bundle/bar
+```
+
+##### Update all submodules with:
+```bash
+git submodule foreach git pull origin master
 ```
 
 
@@ -33,11 +46,6 @@ Features
 - Some niceties like multiline f and t, visual j/k movement, smooth scroll, etc
 
 Don't forget to generate helptags with `:Helptags`.
-
-Install additional plugins with:
-```bash
-git submodule add -f https://github.com/foo/bar.git ./vim/.vim/bundle/bar
-```
 
 #### Tmux
 

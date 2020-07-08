@@ -36,3 +36,5 @@
   helper = osxkeychain
 [diff]
   algorithm = patience
+[branch]
+  autosetuprebase = always
