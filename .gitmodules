@@ -37,9 +37,6 @@
 [submodule "vim/.vim/bundle/ack.vim"]
 	path = vim/.vim/bundle/ack.vim
 	url = https://github.com/mileszs/ack.vim
-[submodule "vim/.vim/bundle/vim-smooth-scroll"]
-	path = vim/.vim/bundle/vim-smooth-scroll
-	url = https://github.com/terryma/vim-smooth-scroll
 [submodule "vim/.vim/bundle/vim-tmux-navigator"]
 	path = vim/.vim/bundle/vim-tmux-navigator
 	url = https://github.com/christoomey/vim-tmux-navigator
@@ -58,3 +55,6 @@
 [submodule "vim/.vim/bundle/ctrlp.vim"]
 	path = vim/.vim/bundle/ctrlp.vim
 	url = https://github.com/ctrlpvim/ctrlp.vim.git
+[submodule "vim/.vim/bundle/comfortable-motion.vim"]
+	path = vim/.vim/bundle/comfortable-motion.vim
+	url = https://github.com/yuttie/comfortable-motion.vim

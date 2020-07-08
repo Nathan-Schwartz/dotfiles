@@ -294,9 +294,15 @@ let NERDTreeQuitOnOpen = 1
 " Toggle Nerd Tree with control + b
 nnoremap <silent> <c-b> :NERDTreeVCS <BAR> NERDTreeClose <BAR> NERDTreeFind<CR>
 
-" ---------- Smooth Scroll ---------- {{{2
-noremap <silent> <c-u> :call smooth_scroll#up(float2nr(&scroll * 0.75), 15, 2)<CR>
-noremap <silent> <c-d> :call smooth_scroll#down(float2nr(&scroll * 0.75), 15, 2)<CR>
+" ---------- Comfortable Motion ---------- {{{2
+" I think these are the default factors
+let g:comfortable_motion_friction = 80.0
+let g:comfortable_motion_air_drag = 2.0
+
+let g:comfortable_motion_no_default_key_mappings = 1
+
+nnoremap <silent> <c-d> :call comfortable_motion#flick(120)<CR>
+nnoremap <silent> <c-u> :call comfortable_motion#flick(-120)<CR>
 
 " ---------- Startify ---------- {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
