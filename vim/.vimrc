@@ -1,12 +1,12 @@
+" vim: foldmethod=marker foldlevel=0
+
 " Run Pathogen (vim package manager)
 execute pathogen#infect()
 
-" Generate helptags with `:Helptags` or `execute pathogen#helptags()`
-
-" Set up folding based on markers in the file. `za` toggles folds
-" vim: foldmethod=marker foldlevel=0
-
-" These functions clobber "z 'z and 'Z on the reg, beware.
+" NOTE:
+" - Set up folding based on markers in the file. `za` toggles folds
+" - Generate helptags with `:Helptags` or `execute pathogen#helptags()`
+" - These functions clobber "z 'z and 'Z on the reg, beware.
 
 " ---------- TODOS ---------- {{{1
 " Plugin I am considering:
