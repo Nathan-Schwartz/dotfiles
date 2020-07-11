@@ -13,12 +13,14 @@ execute pathogen#infect()
 " - https://github.com/sjl/gundo.vim.git
 " - https://github.com/tpope/unimpaired.vim
 " - https://github.com/skywind3000/asyncrun.vim
-" - matchit
 "
-" Things to get better at:
-" - vim regex
+" Things to explore/learn/practice
+" - vim regex magic levels
 " - recursive macros
 " - multi-file find&replace workflows
+" - using the undo tree
+" - utilizing marks
+" - [] mapping pairs (unimpaired, gitgutter, native, etc)
 
 " ---------- General ---------- {{{1
 " Override Y to behave like C and D
@@ -389,6 +391,71 @@ endfunction
 function! JsStringify() abort
   normal "zciwJSON.stringify(z, null, 2)==
 endfunction
+
+
+" Paste list of captures from the last search
+function! g:PasteCaptureList()
+  normal :let t=[] | %s//\zs/\=add(t,submatch(0))[1:0]/g | pu=t
+endfunction
+nnoremap <leader>pc :call PasteGetHitList()<CR>
+
+
+
+" Copied from Abolish by Tim Pope because they were scoped to the script and I
+" want access for visual mode mappings
+function! g:Mixedcase(word)
+  return substitute(g:Camelcase(a:word),'^.','\u&','')
+endfunction
+
+function! g:Camelcase(word)
+  " let word = substitute(a:word, '-', '_', 'g')
+  let word = g:Snakecase(a:word)
+  if word !~# '_' && word =~# '\l'
+    return substitute(word,'^.','\l&','')
+  else
+    return substitute(word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
+  endif
+endfunction
+
+function! g:Snakecase(word)
+  let word = substitute(a:word,'::','/','g')
+  let word = substitute(word, '\s', '_', 'g')
+  let word = substitute(word,'\(\u\+\)\(\u\l\)','\1_\2','g')
+  let word = substitute(word,'\(\l\|\d\)\(\u\)','\1_\2','g')
+  let word = substitute(word,'[.-]','_','g')
+  let word = tolower(word)
+  return word
+endfunction
+
+function! g:Uppercase(word)
+  return toupper(g:Snakecase(a:word))
+endfunction
+
+function! g:Dashcase(word)
+  return substitute(g:Snakecase(a:word),'_','-','g')
+endfunction
+
+function! g:Spacecase(word)
+  return substitute(g:Snakecase(a:word),'_',' ','g')
+endfunction
+
+function! g:Dotcase(word)
+  return substitute(g:Snakecase(a:word),'_','.','g')
+endfunction
+
+function! g:Titlecase(word)
+  return substitute(g:Spacecase(a:word), '\(\<\w\)','\=toupper(submatch(1))','g')
+endfunction
+
+" asdf_asdf-asdf asdfAsdf.asdf
+vnoremap <leader>cc "zd:execute 'normal a' . Camelcase('z')
+vnoremap <leader>cm "zd:execute 'normal a' . Mixedcase('z')
+vnoremap <leader>ct "zd:execute 'normal a' . Titlecase('z')
+vnoremap <leader>c_ "zd:execute 'normal a' . Snakecase('z')
+vnoremap <leader>cu "zd:execute 'normal a' . Uppercase('z')
+vnoremap <leader>c- "zd:execute 'normal a' . Dashcase('z')
+vnoremap <leader>c<leader> "zd:execute 'normal a' . Spacecase('z')
+vnoremap <leader>c. "zd:execute 'normal a' . Dotcase('z')
 
 
 " ---------- Movement & Searching ---------- {{{1

@@ -79,10 +79,10 @@ fi
 alias conflicts="git exec vim -p \$(git conflicts)"
 
 # Conveniently edit config files
-alias evim='vim ~/.vimrc'
-alias ebash='vim ~/.bash_profile'
-alias egit='vim ~/.gitconfig'
-alias etmux='vim ~/.tmux.conf'
+alias evim='$EDITOR ~/.vimrc'
+alias ebash='$EDITOR ~/.bash_profile'
+alias egit='$EDITOR ~/.gitconfig'
+alias etmux='$EDITOR ~/.tmux.conf'
 
 
 # Common typos
@@ -115,7 +115,7 @@ alias projects="cd $PROJECTS_DIR"
 
 # Utility to making a new note (takes a file name)
 note () {
-  vim "${NOTES_DIR}/$1"
+  $EDITOR "${NOTES_DIR}/$1"
 }
 
 # Print out files with the most commits in the codebase
@@ -185,6 +185,8 @@ then
   fi;
   unset brewdir
 fi
+
+unset isMac
 
 source ~/.bash-powerline.sh
 

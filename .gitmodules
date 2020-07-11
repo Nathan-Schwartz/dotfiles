@@ -58,3 +58,6 @@
 [submodule "vim/.vim/bundle/comfortable-motion.vim"]
 	path = vim/.vim/bundle/comfortable-motion.vim
 	url = https://github.com/yuttie/comfortable-motion.vim
+[submodule "vim/.vim/bundle/markdown-toc"]
+	path = vim/.vim/bundle/markdown-toc
+	url = https://github.com/mzlogin/vim-markdown-toc.git
