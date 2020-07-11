@@ -34,8 +34,8 @@ git clone --recursive https://github.com/Nathan-Schwartz/dotfiles.git ~/dotfiles
 
 cd ~/dotfiles
 
-# Run the install script (can skip if you have stow already)
-# bash ./scripts/install.sh
+# Install stow however you like.
+# The install script (./scripts/install.sh) will install stow but also many other things.
 
 # Set up symlinks
 stow vim bash git iterm tmux
@@ -89,10 +89,10 @@ stow --delete vim bash git iterm tmux
 
 
 ### Scripts
-- install.sh: install brew, n, node, npm packages, and brew formulae
-- update.sh: update osx, brew, n, node, npm, npm packages, and brew formulae
+- install.sh: idempotent script which will:
+  - optionally install any available OSX updates
+  - install (or update if already installed): brew, n, Node.js LTS, global npm packages, pip packages, and brew formulae
 - configure-macosx.sh: Set some OS defaults (inpsired by [mathiasbynens dotfiles](https://github.com/mathiasbynens/dotfiles/blob/main/.macos))
-
 
 ### Git
 - My approach to .gitconfig is inspired by [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
