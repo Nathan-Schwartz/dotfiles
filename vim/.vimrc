@@ -352,6 +352,7 @@ vnoremap <leader>/ "zy/<C-R>z<CR>
 nnoremap <leader>bot :call UseBottomDiff()<CR>
 nnoremap <leader>top :call UseTopDiff()<CR>
 nnoremap <leader>req :call JsRequire()<CR>
+nnoremap <leader>imp :call JsImport()<CR>
 nnoremap <leader>log :call JsLog()<CR>
 nnoremap <leader>js  :call JsStringify()<CR>
 
@@ -375,6 +376,11 @@ function! UseTopDiff() abort
   normal d/>>>>
   normal dd
   normal 'z
+endfunction
+
+" Creates a variable and require statement, uses z registry
+function! JsImport() abort
+  normal "zciWimport z from 'z';==
 endfunction
 
 " Creates a variable and require statement, uses z registry

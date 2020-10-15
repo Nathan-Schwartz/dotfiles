@@ -59,15 +59,7 @@ export HISTCONTROL='ignoreboth'
 # Added by n-install (see http://git.io/n-install-repo).
 export N_PREFIX="$HOME/n"
 [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"
-
-if [ "$isMac" = true ]; then
-  export PATH="/usr/local/opt/sqlite/bin:$PATH"
-  export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-else
-  export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"
-  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
-  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-fi
+export PATH="/usr/local/opt/python/libexec/bin:$PATH"
 
 #
 # Aliases

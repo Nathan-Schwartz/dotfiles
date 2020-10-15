@@ -68,6 +68,7 @@ function update_os() {
   if [ "$isMac" = true ]; then
     log "Installing OSX updates"
     sudo softwareupdate -i -a
+    xcode-select --install 2&>1 /dev/null || true
   else
     log "Skipping OS updates (only supported for OSX)"
     #   printf "\n>> Debian updates\n"
