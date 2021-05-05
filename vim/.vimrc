@@ -453,7 +453,6 @@ function! g:Titlecase(word)
   return substitute(g:Spacecase(a:word), '\(\<\w\)','\=toupper(submatch(1))','g')
 endfunction
 
-" asdf_asdf-asdf asdfAsdf.asdf
 vnoremap <leader>cc "zd:execute 'normal a' . Camelcase('z')
 vnoremap <leader>cm "zd:execute 'normal a' . Mixedcase('z')
 vnoremap <leader>ct "zd:execute 'normal a' . Titlecase('z')
