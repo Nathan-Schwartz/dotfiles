@@ -16,8 +16,8 @@
 [alias]
   # Source of conflicts script: https://gist.github.com/jacobvosmaer/3187346
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /' | sort
-  ca = commit --amend
-  cae = commit --amend --no-edit --no-verify
+  ca = commit --amend --allow-empty
+  cae = commit --amend --no-edit --no-verify --allow-empty
   co = checkout
   cob = checkout -b
   conflicts = !git diff --name-only --diff-filter=U --relative -z | xargs -0
