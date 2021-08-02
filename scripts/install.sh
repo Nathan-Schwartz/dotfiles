@@ -13,6 +13,7 @@ function main() {
   install_node_ecosystem
   install_brew_and_formulae
   install_pip_packages
+  update_git_submodules
   unset_global_vars
   print_final_message
 }
@@ -68,7 +69,7 @@ function update_os() {
   if [ "$isMac" = true ]; then
     log "Installing OSX updates"
     sudo softwareupdate -i -a
-    xcode-select --install 2>&1 /dev/null || true
+    xcode-select --install 2> /dev/null || true
   else
     log "Skipping OS updates (only supported for OSX)"
     #   printf "\n>> Debian updates\n"
@@ -87,6 +88,12 @@ function prompt_for_admin_access_if_needed() {
     log "May request admin access to run OS updates. Rerun with SKIP_OS_UPDATE=true to skip os updates.\n"
     sudo -v
   fi
+}
+
+function update_git_submodules() {
+  log "Update dotfile git submodules"
+  cd ~/dotfiles
+  git submodule foreach git pull origin master
 }
 
 function install_node_ecosystem() {
