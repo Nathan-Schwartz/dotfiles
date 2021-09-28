@@ -96,7 +96,13 @@ endif
 
 " Setup a color theme
 set background=dark
-colorscheme solarized
+
+try
+  colorscheme solarized
+catch /^Vim\%((\a\+)\)\=:E185/
+  " deal with it
+endtry
+
 
 command! ToggleBackground :call ToggleBackground()
 

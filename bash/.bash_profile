@@ -60,6 +60,7 @@ export HISTCONTROL='ignoreboth'
 export N_PREFIX="$HOME/n"
 [[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"
 export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+export PATH="/Users/nathanschwartz/Library/Python/3.8/bin:$PATH"
 
 #
 # Aliases
@@ -177,4 +178,8 @@ source ~/.bash-powerline.sh
 # Load this computer's additional configurations
 if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
+fi
+
+if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi

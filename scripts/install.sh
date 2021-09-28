@@ -11,9 +11,9 @@ function main() {
   fi
 
   install_node_ecosystem
-  install_brew_and_formulae
   install_pip_packages
   update_git_submodules
+  install_brew_and_formulae
   unset_global_vars
   print_final_message
 }
@@ -71,10 +71,9 @@ function update_os() {
     sudo softwareupdate -i -a
     xcode-select --install 2> /dev/null || true
   else
-    log "Skipping OS updates (only supported for OSX)"
-    #   printf "\n>> Debian updates\n"
-    #   sudo apt-get update
-    #   sudo apt-get upgrade -y
+    log "Debian updates"
+    sudo apt-get update
+    # sudo apt-get upgrade -y
   fi
 }
 
@@ -94,6 +93,7 @@ function update_git_submodules() {
   log "Update dotfile git submodules"
   cd ~/dotfiles
   git submodule foreach git pull origin master
+  cd -
 }
 
 function install_node_ecosystem() {
@@ -121,8 +121,6 @@ function install_node_ecosystem() {
     flow-bin
     eslint
     babel-eslint
-    eslint-plugin-flowtype
-    jest
     flow-language-server
     prettier
   )
@@ -142,6 +140,10 @@ function install_brew_and_formulae() {
     # Make not shallow, ignore exit code because it fails if the repo isn't shallow, which is the case for reinstallations.
     log "Getting full Brew repo"
     git -C "$(brew --repo homebrew/core)" fetch --unshallow || true
+
+    if [[ "$isMac" = false ]]; then
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    fi
   fi
 
   # Make sure we’re using the latest version.
@@ -154,30 +156,29 @@ function install_brew_and_formulae() {
 
   log "Installing Brew packages"
   brew install bash
-  brew install bash-completion
   brew install shellcheck
   brew install shfmt
   brew install git
   brew install stow
   brew install vim
-  brew install mosh
+  # brew install mosh
   brew install tmux
-  brew install tmate
+  # brew install tmate
   brew install tree
   brew install the_silver_searcher
   brew install watchman
   brew install yamllint
   brew install icu4c
-  brew install python@3.8
   brew install jsonlint
 
   # Explicitly ignoring installation success for these because they may unsuccessfully link due to docker desktop installs
-  brew install docker || true
-  brew install docker-compose || true
+  # brew install docker || true
+  # brew install docker-compose || true
 
   if [ "$isMac" = true ]; then
     # This package is a copy-paste integration between tmux and osx
     brew install reattach-to-user-namespace
+    brew install bash-completion
   fi
 
   # jsonlint unfortunately has a node dependency specified with Brew, and Brew doesn't respect the ignore-dependencies flag for installations.
