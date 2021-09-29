@@ -81,8 +81,9 @@ __powerline() {
             # promptvars is disabled. Avoid creating unnecessary env var.
             local git="$COLOR_GIT$(__git_info)$RESET"
         fi
+        local hostname="$HOSTNAME$RESET "
 
-        PS1="$cwd$git$symbol"
+        PS1="$hostname$cwd$git$symbol"
     }
 
     PROMPT_COMMAND="ps1${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
