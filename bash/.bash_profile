@@ -30,8 +30,15 @@ fi
 export GIT_EDITOR=vim
 export EDITOR=vim
 
+
 # Don't show zsh warning on Catalina
 export BASH_SILENCE_DEPRECATION_WARNING=1
+
+# Used to control the shell depth prompt value
+export SHELL_DEPTH_OFFSET="${SHELL_DEPTH_OFFSET:-1}"
+
+# Used to optionally disable git status info in the prompt due to performance implications
+export SKIP_GIT_PROMPT="${SKIP_GIT_PROMPT:-false}"
 
 # Bash history, don't store dupes
 export HISTCONTROL=ignoredups:erasedups
@@ -51,14 +58,14 @@ export NODE_REPL_MODE='sloppy'
 export HISTSIZE='32768'
 export HISTFILESIZE="${HISTSIZE}"
 # Omit duplicates and commands that begin with a space from history.
-export HISTCONTROL='ignoreboth'
+export HISTCONTROL='erasedups:ignoredups:ignorespace'
 
 #
 # PATH extensions
 #
 # Added by n-install (see http://git.io/n-install-repo).
 export N_PREFIX="$HOME/n"
-[[ :$PATH: == *":$N_PREFIX/bin:"* ]] || PATH+=":$N_PREFIX/bin"
+export PATH="$N_PREFIX/bin:$PATH"
 export PATH="/usr/local/opt/python/libexec/bin:$PATH"
 export PATH="/Users/nathanschwartz/Library/Python/3.8/bin:$PATH"
 
@@ -161,6 +168,8 @@ alias ls="command ls -a ${colorflag}"
 
 # Turn on globstar
 # shopt -s globstar
+shopt -s checkwinsize
+shopt -s histappend
 
 # Add tab completion for many Bash commands
 if test "$(which brew)"; then
@@ -183,3 +192,6 @@ fi
 if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
+
+# Placed after linuxbrew sourcing to load bash if it was installed that way
+export BASH_PATH="$(which bash)"

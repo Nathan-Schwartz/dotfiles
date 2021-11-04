@@ -6,8 +6,8 @@
 __powerline() {
     # Colorscheme
     readonly RESET='\[\033[m\]'
-    readonly COLOR_CWD='\[\033[0;34m\]' # blue
-    readonly COLOR_GIT='\[\033[0;36m\]' # cyan
+    readonly COLOR_CWD='\[\033[0;34m\]'     # blue
+    readonly COLOR_GIT='\[\033[0;36m\]'     # cyan
     readonly COLOR_SUCCESS='\[\033[0;32m\]' # green
     readonly COLOR_FAILURE='\[\033[0;31m\]' # red
 
@@ -17,17 +17,17 @@ __powerline() {
     readonly SYMBOL_GIT_PULL='↓'
 
     if [[ -z "$PS_SYMBOL" ]]; then
-      case "$(uname)" in
-          Darwin)   PS_SYMBOL='';;
-          Linux)    PS_SYMBOL='$';;
-          *)        PS_SYMBOL='%';;
-      esac
+        case "$(uname)" in
+        Darwin) PS_SYMBOL='' ;;
+        Linux) PS_SYMBOL='$' ;;
+        *) PS_SYMBOL='%' ;;
+        esac
     fi
 
     __git_info() {
         [[ $POWERLINE_GIT = 0 ]] && return # disabled
-        hash git 2>/dev/null || return # git not found
-        local git_eng="env LANG=C git"   # force git output in English to make our work easier
+        hash git 2>/dev/null || return     # git not found
+        local git_eng="env LANG=C git"     # force git output in English to make our work easier
 
         # get current branch name
         local ref=$($git_eng symbolic-ref --short HEAD 2>/dev/null)
@@ -40,7 +40,7 @@ __powerline() {
             ref=$($git_eng describe --tags --always 2>/dev/null)
         fi
 
-        [[ -n "$ref" ]] || return  # not a git repo
+        [[ -n "$ref" ]] || return # not a git repo
 
         local marks
 
@@ -53,7 +53,7 @@ __powerline() {
                 marks="$SYMBOL_GIT_MODIFIED$marks"
                 break
             fi
-        done < <($git_eng status --porcelain --branch 2>/dev/null)  # note the space between the two <
+        done < <($git_eng status --porcelain --branch 2>/dev/null) # note the space between the two <
 
         # print the git branch segment without a trailing newline
         printf " $ref$marks"
@@ -75,13 +75,18 @@ __powerline() {
         # POC: https://github.com/njhartwell/pw3nage
         # Related fix in git-bash: https://github.com/git/git/blob/9d77b0405ce6b471cb5ce3a904368fc25e55643d/contrib/completion/git-prompt.sh#L324
         if shopt -q promptvars; then
-            __powerline_git_info="$(__git_info)"
+            if [[ "$SKIP_GIT_PROMPT" == 'true' ]]; then
+                __powerline_git_info=""
+            else
+                __powerline_git_info="$(__git_info)"
+            fi
+
             local git="$COLOR_GIT\${__powerline_git_info}$RESET"
         else
             # promptvars is disabled. Avoid creating unnecessary env var.
             local git="$COLOR_GIT$(__git_info)$RESET"
         fi
-        local hostname="$HOSTNAME$RESET "
+        local hostname="$HOSTNAME$RESET ($(($SHLVL - $SHELL_DEPTH_OFFSET))) "
 
         PS1="$hostname$cwd$git$symbol"
     }
