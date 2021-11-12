@@ -12,9 +12,9 @@ function main() {
 
   install_node_ecosystem
   install_pip_packages
-  update_git_submodules
   install_brew_and_formulae
   unset_global_vars
+  update_git_submodules
   print_final_message
 }
 
@@ -118,10 +118,11 @@ function install_node_ecosystem() {
   npm_list=(
     yarn
     nodemon
-    flow-bin
+    # flow-bin
+    # flow-language-server
+    serve
     eslint
     babel-eslint
-    flow-language-server
     prettier
   )
   for pkg in "${npm_list[@]}"; do
