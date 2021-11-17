@@ -21,15 +21,18 @@ set -o vi
 # Set directory env vars
 if [ "$isMac" = true ]; then
   export NOTES_DIR="$HOME/Documents/notes"
-  export PROJECTS_DIR="$HOME/Documents/projects"
+  defaultProjectsDir="$HOME/Documents/projects"
+  export PROJECTS_DIR="${PROJECTS_DIR:-$defaultProjectsDir}"
+  unset defaultProjectsDir
 else
   export NOTES_DIR="$HOME/notes"
-  export PROJECTS_DIR="$HOME/projects"
+  defaultProjectsDir="$HOME/projects"
+  export PROJECTS_DIR="${PROJECTS_DIR:-$defaultProjectsDir}"
+  unset defaultProjectsDir
 fi
 
 export GIT_EDITOR=vim
 export EDITOR=vim
-
 
 # Don't show zsh warning on Catalina
 export BASH_SILENCE_DEPRECATION_WARNING=1
@@ -102,8 +105,8 @@ alias ....="cd ../../.."
 alias .....="cd ../../../.."
 
 # Create directories if they don't exist
-mkdir "${NOTES_DIR}" 2>/dev/null
-mkdir "${PROJECTS_DIR}" 2>/dev/null
+mkdir -p "$NOTES_DIR"
+mkdir -p "$PROJECTS_DIR"
 
 # Shortcuts to custom dirs
 alias dotfiles="cd ~/dotfiles"

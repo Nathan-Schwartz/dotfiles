@@ -11,8 +11,8 @@ function main() {
   fi
 
   install_node_ecosystem
-  install_pip_packages
   install_brew_and_formulae
+  install_pip_packages
   unset_global_vars
   update_git_submodules
   print_final_message
@@ -92,7 +92,7 @@ function prompt_for_admin_access_if_needed() {
 function update_git_submodules() {
   log "Update dotfile git submodules"
   cd ~/dotfiles
-  git submodule foreach git pull origin master
+  git submodule foreach --recursive git pull --rebase origin master
   cd -
 }
 
