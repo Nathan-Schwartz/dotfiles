@@ -30,9 +30,9 @@
 1. Run the following to set up symlinks:
 ```bash
 # Clone repo and all submodules
-git clone --recursive https://github.com/Nathan-Schwartz/dotfiles.git ~/dotfiles
-
+git clone https://github.com/Nathan-Schwartz/dotfiles.git ~/dotfiles
 cd ~/dotfiles
+git submodule update --force --recursive --init --remote
 
 # Install stow however you like.
 # The install script (./scripts/install.sh) will install stow but also many other things.

@@ -92,7 +92,7 @@ function prompt_for_admin_access_if_needed() {
 function update_git_submodules() {
   log "Update dotfile git submodules"
   cd ~/dotfiles
-  git submodule foreach --recursive git pull --rebase origin master
+  git submodule update --force --recursive --init --remote
   cd -
 }
 
@@ -120,8 +120,6 @@ function install_node_ecosystem() {
   npm_list=(
     yarn
     nodemon
-    # flow-bin
-    # flow-language-server
     serve
     eslint
     babel-eslint
@@ -171,14 +169,6 @@ function install_brew_and_formulae() {
   brew install icu4c
   brew install jsonlint
 
-  # Explicitly ignoring installation success for these because they may unsuccessfully link due to docker desktop installs
-  # brew install docker || true
-  # brew install docker-compose || true
-
-  # brew install mosh
-  # brew install git
-  # brew install tmate
-
   if [ "$isMac" = true ]; then
     # This package is a copy-paste integration between tmux and osx
     brew install reattach-to-user-namespace
@@ -204,7 +194,7 @@ function print_final_message() {
 
 function install_pip_packages() {
   log "Installing PIP packages"
-  python3 -m pip install pylint autopep8
+  python3 -m pip install pylint autopep8 glances
 }
 
 main "$@"
