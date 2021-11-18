@@ -69,11 +69,11 @@ function update_os() {
   if [ "$isMac" = true ]; then
     log "Installing OSX updates"
     sudo softwareupdate -i -a
-    xcode-select --install 2> /dev/null || true
-  else
-    log "Debian updates"
+    xcode-select --install 2>/dev/null || true
+  elif [ -f /etc/redhat-release ]; then
+    sudo yum --security update
+  elif [ -f /etc/lsb-release ]; then
     sudo apt-get update
-    # sudo apt-get upgrade -y
   fi
 }
 
@@ -97,16 +97,18 @@ function update_git_submodules() {
 }
 
 function install_node_ecosystem() {
+  n_version_to_install="${PREFERRED_NODE_VERSION:-lts}"
   if [ "$isMissingN" = true ]; then
-    log "Installing n-install, n, and Node LTS"
+    log "Installing n-install, n, and Node $n_version_to_install"
     # -y automates installation, -n avoids modifying bash_profile
     curl -L https://git.io/n-install | bash -s -- -n -y
   else
     log "Updating n"
     n-update -y
 
-    log "Installing Node LTS"
-    n lts
+    log "Installing Node $n_version_to_install"
+    n $n_version_to_install
+    unset n_version_to_install
   fi
 
   # Upgrade any already-installed packages.
@@ -159,12 +161,9 @@ function install_brew_and_formulae() {
   brew install bash
   brew install shellcheck
   brew install shfmt
-  brew install git
   brew install stow
   brew install vim
-  # brew install mosh
   brew install tmux
-  # brew install tmate
   brew install tree
   brew install the_silver_searcher
   brew install watchman
@@ -175,6 +174,10 @@ function install_brew_and_formulae() {
   # Explicitly ignoring installation success for these because they may unsuccessfully link due to docker desktop installs
   # brew install docker || true
   # brew install docker-compose || true
+
+  # brew install mosh
+  # brew install git
+  # brew install tmate
 
   if [ "$isMac" = true ]; then
     # This package is a copy-paste integration between tmux and osx
