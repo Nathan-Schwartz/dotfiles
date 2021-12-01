@@ -1,5 +1,17 @@
 # Inspired heavily by repos found in dotfiles.github.io, specifically https://github.com/mathiasbynens/dotfiles/
 
+# temporarily hear for benchmarking
+export N_PREFIX="$HOME/n"
+export PATH="$N_PREFIX/bin:$PATH"
+
+startTime="$(node -e 'console.log(Date.now())')"
+printMsTimestamp() {
+  if [ "${BENCHMARK:-}" = "true" ]; then
+    node -e "console.log('$1', Date.now() - $startTime)"
+  fi
+}
+
+printMsTimestamp 'Sourcing .env'
 # Load this computer's env vars
 if [ -a ~/.env ]; then
   source ~/.env
@@ -17,6 +29,8 @@ set -o vi
 #
 # Exports
 #
+
+printMsTimestamp 'Starting exports and aliases'
 
 # Set directory env vars
 if [ "$isMac" = true ]; then
@@ -174,6 +188,8 @@ alias ls="command ls -a ${colorflag}"
 shopt -s checkwinsize
 shopt -s histappend
 
+printMsTimestamp 'Sourcing completion'
+
 # Add tab completion for many Bash commands
 if test "$(which brew)"; then
   brewdir=$(brew --prefix)
@@ -185,16 +201,21 @@ fi
 
 unset isMac
 
+printMsTimestamp 'Sourcing powerline'
 source ~/.bash-powerline.sh
 
+printMsTimestamp 'Sourcing .local'
 # Load this computer's additional configurations
 if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
 fi
 
-if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+printMsTimestamp 'Sourcing brew'
+if [ "$isMac" = false ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
 # Placed after linuxbrew sourcing to load bash if it was installed that way
 export BASH_PATH="$(which bash)"
+
+printMsTimestamp 'Done!'
