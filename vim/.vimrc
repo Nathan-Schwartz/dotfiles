@@ -15,6 +15,7 @@ execute pathogen#infect()
 " - https://github.com/skywind3000/asyncrun.vim
 "
 " Things to explore/learn/practice
+" - ALE: hover, go to definition, find references, refactor
 " - vim regex magic levels
 " - recursive macros
 " - multi-file find&replace workflows
@@ -39,7 +40,7 @@ set undoreload=10000
 " Set dirs so we don't litter all over
 set undodir=~/.vim/cache/undo
 set backupdir=~/.vim/cache/backup
-set dir=~/.vim/cache/swap
+set directory=~/.vim/cache/swap
 
 " Prompt to save instead of erroring
 set confirm
@@ -85,6 +86,7 @@ command! W w
 command! Wq wq
 command! Q q
 command! WQ wq
+command! Qall qall
 
 " ---------- Colors ---------- {{{1
 " This is included in vim-sensible but for some reason even though my vim
@@ -193,8 +195,29 @@ endfunction
 
 " ---------- Ale ---------- {{{2
 " Set up auto fixers
-let g:ale_fixers = { 'typescriptreact': ['eslint', 'prettier-eslint'], 'typescript': ['eslint', 'prettier-eslint'], 'javascript': ['eslint', 'prettier-eslint'], 'json': ['prettier'], 'python': ['autopep8'], 'bash': ['shfmt'], 'sh': ['shfmt'] }
-let g:ale_linters = { 'javascript': ['flow', 'eslint'], 'json': ['jsonlint'], 'python': ['pylint'] }
+let g:ale_fixers = {
+  \ 'typescriptreact': ['eslint', 'prettier'],
+  \ 'typescript': ['eslint', 'prettier'],
+  \ 'javascriptreact': ['eslint', 'prettier'],
+  \ 'javascript': ['eslint', 'prettier'],
+  \ 'python': ['autopep8'],
+  \ 'bash': ['shfmt'],
+  \ 'sh': ['shfmt'],
+  \ 'html': ['prettier'],
+  \ 'less': ['prettier'],
+  \ 'scss': ['prettier'],
+  \ 'ruby': ['prettier'],
+  \ 'svelte': ['prettier'],
+  \ 'vue': ['prettier'],
+  \ 'markdown': ['prettier'],
+  \ 'yaml': ['prettier'],
+  \ 'yml': ['prettier'],
+  \ 'graphql': ['prettier'],
+  \ 'css': ['prettier'],
+  \ 'json': ['prettier'],
+  \ '*': ['remove_trailing_lines', 'trim_whitespace']
+  \ }
+let g:ale_linters = { 'json': ['jq'] }
 let g:ale_yaml_yamllint_options='-d "{extends: relaxed, rules: {line-length: disable}}"'
 
 let g:ale_lint_delay = 50
@@ -300,7 +323,7 @@ let g:NERDTreeNodeDelimiter = "\u00a0"
 let NERDTreeQuitOnOpen = 1
 
 " Toggle Nerd Tree with control + b
-nnoremap <silent> <c-b> :NERDTreeVCS <BAR> NERDTreeClose <BAR> NERDTreeFind<CR>
+nnoremap <silent> <C-b> :NERDTreeVCS <BAR> NERDTreeClose <BAR> NERDTreeFind<CR>
 
 " ---------- Comfortable Motion ---------- {{{2
 " I think these are the default factors
@@ -309,8 +332,8 @@ let g:comfortable_motion_air_drag = 2.0
 
 let g:comfortable_motion_no_default_key_mappings = 1
 
-nnoremap <silent> <c-d> :call comfortable_motion#flick(120)<CR>
-nnoremap <silent> <c-u> :call comfortable_motion#flick(-120)<CR>
+nnoremap <silent> <C-d> :call comfortable_motion#flick(120)<CR>
+nnoremap <silent> <C-u> :call comfortable_motion#flick(-120)<CR>
 
 " ---------- Startify ---------- {{{2
 let g:startify_session_dir = '~/.vim/cache/session'
@@ -322,15 +345,34 @@ let mapleader = " "
 " Make space leader behave the same as other keys would
 nnoremap <Space> <nop>
 
-" turn off search highlight
-nnoremap <leader>n :noh<CR>
+
+" A sequence i hope to never use accidentally
+" Using this to jump down to a split because <c-j> is the null character and
+" <c-w>j gets interpretted as a capital J which just joins the lines.
+nnoremap ttttttttttttt <C-w>j
+
+" turn off search highlight and close hover menu
+nnoremap <leader>n :noh <BAR> normal tttttttttttttq<CR>
+
 
 " Fix linting errors
 nnoremap <leader>af :ALEFix<CR>
 
 " Map keys to navigate between lines with errors and warnings.
-nnoremap <leader>an :ALENextWrap<cr>
-nnoremap <leader>ap :ALEPreviousWrap<cr>
+nnoremap <leader>an :ALENextWrap<CR>
+nnoremap <leader>ap :ALEPreviousWrap<CR>
+
+" Jump to definition of identifier under cursor
+nnoremap <leader>d :ALEGoToDefinition<CR>
+
+" Display description and/or type information for text under cursor
+nnoremap <leader>h :ALEHover<CR>
+
+" Rename variable
+nnoremap <leader>r :ALERename<CR>
+
+" Perform a refactor
+nnoremap <leader>cf :ALECodeAction<CR>
 
 " Apply last operation to a range of lines
 vnoremap <leader>. : normal .<CR>

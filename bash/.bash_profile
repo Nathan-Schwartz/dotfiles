@@ -192,7 +192,7 @@ if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
 fi
 
-if [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+if [ "$isMac" != 'true' ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 

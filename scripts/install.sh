@@ -10,12 +10,13 @@ function main() {
     update_os
   fi
 
-  install_node_ecosystem
-  install_brew_and_formulae
-  install_pip_packages
-  unset_global_vars
+  install_node_deps
+  install_brew_deps
+  install_python_deps
   update_git_submodules
+  install_extended_editor_support
   print_final_message
+  unset_global_vars
 }
 
 ##########################################################
@@ -96,7 +97,7 @@ function update_git_submodules() {
   cd -
 }
 
-function install_node_ecosystem() {
+function install_node_deps() {
   n_version_to_install="${PREFERRED_NODE_VERSION:-lts}"
   if [ "$isMissingN" = true ]; then
     log "Installing n-install, n, and Node $n_version_to_install"
@@ -115,24 +116,18 @@ function install_node_ecosystem() {
   log "Updating Global NPM Packages"
   npm update -g
 
-  log "Installing Global NPM Packages"
-  # Only installs if they are missing.
-  npm_list=(
-    yarn
-    nodemon
-    serve
-    eslint
-    babel-eslint
-    prettier
-  )
-  for pkg in "${npm_list[@]}"; do
-    if ! npm list -g "$pkg" >/dev/null; then
-      npm i -g "$pkg"
-    fi
-  done
+  log "Installing Yarn"
+  install_node_module yarn
 }
 
-function install_brew_and_formulae() {
+# Only installs if dep is missing.
+function install_node_module() {
+  if ! npm list -g "$1" >/dev/null; then
+    npm i -g "$1"
+  fi
+}
+
+function install_brew_deps() {
   # Check for brew and install if it's missing
   if [ "$isMissingBrew" = true ]; then
     log "Installing Brew..."
@@ -157,44 +152,62 @@ function install_brew_and_formulae() {
 
   log "Installing Brew packages"
   brew install bash
-  brew install shellcheck
-  brew install shfmt
   brew install stow
   brew install vim
   brew install tmux
   brew install tree
   brew install the_silver_searcher
   brew install watchman
-  brew install yamllint
   brew install icu4c
-  brew install jsonlint
+  brew install bash-completion
 
-  if [ "$isMac" = true ]; then
-    # This package is a copy-paste integration between tmux and osx
-    brew install reattach-to-user-namespace
-    brew install bash-completion
+  # Install git if it is missing
+  if ! type "git" >/dev/null; then
+    log "Installing missing dep: git"
+    brew install git
   fi
-
-  # jsonlint unfortunately has a node dependency specified with Brew, and Brew doesn't respect the ignore-dependencies flag for installations.
-  # Adding || true because removal isn't idempotent
-  brew uninstall --ignore-dependencies node || true
 
   # Remove outdated versions from the cellar.
   log "Cleaning up brew"
   brew cleanup
-
-  log "Checking Brew health"
-  brew doctor || true
+  brew completions link
 }
 
 function print_final_message() {
-  log "Looks like everything ran successfully, but you may want to double check brew health just to be sure :)"
-  log "NOTE: It's ok for node to be a missing brew dependency because it is installed through n."
+  log "Good to go!"
 }
 
-function install_pip_packages() {
+function install_python_deps() {
   log "Installing PIP packages"
-  python3 -m pip install pylint autopep8 glances
+  python3 -m pip install glances
+}
+
+function install_extended_editor_support() {
+  log "Installing Editor Support: pip"
+  python3 -m pip install pylint autopep8 vim-vint
+
+  log "Installing Editor Support: npm"
+  npm_list=(
+    eslint
+    prettier
+    @babel/eslint-parser
+    prettier-eslint
+  )
+  for pkg in "${npm_list[@]}"; do
+    install_node_module $pkg
+  done
+
+  log "Installing Editor Support: brew"
+  brew install shellcheck
+  brew install shfmt
+  brew install yamllint
+  brew install jq
+  brew install proselint
+
+  if [ "$isMac" = true ]; then
+    # This package is a copy-paste integration between tmux and OSx
+    brew install reattach-to-user-namespace
+  fi
 }
 
 main "$@"
