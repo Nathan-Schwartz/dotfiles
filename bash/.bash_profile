@@ -175,12 +175,15 @@ shopt -s checkwinsize
 shopt -s histappend
 
 # Add tab completion for many Bash commands
-if test "$(which brew)"; then
+if command -v brew  &>/dev/null
+then
   brewdir=$(brew --prefix)
   if [ -f "$brewdir/etc/bash_completion" ]; then
     source "$brewdir/etc/bash_completion"
   fi
   unset brewdir
+else
+  echo "WARNING: Brew is not available"
 fi
 
 unset isMac
