@@ -50,7 +50,10 @@ set splitbelow
 
 " No sounds or bells
 set visualbell
-set belloff=all
+
+if exists('&belloff')
+  set belloff=all
+endif
 
 " Wrap lines at words when possible
 set linebreak
