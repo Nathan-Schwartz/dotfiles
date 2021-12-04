@@ -1,5 +1,7 @@
 # dotfiles
 
+![Build](https://github.com/Nathan-Schwartz/dotfiles/actions/workflows/ci.yml/badge.svg)
+
 <!-- vim-markdown-toc GFM -->
 
 - [Overview](#overview)
