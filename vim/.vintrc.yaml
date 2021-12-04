@@ -1,0 +1,51 @@
+---
+
+cmdargs:
+  # Checking more strictly
+  severity: style_problem
+
+  # Enable coloring
+  color: true
+
+policies:
+  ProhibitCommandRelyOnUser:
+    enabled: false
+
+  ProhibitAbbreviationOption:
+    enabled: true
+
+  ProhibitImplicitScopeVariable:
+    enabled: true
+
+  ProhibitUsingUndeclaredVariable:
+    enabled: true
+
+  ProhibitUnusedVariable:
+    enabled: true
+
+  ProhibitSetNoCompatible:
+    enabled: true
+
+  ProhibitUnnecessaryDoubleQuote:
+    enabled: true
+
+  ProhibitNoAbortFunction:
+    enabled: true
+
+  ProhibitImplicitScopeBuiltinVariable:
+    enabled: true
+
+  ProhibitMissingScriptEncoding:
+    enabled: true
+
+  ProhibitEqualTildeOperator:
+    enabled: true
+
+  ProhibitEncodingOptionAfterScriptEncoding:
+    enabled: true
+
+  ProhibitCommandWithUnintendedSideEffect:
+    enabled: true
+
+  ProhibitAutocmdWithNoGroup:
+    enabled: true

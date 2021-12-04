@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Inspired heavily by repos found in dotfiles.github.io, specifically https://github.com/mathiasbynens/dotfiles/
 
 # Load this environments configs

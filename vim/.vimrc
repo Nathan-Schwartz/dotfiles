@@ -1,5 +1,4 @@
 " vim: foldmethod=marker foldlevel=0
-
 " Run Pathogen (vim package manager)
 execute pathogen#infect()
 
@@ -84,6 +83,10 @@ set updatetime=50
 " Remove escape delays (This breaks arrow keys in insert mode)
 set noesckeys
 
+" TODO: see if this breaks stuff
+set encoding=utf-8
+scriptencoding utf-8
+
 " Autocorrect some typos when trying to quit
 command! W w
 command! Wq wq
@@ -95,7 +98,7 @@ command! Qall qall
 " This is included in vim-sensible but for some reason even though my vim
 " install has syntax support, has("syntax") must be evaluating to false,
 " causing the plugin to not enable syntax
-if !exists("g:syntax_on")
+if !exists('g:syntax_on')
   syntax enable
 endif
 
@@ -116,10 +119,10 @@ match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
 
 " Toggle iterm and vim between dark and light
 function! ToggleBackground() abort
-  if &background == "dark"
+  if &background ==? 'dark'
     set background=light
     normal :!echo -e "\033]50;SetProfile=Light\a"
-  elseif &background == "light"
+  elseif &background ==? 'light'
     set background=dark
     normal :!echo -e "\033]50;SetProfile=Dark\a"
   endif
@@ -150,9 +153,9 @@ let g:ackhighlight = 1
 " Command and function that run Ack.vim from the root of the repo
 command! -nargs=+ AgFn :call AgFromRoot(<f-args>)
 function! AgFromRoot(...)
-  let git_root = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+  let l:git_root = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
   " The ! prevents jumping to the first hit
-  execute "Ack! " . join(a:000) . " " . git_root
+  execute 'Ack! ' . join(a:000) . ' ' . l:git_root
 endfunction
 
 " I type Ag out of habit
@@ -167,21 +170,21 @@ function! OpenQuickFixInTabs() abort
   normal :cclose
 
   " Save our spot so we can come back
-  let current_file = expand('%:p')
+  let l:current_file = expand('%:p')
   normal mz
 
   " Building a hash ensures we get each buffer only once
-  let buffer_numbers = {}
-  for quickfix_item in getqflist()
-    let bufnr = quickfix_item['bufnr']
+  let l:buffer_numbers = {}
+  for l:quickfix_item in getqflist()
+    let l:bufnr = l:quickfix_item['bufnr']
     " Lines without files will appear as bufnr=0
-    if bufnr > 0
+    if l:bufnr > 0
       " Get absolute path for each buffer
-      let buffer_numbers[bufnr] = trim(fnameescape(expand("#" . bufnr . ":p")). ' ')
+      let l:buffer_numbers[l:bufnr] = trim(fnameescape(expand('#' . l:bufnr . ':p')). ' ')
     endif
   endfor
 
-  execute "normal :silent!$tab drop " . join(values(buffer_numbers)) . "\<CR>"
+  execute 'normal :silent!$tab drop ' . join(values(l:buffer_numbers)) . "\<CR>"
   " for qf_file in values(buffer_numbers)
   "   " Ignore Errors. Escape filepath strings. Open existing buffer or append new tab.
   "   execute "normal :silent!$tab drop " . qf_file . "\<CR>"
@@ -190,7 +193,7 @@ function! OpenQuickFixInTabs() abort
   normal :redraw!
 
   " Jump back to original file.
-  execute "normal :silent!tab drop " . current_file . "\<CR>"
+  execute 'normal :silent!tab drop ' . l:current_file . "\<CR>"
   normal `z
 
   normal :copen
@@ -306,15 +309,15 @@ let g:lightline = {
 
 " Function used for printing relative file path
 function! PrintFilePath() abort
-  return fnamemodify(expand("%"), ":~:.")
+  return fnamemodify(expand('%'), ':~:.')
 endfunction
 
 " ---------- NERDTree ---------- {{{2
 " Automatically delete the buffer of the file you just deleted with NerdTree:
-let NERDTreeAutoDeleteBuffer = 1
+let g:NERDTreeAutoDeleteBuffer = 1
 
 " Toggle visibility of hidden files using i and I
-let NERDTreeShowHidden=1
+let g:NERDTreeShowHidden=1
 
 " Don't open NERDTree by default
 let g:nerdtree_tabs_open_on_gui_startup=0
@@ -323,7 +326,7 @@ let g:nerdtree_tabs_open_on_gui_startup=0
 let g:NERDTreeNodeDelimiter = "\u00a0"
 
 " Close tree once file is selected
-let NERDTreeQuitOnOpen = 1
+let g:NERDTreeQuitOnOpen = 1
 
 " Toggle Nerd Tree with control + b
 nnoremap <silent> <C-b> :NERDTreeVCS <BAR> NERDTreeClose <BAR> NERDTreeFind<CR>
@@ -343,7 +346,7 @@ let g:startify_session_dir = '~/.vim/cache/session'
 
 " ---------- Leader: General ---------- {{{1
 " Map space to leader
-let mapleader = " "
+let g:mapleader = ' '
 
 " Make space leader behave the same as other keys would
 nnoremap <Space> <nop>
@@ -466,22 +469,22 @@ endfunction
 
 function! g:Camelcase(word)
   " let word = substitute(a:word, '-', '_', 'g')
-  let word = g:Snakecase(a:word)
-  if word !~# '_' && word =~# '\l'
-    return substitute(word,'^.','\l&','')
+  let l:word = g:Snakecase(a:word)
+  if l:word !~# '_' && l:word =~# '\l'
+    return substitute(l:word,'^.','\l&','')
   else
-    return substitute(word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
+    return substitute(l:word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
   endif
 endfunction
 
 function! g:Snakecase(word)
-  let word = substitute(a:word,'::','/','g')
-  let word = substitute(word, '\s', '_', 'g')
-  let word = substitute(word,'\(\u\+\)\(\u\l\)','\1_\2','g')
-  let word = substitute(word,'\(\l\|\d\)\(\u\)','\1_\2','g')
-  let word = substitute(word,'[.-]','_','g')
-  let word = tolower(word)
-  return word
+  let l:word = substitute(a:word,'::','/','g')
+  let l:word = substitute(l:word, '\s', '_', 'g')
+  let l:word = substitute(l:word,'\(\u\+\)\(\u\l\)','\1_\2','g')
+  let l:word = substitute(l:word,'\(\l\|\d\)\(\u\)','\1_\2','g')
+  let l:word = substitute(l:word,'[.-]','_','g')
+  let l:word = tolower(l:word)
+  return l:word
 endfunction
 
 function! g:Uppercase(word)
@@ -556,22 +559,22 @@ augroup END
 set foldtext=FoldText()
 
 function! FoldText()
-  let line = getline(v:foldstart)
+  let l:line = getline(v:foldstart)
 
-  let nucolwidth = &fdc + &number * &numberwidth
-  let windowwidth = winwidth(0) - nucolwidth - 3
-  let foldedlinecount = v:foldend - v:foldstart
-  let line = trim(substitute(substitute(substitute(substitute(line, '\d', '', 'g'), '-', '', 'g'), '{', '', 'g'), '"', '', 'g'))
-  let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
+  let l:nucolwidth = &foldcolumn + &number * &numberwidth
+  let l:windowwidth = winwidth(0) - l:nucolwidth - 3
+  let l:foldedlinecount = v:foldend - v:foldstart
+  let l:line = trim(substitute(substitute(substitute(substitute(l:line, '\d', '', 'g'), '-', '', 'g'), '{', '', 'g'), '"', '', 'g'))
+  let l:line = strpart(l:line, 0, l:windowwidth - 2 -len(l:foldedlinecount))
 
-  if windowwidth > 100
-    let maxtitlelength = 50
-    let titlepadding = maxtitlelength - len(line)
-    let fillcharcount = windowwidth - maxtitlelength - len(foldedlinecount) - (v:foldlevel * 2)
-    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ', titlepadding - 3) . 'L# ' . foldedlinecount . repeat(' ', fillcharcount) . ' '
+  if l:windowwidth > 100
+    let l:maxtitlelength = 50
+    let l:titlepadding = l:maxtitlelength - len(l:line)
+    let l:fillcharcount = l:windowwidth - l:maxtitlelength - len(l:foldedlinecount) - (v:foldlevel * 2)
+    return repeat('  ', v:foldlevel - 1) . '▸ ' . l:line . repeat(' ', l:titlepadding - 3) . 'L# ' . l:foldedlinecount . repeat(' ', l:fillcharcount) . ' '
   else
-    let fillcharcount = windowwidth - len(line) - len(foldedlinecount) - (v:foldlevel * 2)
-    return repeat('  ', v:foldlevel - 1) . '▸ ' . line . repeat(' ',fillcharcount) . foldedlinecount . '  '
+    let l:fillcharcount = l:windowwidth - len(l:line) - len(l:foldedlinecount) - (v:foldlevel * 2)
+    return repeat('  ', v:foldlevel - 1) . '▸ ' . l:line . repeat(' ', l:fillcharcount) . l:foldedlinecount . '  '
   endif
 endfunction
 
@@ -599,4 +602,3 @@ augroup END
 set softtabstop=2
 set shiftwidth=2
 set expandtab
-

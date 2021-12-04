@@ -13,7 +13,7 @@ apt-get upgrade -y
 apt install sudo curl python3-pip git stow -y
 pip3 install glances
 usermod -aG sudo nathanschwartz
-echo '>>>>>>>>>> Run "exit" to resume install'
+echo '>>>>>>>>>> Run \"exit\" to resume install'
 " > ./install_as_root.sh
 echo ">>>>>>>>>> login as root (and then run 'bash $(pwd)/install_as_root.sh'):"
 su - root
