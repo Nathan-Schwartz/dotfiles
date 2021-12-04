@@ -1,6 +1,6 @@
 # Inspired heavily by repos found in dotfiles.github.io, specifically https://github.com/mathiasbynens/dotfiles/
 
-# Load this computer's env vars
+# Load this environments configs
 if [ -a ~/.env ]; then
   source ~/.env
 fi
@@ -17,6 +17,8 @@ set -o vi
 #
 # Exports
 #
+export GIT_EDITOR=vim
+export EDITOR=vim
 
 # Set directory env vars
 if [ "$isMac" = true ]; then
@@ -31,8 +33,9 @@ else
   unset defaultProjectsDir
 fi
 
-export GIT_EDITOR=vim
-export EDITOR=vim
+# Create directories if they don't exist
+mkdir -p "$NOTES_DIR"
+mkdir -p "$PROJECTS_DIR"
 
 # Don't show zsh warning on Catalina
 export BASH_SILENCE_DEPRECATION_WARNING=1
@@ -69,8 +72,20 @@ export HISTCONTROL='erasedups:ignoredups:ignorespace'
 # Added by n-install (see http://git.io/n-install-repo).
 export N_PREFIX="$HOME/n"
 export PATH="$N_PREFIX/bin:$PATH"
-export PATH="/usr/local/opt/python/libexec/bin:$PATH"
-export PATH="/Users/nathanschwartz/Library/Python/3.8/bin:$PATH"
+
+# Homebrew can install here
+export PATH="/usr/local/sbin:$PATH"
+
+# Homebrew's pip installs here
+if [ -d "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin" ]; then
+  export PATH="/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin:$PATH"
+fi
+
+# debian's pip installs here
+if [ -d "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 
 #
 # Aliases
@@ -82,8 +97,10 @@ alias conflicts="git exec vim -p \$(git conflicts)"
 # Conveniently edit config files
 alias evim='$EDITOR ~/.vimrc'
 alias ebash='$EDITOR ~/.bash_profile'
+alias ebashl='$EDITOR ~/.bash_profile.local'
 alias egit='$EDITOR ~/.gitconfig'
 alias etmux='$EDITOR ~/.tmux.conf'
+alias einstall='$EDITOR ~/dotfiles/scripts/install.sh'
 
 # Common typos
 alias vmi='vim'
@@ -103,10 +120,6 @@ alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
-
-# Create directories if they don't exist
-mkdir -p "$NOTES_DIR"
-mkdir -p "$PROJECTS_DIR"
 
 # Shortcuts to custom dirs
 alias dotfiles="cd ~/dotfiles"
@@ -169,25 +182,28 @@ alias ls="command ls -a ${colorflag}"
 # MISC
 #
 
-# Turn on globstar
 # shopt -s globstar
 shopt -s checkwinsize
 shopt -s histappend
 
-# Add tab completion for many Bash commands
-if command -v brew  &>/dev/null
-then
+# Load linuxbrew, if applicable (deprecated)
+if [ "$isMac" != 'true' ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
+# Placed after linuxbrew in case that's how we've installed bash 5, used by tmux to load the preferred version
+export BASH_PATH="$(which bash)"
+
+# Load brew's shell completion
+if test "$(which brew)"; then
   brewdir=$(brew --prefix)
   if [ -f "$brewdir/etc/bash_completion" ]; then
     source "$brewdir/etc/bash_completion"
   fi
   unset brewdir
-else
-  echo "WARNING: Brew is not available"
 fi
 
-unset isMac
-
+# Show hostname, shell depth, git status (unless disabled) and exit status in prompt
 source ~/.bash-powerline.sh
 
 # Load this computer's additional configurations
@@ -195,9 +211,4 @@ if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
 fi
 
-if [ "$isMac" != 'true' ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-fi
-
-# Placed after linuxbrew sourcing to load bash if it was installed that way
-export BASH_PATH="$(which bash)"
+unset isMac
