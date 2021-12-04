@@ -1,10 +1,13 @@
-# dotfiles
-
 ![Build](https://github.com/Nathan-Schwartz/dotfiles/actions/workflows/ci.yml/badge.svg)
 
-<!-- vim-markdown-toc GFM -->
+# dotfiles
 
-- [Overview](#overview)
+- Configurations and workflows for vim, bash, git, and tmux
+- Tmux and Vim plugins are included as git submodules, but other deps are installed using `scripts/install.sh`
+- Currently in use on Mac OSX, Raspbian, Centos, Ubuntu, and Debian 11 (CI only runs on Ubuntu and Mac though)
+
+<!-- vim-markdown-toc GFM -->
+# Outline
 - [Setting up](#setting-up)
 - [Tearing down](#tearing-down)
 - [Feature tour](#feature-tour)
@@ -20,13 +23,7 @@
 
 <!-- vim-markdown-toc -->
 
-## Overview
 
-- Repo primarily concerns itself with vim, bash, git, and tmux
-- GNU `stow` is used to manage the symlinks and installation.
-- Packages can be installed using `install.sh`, which should work on mac or linux
-- Other dependencies, such as vim plugins, are managed using git submodules
-- Tested on Mac OSX, Raspbian, Centos, and Debian 11
 
 ## Setting up
 
@@ -61,6 +58,8 @@ To disable configs without removing the repo
 # remove symlinks
 stow --delete vim bash git iterm tmux
 ```
+
+Removing dependencies is distro specific.
 
 ## Feature tour
 
@@ -99,31 +98,9 @@ stow --delete vim bash git iterm tmux
   - Packages include: tmux, python, node, stow, bash, AgFn and linters
   - optionally install any available OS updates
   - Uses Brew on mac, and on linux distros it will use apt or yum if available
+- test.sh: Runs linters against dotfiles
 
 ### Git
 
 - My approach to .gitconfig is inspired by [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
 - I have a global gitignore and various git aliases
-
-#### Working with git submodules
-
-Documented here for my convenience.
-
-#### Install additional plugins with:
-
-```bash
-git submodule add -f https://github.com/foo/bar.git ./vim/.vim/bundle/bar
-```
-
-#### Update all submodules with:
-
-```bash
-git submodule foreach --recursive git pull --rebase origin master
-```
-
-#### Update one submodule
-
-```bash
-cd mySubmodule
-git pull --rebase origin master
-```
