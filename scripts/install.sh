@@ -32,10 +32,22 @@ function set_global_vars() {
     isMissingBrew=false
   fi
 
+  if test ! "$(which node)"; then
+    isMissingNode=true
+  else
+    isMissingNode=false
+  fi
+
   if test ! "$(which n)"; then
     isMissingN=true
   else
     isMissingN=false
+  fi
+
+  if test ! "$(which n-install)"; then
+    isMissingNUpdate=true
+  else
+    isMissingNUpdate=false
   fi
 
   if test "$(which yum)"; then
@@ -133,17 +145,24 @@ function debian_installs() {
 
 function node_installs() {
   n_version_to_install="${PREFERRED_NODE_VERSION:-lts}"
-  if [ "$isMissingN" = true ]; then
-    log "Installing n-install, n, and Node $n_version_to_install"
-    # -y automates installation, -n avoids modifying bash_profile
-    curl -L https://git.io/n-install | bash -s -- -n -y
-  else
-    log "Updating n"
-    n-update -y
 
-    log "Installing Node $n_version_to_install"
-    n "$n_version_to_install"
-    unset n_version_to_install
+  if [[ "$isMissingN" = true && "$isMissingNode" = false ]]; then
+    log "Node was not installed with N. Skipping N install."
+  else
+    if [ "$isMissingN" = true ]; then
+      log "Installing n-install, n, and Node $n_version_to_install"
+      # -y automates installation, -n avoids modifying bash_profile
+      curl -L https://git.io/n-install | bash -s -- -n -y
+    else
+      if [ "$isMissingNUpdate" != true ]; then
+        log "Updating n"
+        n-update -y
+      fi
+
+      log "Installing Node $n_version_to_install"
+       n "$n_version_to_install"
+      unset n_version_to_install
+    fi
   fi
 
   # Upgrade any already-installed packages.
@@ -180,9 +199,16 @@ function python_installs() {
 
 function dotfile_submodule_installs() {
   log "Update dotfile git submodules"
-  cd ~/dotfiles
+
+  if [ "$CI" != 'true' ]; then
+    cd ~/dotfiles
+  fi
+
   git submodule update --force --recursive --init --remote
-  cd -
+
+  if [ "$CI" != 'true' ]; then
+    cd -
+  fi
 }
 
 function log() {
