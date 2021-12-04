@@ -15,12 +15,6 @@
   - [Tmux](#tmux)
   - [Bash](#bash)
   - [Scripts](#scripts)
-  - [Git](#git)
-    - [Working with git submodules](#working-with-git-submodules)
-    - [Install additional plugins with:](#install-additional-plugins-with)
-    - [Update all submodules with:](#update-all-submodules-with)
-    - [Update one submodule](#update-one-submodule)
-
 <!-- vim-markdown-toc -->
 
 
