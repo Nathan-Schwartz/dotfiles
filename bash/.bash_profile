@@ -126,14 +126,18 @@ alias dotfiles="cd ~/dotfiles"
 alias notes="cd $NOTES_DIR"
 alias projects="cd $PROJECTS_DIR"
 
+function bak() {
+  mv "$1" "$1.bak"
+}
+
 # Utility to making a new note (takes a file name)
-note() {
+function note() {
   $EDITOR "${NOTES_DIR}/$1"
 }
 
 # Print out files with the most commits in the codebase
 # Used env vars instead of arguments because I didn't want to mess with flag parsing
-hotgitfiles() {
+function hotgitfiles() {
   printf 'USAGE: Can set $AUTHOR_PATTERN, $COMMIT_MSG_PATTERN, $FILE_LIMIT, and $FILE_PATH_PATTERN\n\n'
   # Regex patterns to narrow results
   file_pattern=${FILE_PATH_PATTERN:-'.'}
