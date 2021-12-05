@@ -1,207 +1,49 @@
 #!/usr/bin/env bash
 
-# Inspired heavily by repos found in dotfiles.github.io, specifically https://github.com/mathiasbynens/dotfiles/
+# Inspired heavily by repos found in dotfiles.github.io, especially https://github.com/mathiasbynens/dotfiles/
 
-# Load this environments configs
+# Load any environment-specific settings
 if [ -a ~/.env ]; then
   source ~/.env
 fi
 
-# Determine if we are in OSX (Linux is assumed otherwise)
-case "$OSTYPE" in
-darwin*) isMac=true ;;
-*) isMac=false ;;
-esac
-
-# Put readline in vi mode
-set -o vi
-
-#
-# Exports
-#
-export GIT_EDITOR=vim
-export EDITOR=vim
-
-# Set directory env vars
-if [ "$isMac" = true ]; then
-  export NOTES_DIR="$HOME/Documents/notes"
-  defaultProjectsDir="$HOME/Documents/projects"
-  export PROJECTS_DIR="${PROJECTS_DIR:-$defaultProjectsDir}"
-  unset defaultProjectsDir
-else
-  export NOTES_DIR="$HOME/notes"
-  defaultProjectsDir="$HOME/projects"
-  export PROJECTS_DIR="${PROJECTS_DIR:-$defaultProjectsDir}"
-  unset defaultProjectsDir
-fi
+# Load in my configs
+source ~/.bash/settings.sh
+source ~/.bash/aliases.sh
+source ~/.bash/functions.sh
+source ~/.bash/powerline.sh
 
 # Create directories if they don't exist
 mkdir -p "$NOTES_DIR"
 mkdir -p "$PROJECTS_DIR"
 
-# Don't show zsh warning on Catalina
-export BASH_SILENCE_DEPRECATION_WARNING=1
-
-# Used to control the shell depth prompt value
-export SHELL_DEPTH_OFFSET="${SHELL_DEPTH_OFFSET:-1}"
-
-# Used to optionally disable git status info in the prompt due to performance implications
-export SKIP_GIT_PROMPT="${SKIP_GIT_PROMPT:-false}"
-
-# Bash history, don't store dupes
-export HISTCONTROL=ignoredups:erasedups
-
-# Prefer US English and use UTF-8.
-export LANG='en_US.UTF-8'
-export LC_ALL='en_US.UTF-8'
-
-# Enable persistent REPL history for `node`.
-export NODE_REPL_HISTORY=~/.node_history
-# Allow 32³ entries; the default is 1000.
-export NODE_REPL_HISTORY_SIZE='32768'
-# Use sloppy mode by default, matching web browsers.
-export NODE_REPL_MODE='sloppy'
-
-# Increase Bash history size. Allow 32³ entries; the default is 500.
-export HISTSIZE='32768'
-export HISTFILESIZE="${HISTSIZE}"
-# Omit duplicates and commands that begin with a space from history.
-export HISTCONTROL='erasedups:ignoredups:ignorespace'
-
 #
 # PATH extensions
 #
-# Added by n-install (see http://git.io/n-install-repo).
+# Required by n/n-install (see http://git.io/n-install-repo).
 export N_PREFIX="$HOME/n"
 export PATH="$N_PREFIX/bin:$PATH"
 
-# Homebrew can install here
+# Homebrew can install commands here
 export PATH="/usr/local/sbin:$PATH"
 
-# Homebrew's pip installs here
+# Homebrew's pip can install packages here
 if [ -d "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin" ]; then
   export PATH="/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin:$PATH"
 fi
 
-# debian's pip installs here
+# Debian's pip can install packages here
 if [ -d "$HOME/.local/bin" ]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-
-#
-# Aliases
-#
-
-# Easily fix git conflicts
-alias conflicts="git exec vim -p \$(git conflicts)"
-
-# Conveniently edit config files
-alias evim='$EDITOR ~/.vimrc'
-alias ebash='$EDITOR ~/.bash_profile'
-alias ebashl='$EDITOR ~/.bash_profile.local'
-alias egit='$EDITOR ~/.gitconfig'
-alias etmux='$EDITOR ~/.tmux.conf'
-alias einstall='$EDITOR ~/dotfiles/scripts/install.sh'
-
-# Common typos
-alias vmi='vim'
-alias g="git"
-alias gti='git'
-alias sl='ls'
-
-# Print out directory tree, but omit node_modules
-alias lst='tree -a -I "node_modules|.git|.next|dist|__generated__"'
-alias agi='ag --ignore node_modules --ignore dist --ignore coverage --ignore test --ignore tests --ignore __test__ --ignore __mocks__'
-
-# Print each PATH entry on a separate line
-alias path='echo -e ${PATH//:/\\n}'
-
-# Easier navigation
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-alias .....="cd ../../../.."
-
-# Shortcuts to custom dirs
-alias dotfiles="cd ~/dotfiles"
-alias notes="cd $NOTES_DIR"
-alias projects="cd $PROJECTS_DIR"
-
-function bak() {
-  mv "$1" "$1.bak"
-}
-
-# Utility to making a new note (takes a file name)
-function note() {
-  $EDITOR "${NOTES_DIR}/$1"
-}
-
-# Print out files with the most commits in the codebase
-# Used env vars instead of arguments because I didn't want to mess with flag parsing
-function hotgitfiles() {
-  printf 'USAGE: Can set $AUTHOR_PATTERN, $COMMIT_MSG_PATTERN, $FILE_LIMIT, and $FILE_PATH_PATTERN\n\n'
-  # Regex patterns to narrow results
-  file_pattern=${FILE_PATH_PATTERN:-'.'}
-  author_pattern=${AUTHOR_PATTERN:-'.'}
-  commit_msg_pattern=${COMMIT_MSG_PATTERN:-'.'}
-
-  # Number of files to be printed
-  file_limit=${FILE_LIMIT:-30}
-
-  # Print out files changed by commit. Apply author and commit message patterns.
-  git log --pretty=format: --name-only --author="$author_pattern" --grep="$commit_msg_pattern" |
-    # Limit results to those that match the file_pattern
-    grep -E "$file_pattern" |
-    # Sort results (file names)  so that the duplicates are grouped
-    sort |
-    # Remove duplicates. Prepend each line with the number of duplicates found
-    uniq -c |
-    # Sort by number of duplicates (descending)
-    sort -rg |
-    # Limit results to the specified number
-    head -n "$file_limit" |
-    awk 'BEGIN {print "commits\t\tfiles"} { print $1 "\t\t" $2; }'
-}
-
-# Reload the shell (i.e. invoke as a login shell)
-alias reload="exec $SHELL -l"
-
-# Get macOS Software Updates, and update installed Homebrew and npm packages
-alias update_global_deps='~/dotfiles/scripts/install.sh'
-
-# Enable aliases to be sudo’ed
-alias sudo='sudo '
-
-# Detect which `ls` flavor is in use
-if ls --color >/dev/null 2>&1; then # GNU `ls`
-  eval "$(dircolors ~/.dir_colors)"
-  colorflag="--color"
-else # macOS `ls`
-  colorflag="-G"
-fi
-
-# Always use color output for `ls`
-alias ls="command ls -a ${colorflag}"
-
-#
-# MISC
-#
-
-# shopt -s globstar
-shopt -s checkwinsize
-shopt -s histappend
-
 # Load linuxbrew, if applicable (deprecated)
-if [ "$isMac" != 'true' ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
+if [ "$IS_MAC" != 'true' ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
-# Placed after linuxbrew in case that's how we've installed bash 5, used by tmux to load the preferred version
-export BASH_PATH="$(which bash)"
-
-# Load brew's shell completion
-if test "$(which brew)"; then
+## Load brew's shell completion, if installed and shell is interactive
+if [ -n "$PS1" ] && [ "$(command_exists brew)" = 'true' ]; then
   brewdir=$(brew --prefix)
   if [ -f "$brewdir/etc/bash_completion" ]; then
     source "$brewdir/etc/bash_completion"
@@ -209,12 +51,10 @@ if test "$(which brew)"; then
   unset brewdir
 fi
 
-# Show hostname, shell depth, git status (unless disabled) and exit status in prompt
-source ~/.bash-powerline.sh
+# Used by tmux to load the desired bash executable
+export BASH_PATH="$(which bash)"
 
-# Load this computer's additional configurations
+# Load any environment-specific aliases, paths, etc
 if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local
 fi
-
-unset isMac

@@ -1,8 +1,9 @@
+---
+
 name: CI
 
 # Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+on: # yamllint disable-line
   push:
     branches: [master]
   pull_request:
@@ -19,22 +20,23 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
       - name: Prepare OS for script
         run: |
-          cp bash/.bash-powerline.sh ~/.bash-powerline.sh
-          cp bash/.bash_profile ~/.bash_profile
+          sudo mv ~/.bash_profile ~/.bash_profile.local
+          sudo cp -r bash/.bash ~
+          sudo cp bash/.bashrc ~
+          sudo cp bash/.bash_profile ~
           sudo rm -rf /usr/local/n
           export me="$(whoami)"
           sudo chown -R "$me" ~
           sudo chmod -R 777 ~
+          source ~/.bash_profile
 
       - name: Run install script
-        run: |
-          source ~/.bash_profile
-          bash scripts/install.sh
+        run: bash scripts/install.sh
 
       - name: Stow linter configs
         run: stow vim
@@ -45,11 +47,13 @@ jobs:
   build-mac:
     runs-on: macos-11
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v2
 
       - name: Run install script (skip OS stuff)
-        run: SKIP_OS_UPDATE=true bash scripts/install.sh
+        run: |
+          cp -r bash/ ~
+          SKIP_OS_UPDATE=true bash scripts/install.sh
 
       - name: Stow linter configs
         run: stow vim
