@@ -3,11 +3,14 @@
 # Exit if a command fails
 set -e
 
+# This is mostly for CI, but we just want to make sure the functions are available
+source ~/.bash_profile
+
 function main() {
   set_global_vars
   prompt_for_admin_access_if_needed
 
-  if [ "$isMac" = true ]; then
+  if [ "$IS_MAC" = true ]; then
     mac_installs
   elif [ "$hasYum" = true ]; then
     redhat_installs
@@ -26,41 +29,12 @@ function main() {
 ##########################################################
 
 function set_global_vars() {
-  if test ! "$(which brew)"; then
-    isMissingBrew=true
-  else
-    isMissingBrew=false
-  fi
-
-  if test ! "$(which node)"; then
-    isMissingNode=true
-  else
-    isMissingNode=false
-  fi
-
-  if test ! "$(which n)"; then
-    isMissingN=true
-  else
-    isMissingN=false
-  fi
-
-  if test ! "$(which n-install)"; then
-    isMissingNUpdate=true
-  else
-    isMissingNUpdate=false
-  fi
-
-  if test "$(which yum)"; then
-    hasYum=true
-  else
-    hasYum=false
-  fi
-
-  if test "$(which apt)"; then
-    hasApt=true
-  else
-    hasApt=false
-  fi
+  isMissingBrew="$(missing_command brew)"
+  isMissingNode="$(missing_command node)"
+  isMissingN="$(missing_command n)"
+  isMissingNUpdate="$(missing_command n-update)"
+  hasYum="$(command_exists yum)"
+  hasApt="$(command_exists apt)"
 
   # Set SKIP_OS_UPDATE to false by default, false if passed false, and true if passed anything else.
   skip_os_update=${SKIP_OS_UPDATE:-false}
@@ -68,23 +42,16 @@ function set_global_vars() {
     skip_os_update=true
   fi
 
-  case "$OSTYPE" in darwin*)
-    isMac=true
-    ;;
-  *)
-    isMac=false
-    ;;
-  esac
 }
 
 function prompt_for_admin_access_if_needed() {
-  if [[ "$isMissingBrew" = true && "$isMac" = true ]]; then
+  if [[ "$isMissingBrew" = true && "$IS_MAC" = true ]]; then
     log "Requesting sudo access to install brew. It is safe to decline osx-keychain requests.\n"
     sudo -v
-  elif [[ ! "$skip_os_update" = true && "$isMac" = true ]]; then
+  elif [[ ! "$skip_os_update" = true && "$IS_MAC" = true ]]; then
     log "Requesting sudo access to install OS updates. (To skip set SKIP_OS_UPDATE=true)\n"
     sudo -v
-  elif [ "$isMac" = false ]; then
+  elif [ "$IS_MAC" = false ]; then
     log "Requesting sudo access to update deps.\n"
     sudo -v
   fi
@@ -110,7 +77,7 @@ function brew_installs() {
     log "Getting full Brew repo"
     git -C "$(brew --repo homebrew/core)" fetch --unshallow || true
 
-    if [[ "$isMac" = false ]]; then
+    if [[ "$IS_MAC" = false ]]; then
       eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     fi
   fi
@@ -133,13 +100,24 @@ function brew_installs() {
 
 function redhat_installs() {
   sudo yum --security update -y
-  sudo yum install git stow python3 bash vim tmux tree the_silver_searcher
+  sudo yum install stow bash vim tmux tree the_silver_searcher -y
+
+  if [ "$(missing_command git)" = 'true' ]; then
+    sudo yum install git -y
+  fi
+
+  if [ "$(missing_command python3)" = 'true' ]; then
+    sudo yum install python3 -y
+  fi
+
+  sudo python3 -m pip install --upgrade pip
 }
 
 function debian_installs() {
   sudo apt update
   sudo apt upgrade -y
   sudo apt install git stow python3 python3-pip bash vim tmux tree silversearcher-ag -y
+  sudo python3 -m pip install --upgrade pip
   sudo apt autoremove -y
 }
 
@@ -160,7 +138,7 @@ function node_installs() {
       fi
 
       log "Installing Node $n_version_to_install"
-       n "$n_version_to_install"
+      n "$n_version_to_install"
       unset n_version_to_install
     fi
   fi
@@ -220,7 +198,3 @@ function log() {
 }
 
 main "$@"
-# exit
-
-# To uninstall packages this is a good start:
-# brew uninstall $(brew list) && n uninstall && n-uninstall && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)" && rm /usr/local/bin/npm
