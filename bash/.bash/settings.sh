@@ -44,6 +44,15 @@ export HISTCONTROL='erasedups:ignoredups:ignorespace'
 # dotfile configs
 #
 
+# While not truly a setting, it fits this file best
+case "$OSTYPE" in darwin*)
+  export IS_MAC=true
+  ;;
+*)
+  export IS_MAC=false
+  ;;
+esac
+
 # Set directory env vars
 if [ "$IS_MAC" = true ]; then
   export NOTES_DIR="$HOME/Documents/notes"
@@ -62,13 +71,3 @@ export SHELL_DEPTH_OFFSET="${SHELL_DEPTH_OFFSET:-1}"
 
 # Used to optionally disable git status info in the prompt due to performance implications
 export SKIP_GIT_PROMPT="${SKIP_GIT_PROMPT:-false}"
-
-# While not truly a setting, it fits this file best
-case "$OSTYPE" in darwin*)
-  export IS_MAC=true
-  ;;
-*)
-  export IS_MAC=false
-  ;;
-esac
-
