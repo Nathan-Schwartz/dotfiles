@@ -323,7 +323,7 @@ let g:NERDTreeShowHidden=1
 let g:nerdtree_tabs_open_on_gui_startup=0
 
 " Don't show ^G before file names
-let g:NERDTreeNodeDelimiter = "\u00a0"
+let g:NERDTreeNodeDelimiter = "\t"
 
 " Close tree once file is selected
 let g:NERDTreeQuitOnOpen = 1
