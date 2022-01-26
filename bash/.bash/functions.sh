@@ -39,6 +39,26 @@ function hotgitfiles() {
 }
 export -f hotgitfiles
 
+function va() {
+  if [ ! $# -eq 1 ]; then
+    echo "Only one argument is permitted"
+    return 1;
+  fi
+
+  vim -p `ag "$1" -l`
+}
+export -f va
+
+function vaq() {
+  if [ ! $# -eq 1 ]; then
+    echo "Only one argument is permitted"
+    return 1;
+  fi
+
+  vim -p `ag -Q "$1" -l`
+}
+export -f vaq
+
 function missing_command() {
   # POSIX compliant check to see if a command is available and executable
   if [ -x "$(command -v $1)" ]; then

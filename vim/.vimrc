@@ -380,6 +380,9 @@ nnoremap <leader>r :ALERename<CR>
 " Perform a refactor
 nnoremap <leader>cf :ALECodeAction<CR>
 
+" List references
+nnoremap <leader>f :ALEFindReferences<CR>
+
 " Apply last operation to a range of lines
 vnoremap <leader>. : normal .<CR>
 
