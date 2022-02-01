@@ -42,20 +42,24 @@ export -f hotgitfiles
 function va() {
   if [ ! $# -eq 1 ]; then
     echo "Only one argument is permitted"
-    return 1;
+    return 1
   fi
 
-  vim -p `ag "$1" -l`
+  # I want word splitting so I can open multiple files
+  # shellcheck disable=SC2046
+  vim -p $(ag "$1" -l)
 }
 export -f va
 
 function vaq() {
   if [ ! $# -eq 1 ]; then
     echo "Only one argument is permitted"
-    return 1;
+    return 1
   fi
 
-  vim -p `ag -Q "$1" -l`
+  # I want word splitting so I can open multiple files
+  # shellcheck disable=SC2046
+  vim -p $(ag -Q "$1" -l)
 }
 export -f vaq
 
@@ -79,16 +83,16 @@ function command_exists() {
 export -f command_exists
 
 function assert() {
-  if [ -z "$1" ] || [ -z "$2" ]; then  # Not enough parameters passed.
+  if [ -z "$1" ] || [ -z "$2" ]; then # Not enough parameters passed.
     echo "Assert requires 2 params"
     return 1
   fi
 
   if [ "$1" != "$2" ]; then
     if [ -z "$3" ]; then
-      echo "Assertion failed: '$1' != '$2'";
+      echo "Assertion failed: '$1' != '$2'"
     else
-      echo "$3";
+      echo "$3"
     fi
 
     return 1
