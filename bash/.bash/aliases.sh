@@ -7,9 +7,14 @@ alias conflicts="git exec vim -p \$(git conflicts)"
 alias evim='$EDITOR ~/.vimrc'
 alias ebash='$EDITOR ~/.bash_profile'
 alias ebashl='$EDITOR ~/.bash_profile.local'
+alias ebashh='$EDITOR ~/.bash_history'
 alias egit='$EDITOR ~/.gitconfig'
 alias etmux='$EDITOR ~/.tmux.conf'
 alias einstall='$EDITOR ~/dotfiles/scripts/install.sh'
+
+# Tmux
+alias tma='tmux attach || tmux'
+alias tmk='tmux kill-server'
 
 # Common typos
 alias vmi='vim'
