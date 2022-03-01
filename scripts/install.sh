@@ -172,7 +172,7 @@ function install_node_module() {
 
 function python_installs() {
   log "Installing PIP packages"
-  python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint jq shfmt-py shellcheck-py
+  python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint jq shfmt-py shellcheck-py jc
 }
 
 function dotfile_submodule_installs() {
