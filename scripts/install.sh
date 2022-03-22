@@ -91,7 +91,7 @@ function brew_installs() {
   brew upgrade
 
   log "Installing Brew packages"
-  brew install git python3 bash stow vim tmux tree the_silver_searcher bash-completion reattach-to-user-namespace
+  brew install git python3 bash stow vim tmux tree the_silver_searcher bash-completion reattach-to-user-namespace rsync
 
   log "Cleaning up brew"
   brew cleanup
@@ -116,7 +116,7 @@ function redhat_installs() {
 function debian_installs() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install git stow python3 python3-pip bash vim tmux tree silversearcher-ag -y
+  sudo apt install git stow python3 python3-pip bash vim tmux tree silversearcher-ag nfs-common rsync iotop -y
   sudo python3 -m pip install --upgrade pip
   sudo apt autoremove -y
 }
