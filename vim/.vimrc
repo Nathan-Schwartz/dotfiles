@@ -303,7 +303,7 @@ let g:lightline = {
       \   },
       \   'component_function': {
       \     'filepath': 'PrintFilePath',
-      \     'gitbranch': 'fugitive#head',
+      \     'gitbranch': 'Fugitive#Head',
       \   },
       \ }
 
