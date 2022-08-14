@@ -9,8 +9,8 @@ fi
 
 # Load in my configs
 source ~/.bash/settings.sh
-source ~/.bash/aliases.sh
 source ~/.bash/functions.sh
+source ~/.bash/aliases.sh
 source ~/.bash/powerline.sh
 
 # Create directories if they don't exist

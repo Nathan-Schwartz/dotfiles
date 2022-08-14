@@ -91,7 +91,7 @@ function brew_installs() {
   brew upgrade
 
   log "Installing Brew packages"
-  brew install git python3 bash stow vim tmux tree the_silver_searcher bash-completion reattach-to-user-namespace rsync
+  brew install git python3 bash stow vim tmux tree the_silver_searcher bash-completion reattach-to-user-namespace rsync coreutils
 
   log "Cleaning up brew"
   brew cleanup

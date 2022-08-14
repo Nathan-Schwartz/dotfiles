@@ -40,7 +40,6 @@ alias dotfiles="cd ~/dotfiles"
 alias notes="cd $NOTES_DIR"
 alias projects="cd $PROJECTS_DIR"
 
-
 # Reload the shell (i.e. invoke as a login shell)
 alias reload="exec $SHELL -l"
 
@@ -49,6 +48,10 @@ alias update_global_deps='~/dotfiles/scripts/install.sh'
 
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
+
+if [[ "$(missing_command dircolors)" = true && "$(command_exists gdircolors)" = true ]]; then
+  alias dircolors="gdircolors"
+fi
 
 # Detect which `ls` flavor is in use
 if ls --color >/dev/null 2>&1; then # GNU `ls`
