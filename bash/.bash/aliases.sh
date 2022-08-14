@@ -49,13 +49,15 @@ alias update_global_deps='~/dotfiles/scripts/install.sh'
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
 
-if [[ "$(missing_command dircolors)" = true && "$(command_exists gdircolors)" = true ]]; then
-  alias dircolors="gdircolors"
-fi
-
 # Detect which `ls` flavor is in use
 if ls --color >/dev/null 2>&1; then # GNU `ls`
-  eval "$(dircolors ~/.dir_colors)"
+  if [[ "$(command_exists gdircolors)" = true ]]; then
+    eval "$(gdircolors ~/.dir_colors)"
+  fi
+
+  if [[ "$(command_exists dircolors)" = true ]]; then
+    eval "$(dircolors ~/.dir_colors)"
+  fi
   colorflag="--color"
 else # macOS `ls`
   colorflag="-G"

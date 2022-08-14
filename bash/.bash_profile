@@ -27,9 +27,12 @@ export PATH="$N_PREFIX/bin:$PATH"
 # Homebrew can install commands here
 export PATH="/usr/local/sbin:$PATH"
 
-# Homebrew's pip can install packages here
-if [ -d "/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin" ]; then
-  export PATH="/usr/local/opt/python@3.9/Frameworks/Python.framework/Versions/3.9/bin:$PATH"
+# Standard python installation directory
+export PATH="$(get_python_target_dir)/bin:$PATH"
+
+if [[ "$(command_exists brew)" = true ]]; then
+  # This is slow but it's the most robust option I've found so far
+  export PATH="$(brew --prefix python)/libexec/bin:$PATH"
 fi
 
 # Debian's pip can install packages here

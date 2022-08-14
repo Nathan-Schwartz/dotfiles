@@ -91,7 +91,7 @@ function brew_installs() {
   brew upgrade
 
   log "Installing Brew packages"
-  brew install git python3 bash stow vim tmux tree the_silver_searcher bash-completion reattach-to-user-namespace rsync coreutils
+  brew install git python3 bash stow vim tmux tree the_silver_searcher bash-completion reattach-to-user-namespace rsync coreutils jq
 
   log "Cleaning up brew"
   brew cleanup
@@ -116,7 +116,7 @@ function redhat_installs() {
 function debian_installs() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install git stow python3 python3-pip bash vim tmux tree silversearcher-ag nfs-common rsync iotop -y
+  sudo apt install git stow python3 python3-pip bash vim tmux tree silversearcher-ag nfs-common rsync iotop jq -y
   sudo python3 -m pip install --upgrade pip
   sudo apt autoremove -y
 }
@@ -172,7 +172,12 @@ function install_node_module() {
 
 function python_installs() {
   log "Installing PIP packages"
-  python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint jq shfmt-py shellcheck-py jc
+  if [ "$IS_MAC" = true ]; then
+    # Specify target directory on mac to avoid conflicting/non-standard locations. .bash_profile ensures `get_python_target_dir` is in $PATH
+    python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint shfmt-py shellcheck-py jc --upgrade -t "$(get_python_target_dir)"
+  else
+    python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint shfmt-py shellcheck-py jc --upgrade
+  fi
 }
 
 function dotfile_submodule_installs() {
