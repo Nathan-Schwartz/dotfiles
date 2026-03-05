@@ -36,8 +36,8 @@ set convert-meta off
 
 # Show vim mode in the prompt
 set show-mode-in-prompt on
-set vi-cmd-mode-string "\e[1;30;44m\ NORMAL \e[0;39;49m "
-set vi-ins-mode-string "\e[1;30;42m\ INSERT \e[0;39;49m "
+set vi-cmd-mode-string "\1\e[1;30;44m\2 NORMAL \1\e[0;39;49m\2 "
+set vi-ins-mode-string "\1\e[1;30;42m\2 INSERT \1\e[0;39;49m\2 "
 set keyseq-timeout 100
 
 set bell-style none
