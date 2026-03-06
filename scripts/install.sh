@@ -170,7 +170,7 @@ function upgrade_dependencies() {
     cd "$DOTFILES_DIR"
     if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
       log "Committing pre-upgrade state"
-      git add mise/.tool-versions vim/.vim/bundle
+      git add -f mise/.tool-versions vim/.vim/bundle
       git commit -m "install: pre-upgrade state at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     fi
     cd -
@@ -186,7 +186,7 @@ function upgrade_dependencies() {
     cd "$DOTFILES_DIR"
     if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
       log "Committing upgraded dependencies"
-      git add mise/.tool-versions vim/.vim/bundle
+      git add -f mise/.tool-versions vim/.vim/bundle
       git commit -m "install: upgraded on $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     fi
     cd -
