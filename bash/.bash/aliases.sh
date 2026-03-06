@@ -49,18 +49,14 @@ alias update_global_deps='~/dotfiles/scripts/install.sh'
 alias sudo='sudo '
 
 # Detect which `ls` flavor is in use
-if ls --color >/dev/null 2>&1; then # GNU `ls`
-  if [[ "$(command_exists gdircolors)" = true ]]; then
-    eval "$(gdircolors ~/.dir_colors)"
-  fi
-
+if [[ "$(command_exists gls)" = true ]]; then # GNU `ls` via Homebrew coreutils
+  eval "$(gdircolors ~/.dir_colors)"
+  alias ls="command gls -a --color"
+elif ls --color >/dev/null 2>&1; then # GNU `ls` (Linux)
   if [[ "$(command_exists dircolors)" = true ]]; then
     eval "$(dircolors ~/.dir_colors)"
   fi
-  colorflag="--color"
-else # macOS `ls`
-  colorflag="-G"
+  alias ls="command ls -a --color"
+else # macOS BSD `ls`
+  alias ls="command ls -a -G"
 fi
-
-# Always use color output for `ls`
-alias ls="command ls -a ${colorflag}"
