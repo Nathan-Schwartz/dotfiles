@@ -29,6 +29,11 @@ function main() {
 ##########################################################
 
 function set_global_vars() {
+  # ~/dotfiles is the expected location. DOTFILES_DIR can be overridden for
+  # environments where the repo lives elsewhere (e.g. CI runners).
+  # Other locations are not explicitly supported.
+  DOTFILES_DIR="${DOTFILES_DIR:-~/dotfiles}"
+
   isMissingBrew="$(missing_command brew)"
   isMissingMise="$(missing_command mise)"
   hasYum="$(command_exists yum)"
@@ -162,7 +167,7 @@ function python_installs() {
 
 function upgrade_dependencies() {
   if [ ! "$skip_commits" = true ]; then
-    cd ~/dotfiles
+    cd "$DOTFILES_DIR"
     if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
       log "Committing pre-upgrade state"
       git add mise/.tool-versions vim/.vim/bundle
@@ -175,10 +180,10 @@ function upgrade_dependencies() {
   mise upgrade
 
   log "Updating git submodules"
-  git -C ~/dotfiles submodule update --force --recursive --init --remote
+  git -C "$DOTFILES_DIR" submodule update --force --recursive --init --remote
 
   if [ ! "$skip_commits" = true ]; then
-    cd ~/dotfiles
+    cd "$DOTFILES_DIR"
     if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
       log "Committing upgraded dependencies"
       git add mise/.tool-versions vim/.vim/bundle

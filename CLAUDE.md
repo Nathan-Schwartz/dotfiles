@@ -69,6 +69,7 @@ Run `./test.sh` after changes. It runs:
 
 - `SKIP_OS_UPDATE` — Skip OS-level updates (macOS softwareupdate, apt/yum upgrade). Default: `false`.
 - `SKIP_COMMITS` — Skip the automatic pre-upgrade and post-upgrade commits. Defaults to `CI` env var (so commits are skipped in CI automatically). Set `SKIP_COMMITS=true` for non-git environments or when commits are unwanted.
+- `DOTFILES_DIR` — Path to the dotfiles repo. Defaults to `~/dotfiles`. Only needed for environments where the repo isn't at the default location (e.g. CI runners). Other locations are not explicitly supported.
 
 ## CI
 
