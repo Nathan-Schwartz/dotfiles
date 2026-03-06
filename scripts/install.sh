@@ -32,7 +32,7 @@ function set_global_vars() {
   # ~/dotfiles is the expected location. DOTFILES_DIR can be overridden for
   # environments where the repo lives elsewhere (e.g. CI runners).
   # Other locations are not explicitly supported.
-  DOTFILES_DIR="${DOTFILES_DIR:-~/dotfiles}"
+  DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 
   isMissingBrew="$(missing_command brew)"
   isMissingMise="$(missing_command mise)"
