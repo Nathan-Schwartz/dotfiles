@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU Stow symlinks. Currently in use on macOS, Raspbian, CentOS, Ubuntu, and Debian. CI runs on Ubuntu and macOS.
+Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU Stow symlinks. Currently in use on macOS, Raspbian, CentOS, and Debian. CI runs on Ubuntu and macOS.
 
 ## Architecture
 

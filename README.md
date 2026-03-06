@@ -4,7 +4,7 @@
 
 - Configurations and workflows for vim, bash, and git
 - Vim plugins are included as git submodules, but other deps are installed using `scripts/install.sh`
-- Currently in use on macOS, Raspbian, CentOS, Ubuntu, and Debian (CI only runs on Ubuntu and Mac though)
+- Currently in use on macOS, Raspbian, CentOS, and Debian (CI only runs on Ubuntu and Mac though)
 
 <!-- vim-markdown-toc GFM -->
 # Outline
