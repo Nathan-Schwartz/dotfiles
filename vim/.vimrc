@@ -94,6 +94,10 @@ command! Q q
 command! WQ wq
 command! Qall qall
 
+" Allow per-project .vimrc files (for local biome/linter config)
+set exrc
+set secure
+
 " ---------- Colors ---------- {{{1
 " This is included in vim-sensible but for some reason even though my vim
 " install has syntax support, has("syntax") must be evaluating to false,
@@ -202,10 +206,10 @@ endfunction
 " ---------- Ale ---------- {{{2
 " Set up auto fixers
 let g:ale_fixers = {
-  \ 'typescriptreact': ['eslint', 'prettier'],
-  \ 'typescript': ['eslint', 'prettier'],
-  \ 'javascriptreact': ['eslint', 'prettier'],
-  \ 'javascript': ['eslint', 'prettier'],
+  \ 'typescriptreact': ['biome'],
+  \ 'typescript': ['biome'],
+  \ 'javascriptreact': ['biome'],
+  \ 'javascript': ['biome'],
   \ 'python': ['autopep8'],
   \ 'bash': ['shfmt'],
   \ 'sh': ['shfmt'],
@@ -223,7 +227,13 @@ let g:ale_fixers = {
   \ 'json': ['prettier'],
   \ '*': ['remove_trailing_lines', 'trim_whitespace']
   \ }
-let g:ale_linters = { 'json': ['jq'] }
+let g:ale_linters = {
+  \ 'json': ['jq'],
+  \ 'javascript': ['biome'],
+  \ 'javascriptreact': ['biome'],
+  \ 'typescript': ['biome'],
+  \ 'typescriptreact': ['biome']
+  \ }
 let g:ale_yaml_yamllint_options='-d "{extends: relaxed, rules: {line-length: disable}}"'
 
 let g:ale_lint_delay = 50
