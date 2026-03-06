@@ -10,6 +10,14 @@
   editor = vim
   excludesfile = ~/.gitignore_global
   ignorecase = false
+  # Use delta for syntax-highlighted, side-by-side diffs
+  pager = delta
+[interactive]
+  # Colorize interactive diffs (e.g. git add -p)
+  diffFilter = delta --color-only
+[delta]
+  # Enable n/N keybindings to jump between diff sections
+  navigate = true
 [alias]
   # Source of conflicts script: https://gist.github.com/jacobvosmaer/3187346
   aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /' | sort
@@ -37,6 +45,8 @@
   path = ~/.gitconfig.mac
 [diff]
   algorithm = patience
+  # Let delta highlight moved code blocks in a different color
+  colorMoved = default
 # Local settings and overrides
 [include]
   path = ~/.gitconfig.local
