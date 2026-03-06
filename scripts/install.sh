@@ -178,8 +178,11 @@ function python_installs() {
     jc
   )
   for pkg in "${pipx_list[@]}"; do
-    pipx install "$pkg" --force
+    pipx install "$pkg" --force || { pipx uninstall "$pkg" && pipx install "$pkg"; }
   done
+
+  # vim-vint uses pkg_resources which requires setuptools in its virtualenv
+  pipx inject vim-vint 'setuptools<82' --force
 }
 
 function dotfile_submodule_installs() {
