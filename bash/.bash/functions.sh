@@ -83,7 +83,7 @@ function command_exists() {
 export -f command_exists
 
 function get_python_target_dir() {
-  echo "/usr/local/lib/$(python3 --version | awk '{ n = split($2, arr, "."); printf("python%d.%d", arr[1], arr[2]) }')/site-packages"
+  echo "${HOMEBREW_PREFIX}/lib/$(python3 --version | awk '{ n = split($2, arr, "."); printf("python%d.%d", arr[1], arr[2]) }')/site-packages"
 }
 export -f get_python_target_dir
 

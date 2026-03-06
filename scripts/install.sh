@@ -71,15 +71,7 @@ function brew_installs() {
   # Check for brew and install if it's missing
   if [ "$isMissingBrew" = true ]; then
     log "Installing Brew..."
-    echo | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
-    # Make not shallow, ignore exit code because it fails if the repo isn't shallow, which is the case for reinstallations.
-    log "Getting full Brew repo"
-    git -C "$(brew --repo homebrew/core)" fetch --unshallow || true
-
-    if [[ "$IS_MAC" = false ]]; then
-      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    fi
+    echo | /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
 
   # Make sure we’re using the latest version.

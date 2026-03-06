@@ -20,12 +20,17 @@ mkdir -p "$PROJECTS_DIR"
 #
 # PATH extensions
 #
+
+# Homebrew locations: Apple Silicon = /opt/homebrew, Intel Mac = /usr/local. (Not using brew on linux.)
+if [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
+
 # Required by n/n-install (see http://git.io/n-install-repo).
 export N_PREFIX="$HOME/n"
 export PATH="$N_PREFIX/bin:$PATH"
-
-# Homebrew can install commands here
-export PATH="/usr/local/sbin:$PATH"
 
 # Standard python installation directory
 export PATH="$(get_python_target_dir)/bin:$PATH"
@@ -40,18 +45,11 @@ if [ -d "$HOME/.local/bin" ]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Load linuxbrew, if applicable (deprecated)
-if [ "$IS_MAC" != 'true' ] && [ -f /home/linuxbrew/.linuxbrew/bin/brew ]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-fi
-
 ## Load brew's shell completion, if installed and shell is interactive
 if [ -n "$PS1" ] && [ "$(command_exists brew)" = 'true' ]; then
-  brewdir=$(brew --prefix)
-  if [ -f "$brewdir/etc/bash_completion" ]; then
-    source "$brewdir/etc/bash_completion"
+  if [ -f "$HOMEBREW_PREFIX/etc/bash_completion" ]; then
+    source "$HOMEBREW_PREFIX/etc/bash_completion"
   fi
-  unset brewdir
 fi
 
 # Used by tmux to load the desired bash executable
