@@ -8,13 +8,14 @@ Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU St
 
 ### Stow Modules
 
-Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `iterm`. More may be added (tmux, claude configs, etc.) — any tool that requires configuration is a candidate.
+Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `iterm`, `mise`. More may be added (claude configs, etc.) — any tool that requires configuration is a candidate.
 
 New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are loaded via Pathogen.
 
 ### Key Files
 
 - `scripts/install.sh` — Idempotent install script (brew/apt/yum + mise + python)
+- `mise/.tool-versions` — Pinned versions for mise-managed dev tools
 - `test.sh` — Linters and assertions (yamllint, proselint, vint, shellcheck, jq)
 - `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + mac)
 - `bash/.bash_profile` — Shell entry point; sources `~/.env` first, `~/.bash_profile.local` last

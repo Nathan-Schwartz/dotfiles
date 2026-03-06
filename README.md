@@ -4,7 +4,7 @@
 
 - Configurations and workflows for vim, bash, and git
 - Vim plugins are included as git submodules, but other deps are installed using `scripts/install.sh`
-- Currently in use on Mac OSX, Raspbian, Centos, Ubuntu, and Debian 11 (CI only runs on Ubuntu and Mac though)
+- Currently in use on macOS, Raspbian, CentOS, Ubuntu, and Debian (CI only runs on Ubuntu and Mac though)
 
 <!-- vim-markdown-toc GFM -->
 # Outline
@@ -32,7 +32,7 @@ git submodule update --force --recursive --init --remote
 # The install script (./scripts/install.sh) will install stow but also many other things.
 
 # Set up symlinks
-stow vim bash git iterm
+stow vim bash git iterm mise
 ```
 
 2. To identify yourself with git, create a `~/.gitconfig.local` with the following structure:
@@ -49,7 +49,7 @@ To disable configs without removing the repo
 
 ```bash
 # remove symlinks
-stow --delete vim bash git iterm
+stow --delete vim bash git iterm mise
 ```
 
 Removing dependencies is distro specific.
@@ -59,8 +59,8 @@ Removing dependencies is distro specific.
 ### Vim
 
 - File Navigation
-  - Fuzzy file search with CtrlP (using ag)
-  - Project search with Ack.vim (using ag)
+  - Fuzzy file search with CtrlP (using ripgrep)
+  - Project search with Ack.vim (using ripgrep)
   - Browse directories with NERDTree
 - Integrations
   - linter, typecheck, autocomplete, and autofix support with ALE
@@ -81,7 +81,7 @@ Removing dependencies is distro specific.
 ### Scripts
 
 - install.sh: idempotent script which will install the core elements of my toolchain
-  - Packages include: python, node, stow, bash, ag, and linters
+  - Packages include: python, stow, bash, vim, and tree (via OS packages); node, ripgrep, delta, biome, and more (via mise); linters (via pipx)
   - optionally install any available OS updates
   - Uses Brew on mac, and on linux distros it will use apt or yum if available
 - test.sh: Runs linters against dotfiles
