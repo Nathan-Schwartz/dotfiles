@@ -184,7 +184,9 @@ nnoremap <Space> <nop>
 nnoremap <leader>n :noh<CR>
 
 " Fix linting errors
-nnoremap <leader>af :action ReformatCode<CR>
+" nnoremap <leader>af :action ReformatCode<CR>
+" nnoremap <leader>af :action com.github.ragurney.spotless.actions.ReformatFileAction<CR>
+nnoremap <leader>af :action com.github.lipiridi.spotless.applier.actions.ReformatFileAction<CR>
 
 " Map keys to navigate between lines with errors and warnings.
 nnoremap <leader>an :action GotoNextError<CR>
