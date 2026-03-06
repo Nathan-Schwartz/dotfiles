@@ -55,12 +55,10 @@ esac
 
 # Set directory env vars
 if [ "$IS_MAC" = true ]; then
-  export NOTES_DIR="$HOME/Documents/notes"
   defaultProjectsDir="$HOME/Documents/projects"
   export PROJECTS_DIR="${PROJECTS_DIR:-$defaultProjectsDir}"
   unset defaultProjectsDir
 else
-  export NOTES_DIR="$HOME/notes"
   defaultProjectsDir="$HOME/projects"
   export PROJECTS_DIR="${PROJECTS_DIR:-$defaultProjectsDir}"
   unset defaultProjectsDir

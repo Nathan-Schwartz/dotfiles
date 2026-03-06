@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
 
-function bak() {
-  mv "$1" "$1.bak"
-}
-export -f bak
-
-# Utility to making a new note (takes a file name)
-function note() {
-  $EDITOR "${NOTES_DIR}/$1"
-}
-export -f note
-
 # Print out files with the most commits in the codebase
 # Used env vars instead of arguments because I didn't want to mess with flag parsing
 function hotgitfiles() {

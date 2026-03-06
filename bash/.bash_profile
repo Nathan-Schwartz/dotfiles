@@ -14,7 +14,6 @@ source ~/.bash/aliases.sh
 source ~/.bash/powerline.sh
 
 # Create directories if they don't exist
-mkdir -p "$NOTES_DIR"
 mkdir -p "$PROJECTS_DIR"
 
 #

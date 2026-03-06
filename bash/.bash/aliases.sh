@@ -37,7 +37,6 @@ alias .....="cd ../../../.."
 
 # Shortcuts to custom dirs
 alias dotfiles="cd ~/dotfiles"
-alias notes="cd $NOTES_DIR"
 alias projects="cd $PROJECTS_DIR"
 
 # Reload the shell (i.e. invoke as a login shell)
