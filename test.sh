@@ -8,7 +8,11 @@ echo "Running yamllint..."
 yamllint vim/.vintrc.yaml .github/workflows/ci.yml
 
 echo "Running proselint..."
-proselint check README.md
+if proselint version &>/dev/null; then
+  proselint check README.md
+else
+  proselint README.md
+fi
 
 echo "Running vint..."
 vint vim/.vimrc
