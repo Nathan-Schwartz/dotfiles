@@ -46,12 +46,12 @@ alias sudo='sudo '
 # Detect which `ls` flavor is in use
 if [[ "$(command_exists gls)" = true ]]; then # GNU `ls` via Homebrew coreutils
   eval "$(gdircolors ~/.dir_colors)"
-  alias ls="command gls -a --color"
-elif ls --color >/dev/null 2>&1; then # GNU `ls` (Linux)
+  ls() { command gls -a --color "$@"; }
+elif command ls --color >/dev/null 2>&1; then # GNU `ls` (Linux)
   if [[ "$(command_exists dircolors)" = true ]]; then
     eval "$(dircolors ~/.dir_colors)"
   fi
-  alias ls="command ls -a --color"
+  ls() { command ls -a --color "$@"; }
 else # macOS BSD `ls`
-  alias ls="command ls -a -G"
+  ls() { command ls -a -G "$@"; }
 fi
