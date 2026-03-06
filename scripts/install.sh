@@ -86,7 +86,7 @@ function brew_installs() {
   brew upgrade
 
   log "Installing Brew packages"
-  brew install git python3 bash stow vim tree the_silver_searcher bash-completion rsync coreutils jq
+  brew install git python3 pipx bash stow vim tree the_silver_searcher bash-completion rsync coreutils jq
 
   log "Cleaning up brew"
   brew cleanup
@@ -105,14 +105,13 @@ function redhat_installs() {
     sudo yum install python3 -y
   fi
 
-  sudo python3 -m pip install --upgrade pip
+  sudo python3 -m pip install pipx
 }
 
 function debian_installs() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install git stow python3 python3-pip bash vim tree silversearcher-ag nfs-common rsync iotop jq -y
-  sudo python3 -m pip install --upgrade pip
+  sudo apt install git stow python3 python3-pipx bash vim tree silversearcher-ag nfs-common rsync iotop jq -y
   sudo apt autoremove -y
 }
 
@@ -164,13 +163,23 @@ function install_node_module() {
 }
 
 function python_installs() {
-  log "Installing PIP packages"
-  if [ "$IS_MAC" = true ]; then
-    # Specify target directory on mac to avoid conflicting/non-standard locations. .bash_profile ensures `get_python_target_dir` is in $PATH
-    python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint shfmt-py shellcheck-py jc --upgrade -t "$(get_python_target_dir)"
-  else
-    python3 -m pip install glances pylint autopep8 vim-vint proselint yamllint shfmt-py shellcheck-py jc --upgrade
-  fi
+  log "Installing Python CLI tools via pipx"
+  pipx ensurepath
+
+  pipx_list=(
+    glances
+    pylint
+    autopep8
+    vim-vint
+    proselint
+    yamllint
+    shfmt-py
+    shellcheck-py
+    jc
+  )
+  for pkg in "${pipx_list[@]}"; do
+    pipx install "$pkg" --force
+  done
 }
 
 function dotfile_submodule_installs() {

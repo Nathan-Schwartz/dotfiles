@@ -31,15 +31,12 @@ fi
 export N_PREFIX="$HOME/n"
 export PATH="$N_PREFIX/bin:$PATH"
 
-# Standard python installation directory
-export PATH="$(get_python_target_dir)/bin:$PATH"
-
 if [[ "$(command_exists brew)" = true ]]; then
   # This is slow but it's the most robust option I've found so far
   export PATH="$(brew --prefix python)/libexec/bin:$PATH"
 fi
 
-# Debian's pip can install packages here
+# pipx and pip user installs go here
 if [ -d "$HOME/.local/bin" ]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
