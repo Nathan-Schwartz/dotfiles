@@ -236,12 +236,6 @@ let g:ale_statusline_format = ['X %d', '? %d', '']
 " %s is the error or warning message
 let g:ale_echo_msg_format = '%linter% says %s'
 
-" :help ale-reasonml-ols
-let g:ale_reason_ols_use_global = 1
-
-
-
-
 " GitGutter has gutter enabled which makes this option unnecessary
 " Keep sign column open all the time so changes are less jarring
 " let g:ale_sign_column_always = 1
@@ -282,10 +276,6 @@ if exists('&signcolumn')  " Vim 7.4.2201
 else
   let g:gitgutter_sign_column_always = 1
 endif
-
-" ---------- Javascript ---------- {{{2
-" let g:javascript_plugin_jsdoc = 0
-let g:javascript_plugin_flow = 1
 
 " ---------- LightLine ---------- {{{2
 " Don't show current mode since it is in status bar

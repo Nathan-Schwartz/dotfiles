@@ -146,8 +146,6 @@ function node_installs() {
 
     eslint
     prettier
-    @babel/eslint-parser
-    @babel/core
     prettier-eslint
   )
   for pkg in "${npm_list[@]}"; do
