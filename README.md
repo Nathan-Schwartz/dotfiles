@@ -84,6 +84,7 @@ Removing dependencies is distro specific.
   - Packages include: python, stow, bash, vim, and tree (via OS packages); node, ripgrep, delta, biome, and more (via mise); linters (via pipx)
   - optionally install any available OS updates
   - Uses Brew on mac, and on linux distros it will use apt or yum if available
+  - Automatically commits dependency upgrades (mise tools and vim plugin submodules) in two steps: a pre-upgrade snapshot and a post-upgrade commit. Set `SKIP_COMMITS=true` to disable (defaults to skipping in CI).
 - test.sh: Runs linters against dotfiles
 
 ### Git

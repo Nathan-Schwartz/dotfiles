@@ -10,11 +10,11 @@ Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU St
 
 Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `iterm`, `mise`. More may be added (claude configs, etc.) — any tool that requires configuration is a candidate.
 
-New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are loaded via Pathogen.
+New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are loaded via Pathogen. All git submodules (including vim plugins) are part of the dependency upgrade commit flow in `install.sh` — the `upgrade_dependencies` function checks `mise/.tool-versions` and all submodule paths for unstaged changes before and after upgrading. Any new submodule must be included in that flow.
 
 ### Key Files
 
-- `scripts/install.sh` — Idempotent install script (brew/apt/yum + mise + python)
+- `scripts/install.sh` — Idempotent install script (brew/apt/yum + mise + python + dependency upgrades)
 - `mise/.tool-versions` — Pinned versions for mise-managed dev tools
 - `test.sh` — Linters and assertions (yamllint, proselint, vint, shellcheck, jq)
 - `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + mac)
@@ -65,9 +65,72 @@ Run `./test.sh` after changes. It runs:
 - **Python CLI tools**: installed via `pipx` (never raw pip)
 - **npm globals**: none (use project-local tooling instead)
 
+## install.sh Environment Variables
+
+- `SKIP_OS_UPDATE` — Skip OS-level updates (macOS softwareupdate, apt/yum upgrade). Default: `false`.
+- `SKIP_COMMITS` — Skip the automatic pre-upgrade and post-upgrade commits. Defaults to `CI` env var (so commits are skipped in CI automatically). Set `SKIP_COMMITS=true` for non-git environments or when commits are unwanted.
+
 ## CI
 
 GitHub Actions runs on every push/PR to master and daily at midnight. Two jobs: `build-ubuntu` and `build-mac`. Both run `install.sh` then `test.sh`.
+
+## Vim Features
+
+Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
+
+### Plugins
+
+- **ALE** — linting, autofixing, autocomplete, go-to-definition, hover, rename, find references, code actions
+- **CtrlP** — fuzzy file finder (backed by ripgrep)
+- **Ack.vim** — project-wide search (backed by ripgrep via `:Search` / `:Rg` / `:Ag`, searches from git root)
+- **NERDTree** — file browser (`<C-b>` to toggle)
+- **vim-fugitive** — git commands and branch name in statusline
+- **vim-gitgutter** — git diff signs in the gutter
+- **vim-commentary** — toggle comments with `gc`
+- **vim-abolish** — word-case coercion (`crs` snake, `crc` camel, `crm` mixed, etc.)
+- **vim-surround** — add/change/delete surrounding chars
+- **vim-repeat** — `.` repeat for plugin mappings
+- **CamelCaseMotion** — `w`, `b`, `e` respect camelCase/snake_case boundaries
+- **lightline** — statusline with solarized theme, branch, and relative filepath
+- **vim-startify** — MRU files and session management on startup
+- **vim-polyglot** — syntax highlighting for many languages
+- **vim-tmux-navigator** — seamless navigation between vim splits and tmux panes
+- **comfortable-motion** — inertia scrolling (`<C-d>`, `<C-u>`)
+
+### Key Mappings
+
+- `<leader>af` — ALE autofix
+- `<leader>an` / `<leader>ap` — next/previous ALE error
+- `<leader>d` — go to definition
+- `<leader>h` — hover info
+- `<leader>r` — rename symbol
+- `<leader>cf` — code action
+- `<leader>f` — find references
+- `<leader>n` — clear search highlight
+
+### Custom Functions
+
+- **Git conflict resolution**: `<leader>top` / `<leader>bot` — keep top or bottom side of a merge conflict
+- **JS helpers**: `<leader>imp` (import), `<leader>req` (require), `<leader>log` (console.log), `<leader>js` (JSON.stringify) — generates boilerplate from word under cursor
+- **Visual case conversion**: `<leader>cc` (camelCase), `<leader>cm` (MixedCase), `<leader>c_` (snake_case), `<leader>cu` (UPPER_CASE), `<leader>c-` (dash-case), `<leader>c.` (dot.case), `<leader>ct` (Title Case), `<leader>c<space>` (space case)
+- **Visual search**: `<leader>/` — search for highlighted text
+- **Visual repeat**: `<leader>.` — apply last operation to selected lines; `<leader>o` — apply macro "o" to selected lines
+- **OpenQFTabs**: opens all quickfix results in separate tabs
+- **ToggleBackground**: switches solarized dark/light and iTerm profile
+- `<leader>gf` — follow JS import to source file in new tab
+- `<leader>=` — re-indent entire file
+- `<leader>rel` — reload vimrc
+- `<leader>p` — clear CtrlP caches
+
+### Other Behaviors
+
+- Per-project `.vimrc` support (`set exrc`)
+- Persistent undo across sessions
+- Typo-tolerant commands (`:W`, `:Wq`, `:Q`, etc.)
+- Git conflict markers highlighted in red
+- System clipboard integration
+- `gf` opens file in new tab (overridden default)
+- `j`/`k` navigate visual lines (respect wrapping)
 
 ## Root .gitignore
 

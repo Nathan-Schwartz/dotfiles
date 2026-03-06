@@ -20,7 +20,7 @@ function main() {
 
   mise_installs
   python_installs
-  dotfile_submodule_installs
+  upgrade_dependencies
   log "Good to go!"
 }
 
@@ -38,6 +38,12 @@ function set_global_vars() {
   skip_os_update=${SKIP_OS_UPDATE:-false}
   if [ ! "$skip_os_update" = false ]; then
     skip_os_update=true
+  fi
+
+  # Set SKIP_COMMITS to CI by default (skips in CI, commits locally)
+  skip_commits=${SKIP_COMMITS:-${CI:-false}}
+  if [ ! "$skip_commits" = false ]; then
+    skip_commits=true
   fi
 
 }
@@ -154,16 +160,30 @@ function python_installs() {
   pipx inject vim-vint 'setuptools<82' --force
 }
 
-function dotfile_submodule_installs() {
-  log "Update dotfile git submodules"
-
-  if [ "$CI" != 'true' ]; then
+function upgrade_dependencies() {
+  if [ ! "$skip_commits" = true ]; then
     cd ~/dotfiles
+    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
+      log "Committing pre-upgrade state"
+      git add mise/.tool-versions vim/.vim/bundle
+      git commit -m "install: pre-upgrade state at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    fi
+    cd -
   fi
 
-  git submodule update --force --recursive --init --remote
+  log "Upgrading mise tools"
+  mise upgrade
 
-  if [ "$CI" != 'true' ]; then
+  log "Updating git submodules"
+  git -C ~/dotfiles submodule update --force --recursive --init --remote
+
+  if [ ! "$skip_commits" = true ]; then
+    cd ~/dotfiles
+    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
+      log "Committing upgraded dependencies"
+      git add mise/.tool-versions vim/.vim/bundle
+      git commit -m "install: upgraded on $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    fi
     cd -
   fi
 }
