@@ -1,6 +1,3 @@
-# Include user settings from a file in the home directory
-[include]
-  path = ~/.gitconfig.local
 [push]
   default = simple
 [merge]
@@ -35,5 +32,11 @@
   detail = "!git diff \"$1\"^ \"$1\" #"
 [credential]
   helper = store
+# Use osxkeychain credential helper on Mac
+[include]
+  path = ~/.gitconfig.mac
 [diff]
   algorithm = patience
+# Local settings and overrides
+[include]
+  path = ~/.gitconfig.local

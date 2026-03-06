@@ -66,6 +66,9 @@ function mac_installs() {
 
   xcode-select --install 2>/dev/null || true
   brew_installs
+
+  log "Configuring macOS credential helper"
+  git config -f ~/.gitconfig.mac credential.helper osxkeychain
 }
 function brew_installs() {
   # Check for brew and install if it's missing
