@@ -1,0 +1,14 @@
+{
+  "env": {
+    "SHELL": "/usr/local/bin/bash"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "model": "claude-opus-4-6",
+  "includeGitInstructions": true,
+  "permissions": {
+    "defaultMode": "plan"
+  }
+}
