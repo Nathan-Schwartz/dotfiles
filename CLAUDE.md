@@ -60,7 +60,7 @@ Run `./test.sh` after changes. It runs:
 - **OS packages**: brew (mac), apt (debian), yum (redhat)
 - **Node**: managed by `n`, targeting LTS (migrating to asdf soon)
 - **Python CLI tools**: installed via `pipx` (never raw pip)
-- **npm globals**: yarn, eslint, prettier, prettier-eslint
+- **npm globals**: none (removed yarn, eslint, prettier, prettier-eslint — use project-local tooling instead)
 
 ## CI
 

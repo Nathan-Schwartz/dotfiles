@@ -141,25 +141,6 @@ function node_installs() {
   log "Updating Global NPM Packages"
   npm update -g
 
-  log "Installing Global NPM Packages"
-
-  npm_list=(
-    yarn
-
-    eslint
-    prettier
-    prettier-eslint
-  )
-  for pkg in "${npm_list[@]}"; do
-    install_node_module "$pkg"
-  done
-}
-function install_node_module() {
-  # Only installs if dep is missing.
-  if ! npm list -g "$1" >/dev/null; then
-    # force should be ok because the package was just determined not to exist
-    npm i -g "$1" --force
-  fi
 }
 
 function python_installs() {
