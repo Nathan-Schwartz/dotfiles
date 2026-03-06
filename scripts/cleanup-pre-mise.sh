@@ -7,7 +7,7 @@
 #   n (node)        -> mise: node
 #   the_silver_searcher (ag) -> mise: ripgrep
 #   jq (brew/apt)   -> mise: jq
-#   shellcheck-py   -> mise: shellcheck
+#   (shellcheck-py) -> mise: shellcheck
 #   shfmt-py        -> mise: shfmt
 #   jc (pipx)       -> mise: jc
 

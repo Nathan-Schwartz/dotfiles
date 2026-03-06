@@ -40,7 +40,9 @@ jobs:
           source ~/.bash_profile
 
       - name: Run install script
-        run: DOTFILES_DIR="$GITHUB_WORKSPACE" bash scripts/install.sh
+        env:
+          DOTFILES_DIR: ${{ github.workspace }}
+        run: bash scripts/install.sh
 
       - name: Stow linter configs
         run: stow vim
@@ -59,10 +61,13 @@ jobs:
           submodules: recursive
 
       - name: Run install script (skip OS stuff)
+        env:
+          DOTFILES_DIR: ${{ github.workspace }}
+          SKIP_OS_UPDATE: "true"
         run: |
           cp -r bash/ ~
           cp mise/.tool-versions ~/
-          SKIP_OS_UPDATE=true DOTFILES_DIR="$GITHUB_WORKSPACE" bash scripts/install.sh
+          bash scripts/install.sh
 
       - name: Stow linter configs
         run: stow vim
