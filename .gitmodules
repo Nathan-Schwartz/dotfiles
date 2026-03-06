@@ -28,9 +28,6 @@
 [submodule "vim/.vim/bundle/vim-polyglot"]
 	path = vim/.vim/bundle/vim-polyglot
 	url = https://github.com/sheerun/vim-polyglot.git
-[submodule "tmux/.tmux/plugins/resurrect"]
-	path = tmux/.tmux/plugins/resurrect
-	url = https://github.com/tmux-plugins/tmux-resurrect.git
 [submodule "vim/.vim/bundle/vim-startify"]
 	path = vim/.vim/bundle/vim-startify
 	url = https://github.com/mhinz/vim-startify.git
