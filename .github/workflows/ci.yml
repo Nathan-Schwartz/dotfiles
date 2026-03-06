@@ -33,6 +33,7 @@ jobs:
           sudo cp -r bash/.bash ~
           sudo cp bash/.bashrc ~
           sudo cp bash/.bash_profile ~
+          sudo cp bash/.dir_colors ~
           cp mise/.tool-versions ~/
           export me="$(whoami)"
           sudo chown -R "$me" ~
@@ -49,6 +50,44 @@ jobs:
 
       - name: Run quality checks
         run: bash test.sh
+
+  build-redhat:
+    runs-on: ubuntu-latest
+    container:
+      image: rockylinux:9
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SHELL: /bin/bash
+    steps:
+      - name: Install prerequisites
+        run: yum install -y sudo git glibc-langpack-en xz
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Prepare OS for script
+        run: |
+          cp -r bash/.bash ~
+          cp bash/.bashrc ~
+          cp bash/.bash_profile ~
+          cp bash/.dir_colors ~
+          cp mise/.tool-versions ~/
+          mkdir -p ~/.local/bin
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Run install script
+        env:
+          DOTFILES_DIR: ${{ github.workspace }}
+        run: bash scripts/install.sh
+
+      - name: Stow linter configs
+        run: stow vim
+
+      - name: Run quality checks
+        run: |
+          ln -sf ~/.tool-versions .tool-versions
+          bash test.sh
 
   build-mac:
     runs-on: macos-latest

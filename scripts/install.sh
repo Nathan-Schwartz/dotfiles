@@ -104,7 +104,8 @@ function brew_installs() {
 
 function redhat_installs() {
   sudo yum --security update -y
-  sudo yum install stow bash vim tree -y
+  sudo yum install -y epel-release
+  sudo yum install -y stow bash vim tree glibc-langpack-en xz
 
   if [ "$(missing_command git)" = 'true' ]; then
     sudo yum install git -y
@@ -114,6 +115,7 @@ function redhat_installs() {
     sudo yum install python3 -y
   fi
 
+  sudo yum install -y python3-pip
   sudo python3 -m pip install pipx
 }
 
@@ -139,7 +141,7 @@ function mise_installs() {
 
   log "Installing mise tools"
   eval "$(mise activate bash)"
-  mise install --yes
+  mise install --yes -C ~
 }
 
 function python_installs() {

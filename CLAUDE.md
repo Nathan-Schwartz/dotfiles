@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU Stow symlinks. Currently in use on macOS, Raspbian, CentOS, and Debian. CI runs on Ubuntu and macOS.
+Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU Stow symlinks. Currently in use on macOS, CentOS, and Debian. CI runs on Ubuntu, Rocky Linux, and macOS.
 
 ## Architecture
 
@@ -17,7 +17,7 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `scripts/install.sh` — Idempotent install script (brew/apt/yum + mise + python + dependency upgrades)
 - `mise/.tool-versions` — Pinned versions for mise-managed dev tools
 - `test.sh` — Linters and assertions (yamllint, proselint, vint, shellcheck, jq)
-- `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + mac)
+- `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + rocky linux + mac)
 - `bash/.bash_profile` — Shell entry point; sources `~/.env` first, `~/.bash_profile.local` last
 - `bash/.bash/functions.sh` — Shared helpers (`command_exists`, `missing_command`, `assert`)
 
@@ -73,7 +73,7 @@ Run `./test.sh` after changes. It runs:
 
 ## CI
 
-GitHub Actions runs on every push/PR to master and daily at midnight. Two jobs: `build-ubuntu` and `build-mac`. Both run `install.sh` then `test.sh`.
+GitHub Actions runs on every push/PR to master and daily at midnight. Three jobs: `build-ubuntu`, `build-redhat` (Rocky Linux 9 container), and `build-mac`. All run `install.sh` then `test.sh`.
 
 ## Vim Features
 
