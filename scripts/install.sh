@@ -115,7 +115,7 @@ function redhat_installs() {
 function debian_installs() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install git stow python3 python3-pipx bash vim tree nfs-common rsync iotop -y
+  sudo apt install git stow python3 pipx bash vim tree nfs-common rsync iotop -y
   sudo apt autoremove -y
 }
 
