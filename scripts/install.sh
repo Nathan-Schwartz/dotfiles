@@ -167,7 +167,6 @@ function python_installs() {
   pipx ensurepath
 
   pipx_list=(
-    glances
     pylint
     autopep8
     vim-vint
@@ -180,6 +179,10 @@ function python_installs() {
   for pkg in "${pipx_list[@]}"; do
     pipx install "$pkg" --force || { pipx uninstall "$pkg" && pipx install "$pkg"; }
   done
+
+  # glances has a broken platform_version marker for psutil on macOS,
+  # so we pass psutil as an extra pip arg to ensure it gets installed
+  pipx install glances --pip-args="psutil" --force || { pipx uninstall glances 2>/dev/null; pipx install glances --pip-args="psutil"; }
 
   # vim-vint uses pkg_resources which requires setuptools in its virtualenv
   pipx inject vim-vint 'setuptools<82' --force
