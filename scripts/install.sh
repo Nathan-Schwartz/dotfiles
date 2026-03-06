@@ -122,7 +122,7 @@ function node_installs() {
     if [ "$isMissingN" = true ]; then
       log "Installing n-install, n, and Node $n_version_to_install"
       # -y automates installation, -n avoids modifying bash_profile
-      curl -L https://git.io/n-install | bash -s -- -n -y
+      curl -L https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -n -y
     else
       if [ "$isMissingNUpdate" != true ]; then
         log "Updating n"
