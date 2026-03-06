@@ -28,5 +28,10 @@ assert "$(command_exists mise)" "true" 'mise not installed'
 assert "$(command_exists delta)" "true" 'delta not installed'
 assert "$(command_exists biome)" "true" 'biome not installed'
 assert "$(command_exists stow)" "true" 'Stow not installed'
+assert "$(command_exists shfmt)" "true" 'shfmt not installed'
+assert "$(command_exists jq)" "true" 'jq not installed'
+assert "$(command_exists jc)" "true" 'jc not installed'
+assert "$(command_exists tree)" "true" 'tree not installed'
+assert "$(command_exists pipx)" "true" 'pipx not installed'
 
 echo "Everything looks good!"
