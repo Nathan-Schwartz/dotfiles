@@ -148,24 +148,28 @@ endfunction
 
 " ---------- Plugins ---------- {{{1
 " Ack {{{2
-" Use ag instead of ack
-let g:ackprg = 'ag --vimgrep --smart-case'
+" Use rg instead of ack
+let g:ackprg = 'rg --vimgrep --smart-case'
 
 " Highlight hits
 let g:ackhighlight = 1
 
-" Command and function that run Ack.vim from the root of the repo
-command! -nargs=+ AgFn :call AgFromRoot(<f-args>)
-function! AgFromRoot(...)
+" Search from the root of the git repo
+command! -nargs=+ Search :call SearchFromRoot(<f-args>)
+function! SearchFromRoot(...)
   let l:git_root = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
   " The ! prevents jumping to the first hit
   execute 'Ack! ' . join(a:000) . ' ' . l:git_root
 endfunction
 
-" I type Ag out of habit
-abbrev Ag AgFn
-abbrev AG AgFn
-abbrev ag AgFn
+" Aliases
+command! -nargs=+ SearchRepo Search <args>
+abbrev Ag Search
+abbrev AG Search
+abbrev ag Search
+abbrev Rg Search
+abbrev RG Search
+abbrev rg Search
 
 command! OpenQFTabs :call OpenQuickFixInTabs()
 
@@ -262,8 +266,8 @@ sunmap e
 sunmap ge
 
 " ---------- CtrlP ---------- {{{2
-" Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
-let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+" Use rg in CtrlP for listing files. Lightning fast and respects .gitignore
+let g:ctrlp_user_command = 'rg --files --hidden --color=never %s'
 
 " Display hidden files
 let g:ctrlp_show_hidden = 1

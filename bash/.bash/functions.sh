@@ -28,7 +28,7 @@ function hotgitfiles() {
 }
 export -f hotgitfiles
 
-function va() {
+function vimsearch() {
   if [ ! $# -eq 1 ]; then
     echo "Only one argument is permitted"
     return 1
@@ -36,11 +36,11 @@ function va() {
 
   # I want word splitting so I can open multiple files
   # shellcheck disable=SC2046
-  vim -p $(ag "$1" -l)
+  vim -p $(rg --hidden "$1" -l)
 }
-export -f va
+export -f vimsearch
 
-function vaq() {
+function vimsearchliteral() {
   if [ ! $# -eq 1 ]; then
     echo "Only one argument is permitted"
     return 1
@@ -48,9 +48,9 @@ function vaq() {
 
   # I want word splitting so I can open multiple files
   # shellcheck disable=SC2046
-  vim -p $(ag -Q "$1" -l)
+  vim -p $(rg --hidden -F "$1" -l)
 }
-export -f vaq
+export -f vimsearchliteral
 
 function missing_command() {
   # POSIX compliant check to see if a command is available and executable
