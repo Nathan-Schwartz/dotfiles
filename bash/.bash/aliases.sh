@@ -19,16 +19,9 @@ alias sl='ls'
 
 # Print out directory tree, but omit node_modules
 alias lst='tree -a -I "node_modules|.git|.next|dist|__generated__"'
-alias agi='ag --ignore node_modules --ignore dist --ignore coverage --ignore test --ignore tests --ignore __test__ --ignore __mocks__'
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
-
-# Easier navigation
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-alias .....="cd ../../../.."
 
 # Shortcuts to custom dirs
 alias dotfiles="cd ~/dotfiles"
