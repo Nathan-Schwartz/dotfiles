@@ -58,3 +58,6 @@
 [submodule "vim/.vim/bundle/markdown-toc"]
 	path = vim/.vim/bundle/markdown-toc
 	url = https://github.com/mzlogin/vim-markdown-toc.git
+[submodule "vendor/ticket"]
+	path = vendor/ticket
+	url = https://github.com/wedow/ticket.git

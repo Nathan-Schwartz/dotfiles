@@ -170,9 +170,9 @@ function python_installs() {
 function upgrade_dependencies() {
   if [ ! "$skip_commits" = true ]; then
     cd "$DOTFILES_DIR"
-    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
+    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle vendor/ticket)" ]; then
       log "Committing pre-upgrade state"
-      git add -f mise/.tool-versions vim/.vim/bundle
+      git add -f mise/.tool-versions vim/.vim/bundle vendor/ticket
       git commit -m "install: pre-upgrade state at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     fi
     cd -
@@ -184,11 +184,15 @@ function upgrade_dependencies() {
   log "Updating git submodules"
   git -C "$DOTFILES_DIR" submodule update --force --recursive --init --remote
 
+  log "Symlinking vendor tools"
+  mkdir -p "$HOME/.local/bin"
+  ln -sf "$DOTFILES_DIR/vendor/ticket/ticket" "$HOME/.local/bin/tk"
+
   if [ ! "$skip_commits" = true ]; then
     cd "$DOTFILES_DIR"
-    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle)" ]; then
+    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle vendor/ticket)" ]; then
       log "Committing upgraded dependencies"
-      git add -f mise/.tool-versions vim/.vim/bundle
+      git add -f mise/.tool-versions vim/.vim/bundle vendor/ticket
       git commit -m "install: upgraded on $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     fi
     cd -
