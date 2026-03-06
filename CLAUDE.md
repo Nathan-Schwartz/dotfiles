@@ -14,7 +14,7 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 
 ### Key Files
 
-- `scripts/install.sh` — Idempotent install script (brew/apt/yum + node + python)
+- `scripts/install.sh` — Idempotent install script (brew/apt/yum + mise + python)
 - `test.sh` — Linters and assertions (yamllint, proselint, vint, shellcheck, jq)
 - `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + mac)
 - `bash/.bash_profile` — Shell entry point; sources `~/.env` first, `~/.bash_profile.local` last
@@ -53,14 +53,16 @@ Run `./test.sh` after changes. It runs:
 - `vint` on `.vimrc`
 - `shellcheck` on all shell scripts
 - `jq` validation on JSON files
-- Assertions that core commands exist (node, python3, bash, vim, ag, stow)
+- Assertions that core commands exist (node, python3, bash, vim, rg, mise, delta, biome, stow)
 
 ## Package Management
 
-- **OS packages**: brew (mac), apt (debian), yum (redhat)
-- **Node**: managed by `n`, targeting LTS (migrating to asdf soon)
+**Prefer mise** for any new tool. If mise has a registry entry (check `mise registry` or the [registry](https://github.com/jdx/mise/tree/main/registry)), add it to `mise/.tool-versions` with a pinned version instead of installing via brew/apt/yum/pipx. Fall back to OS packages only for things mise can't manage (e.g. bash, vim, stow, tree) and to pipx for Python-only CLI tools without a mise backend.
+
+- **OS packages**: brew (mac), apt (debian), yum (redhat) — only for tools mise can't manage
+- **Dev tools**: managed by mise via `~/.tool-versions` (node, ripgrep, delta, biome, jq, shellcheck, shfmt, jc)
 - **Python CLI tools**: installed via `pipx` (never raw pip)
-- **npm globals**: none (removed yarn, eslint, prettier, prettier-eslint — use project-local tooling instead)
+- **npm globals**: none (use project-local tooling instead)
 
 ## CI
 
@@ -68,4 +70,4 @@ GitHub Actions runs on every push/PR to master and daily at midnight. Two jobs: 
 
 ## Root .gitignore
 
-The root `.gitignore` contains `*` — this is intentional. It prevents stow from symlinking the entire directory and ensures only explicitly tracked files are committed. Use `git add -f` when adding new files.
+The root `.gitignore` contains `*` — this ignores everything by default. This is intentional: it prevents stow from symlinking the entire directory and ensures only explicitly tracked files are committed. **Every new file must be added with `git add -f`** or it will be silently ignored. New files won't appear in `git status` unless force-added. This applies to new stow modules, scripts, config files — everything.

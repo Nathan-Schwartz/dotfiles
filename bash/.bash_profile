@@ -27,18 +27,14 @@ elif [ -x /usr/local/bin/brew ]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-# Required by n/n-install (see http://git.io/n-install-repo).
-export N_PREFIX="$HOME/n"
-export PATH="$N_PREFIX/bin:$PATH"
-
-if [[ "$(command_exists brew)" = true ]]; then
-  # This is slow but it's the most robust option I've found so far
-  export PATH="$(brew --prefix python)/libexec/bin:$PATH"
-fi
-
 # pipx and pip user installs go here
 if [ -d "$HOME/.local/bin" ]; then
   export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# Activate mise for tool version management
+if [ "$(command_exists mise)" = 'true' ]; then
+  eval "$(mise activate bash)"
 fi
 
 ## Load brew's shell completion, if installed and shell is interactive

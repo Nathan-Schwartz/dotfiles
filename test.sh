@@ -23,7 +23,10 @@ assert "$(command_exists node)" "true" 'Node not installed'
 assert "$(command_exists python3)" "true" 'Python 3 not installed'
 assert "$(command_exists bash)" "true" 'Bash not installed'
 assert "$(command_exists vim)" "true" 'Vim not installed'
-assert "$(command_exists ag)" "true" 'Ag not installed'
+assert "$(command_exists rg)" "true" 'ripgrep not installed'
+assert "$(command_exists mise)" "true" 'mise not installed'
+assert "$(command_exists delta)" "true" 'delta not installed'
+assert "$(command_exists biome)" "true" 'biome not installed'
 assert "$(command_exists stow)" "true" 'Stow not installed'
 
 echo "Everything looks good!"

@@ -18,7 +18,7 @@ function main() {
     debian_installs
   fi
 
-  node_installs
+  mise_installs
   python_installs
   dotfile_submodule_installs
   log "Good to go!"
@@ -30,9 +30,7 @@ function main() {
 
 function set_global_vars() {
   isMissingBrew="$(missing_command brew)"
-  isMissingNode="$(missing_command node)"
-  isMissingN="$(missing_command n)"
-  isMissingNUpdate="$(missing_command n-update)"
+  isMissingMise="$(missing_command mise)"
   hasYum="$(command_exists yum)"
   hasApt="$(command_exists apt)"
 
@@ -86,7 +84,7 @@ function brew_installs() {
   brew upgrade
 
   log "Installing Brew packages"
-  brew install git python3 pipx bash stow vim tree the_silver_searcher bash-completion rsync coreutils jq
+  brew install git python3 pipx bash stow vim tree mise bash-completion rsync coreutils
 
   log "Cleaning up brew"
   brew cleanup
@@ -95,7 +93,7 @@ function brew_installs() {
 
 function redhat_installs() {
   sudo yum --security update -y
-  sudo yum install stow bash vim tree the_silver_searcher -y
+  sudo yum install stow bash vim tree -y
 
   if [ "$(missing_command git)" = 'true' ]; then
     sudo yum install git -y
@@ -111,36 +109,26 @@ function redhat_installs() {
 function debian_installs() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install git stow python3 python3-pipx bash vim tree silversearcher-ag nfs-common rsync iotop jq -y
+  sudo apt install git stow python3 python3-pipx bash vim tree nfs-common rsync iotop -y
   sudo apt autoremove -y
 }
 
-function node_installs() {
-  n_version_to_install="${PREFERRED_NODE_VERSION:-lts}"
-
-  if [[ "$isMissingN" = true && "$isMissingNode" = false ]]; then
-    log "Node was not installed with N. Skipping N install."
-  else
-    if [ "$isMissingN" = true ]; then
-      log "Installing n-install, n, and Node $n_version_to_install"
-      # -y automates installation, -n avoids modifying bash_profile
-      curl -L https://raw.githubusercontent.com/mklement0/n-install/stable/bin/n-install | bash -s -- -n -y
+function mise_installs() {
+  if [ "$isMissingMise" = true ]; then
+    if [ "$IS_MAC" = true ]; then
+      log "mise will be installed via brew"
     else
-      if [ "$isMissingNUpdate" != true ]; then
-        log "Updating n"
-        n-update -y
-      fi
-
-      log "Installing Node $n_version_to_install"
-      n "$n_version_to_install"
-      unset n_version_to_install
+      log "Installing mise"
+      curl https://mise.run | sh
     fi
   fi
 
-  # Upgrade any already-installed packages.
-  log "Updating Global NPM Packages"
-  npm update -g
+  log "Trusting global tool-versions"
+  mise trust ~/.tool-versions
 
+  log "Installing mise tools"
+  eval "$(mise activate bash)"
+  mise install --yes
 }
 
 function python_installs() {
@@ -153,9 +141,6 @@ function python_installs() {
     vim-vint
     proselint
     yamllint
-    shfmt-py
-    shellcheck-py
-    jc
   )
   for pkg in "${pipx_list[@]}"; do
     pipx install "$pkg" --force || { pipx uninstall "$pkg" && pipx install "$pkg"; }
