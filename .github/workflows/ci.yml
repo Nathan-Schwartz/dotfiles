@@ -24,6 +24,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Prepare OS for script
         run: |
@@ -53,6 +55,8 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Run install script (skip OS stuff)
         run: |
