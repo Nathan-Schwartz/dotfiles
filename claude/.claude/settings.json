@@ -6,9 +6,26 @@
     "commit": "",
     "pr": ""
   },
-  "model": "claude-opus-4-6",
   "includeGitInstructions": true,
   "permissions": {
-    "defaultMode": "plan"
-  }
+    "defaultMode": "plan",
+    "allow": [
+      "Bash(which *)",
+      "Bash(pwd)",
+      "Bash(file *)",
+      "Bash(wc *)",
+      "Bash(tree *)",
+      "Bash(git rev-parse *)",
+      "Bash(git show *)",
+      "Bash(git remote -v)",
+      "Bash(tk *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(ls *)",
+      "Bash(stat *)"
+    ]
+  },
+  "model": "claude-opus-4-6",
+  "effortLevel": "high"
 }
