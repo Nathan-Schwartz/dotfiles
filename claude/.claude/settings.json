@@ -6,9 +6,10 @@
     "commit": "",
     "pr": ""
   },
-  "model": "claude-opus-4-6",
   "includeGitInstructions": true,
   "permissions": {
     "defaultMode": "plan"
-  }
+  },
+  "model": "claude-opus-4-6",
+  "effortLevel": "high"
 }
