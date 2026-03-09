@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Validates YAML frontmatter in compound-extension markdown files.
+# PKM integrity hook for compound-extension markdown files.
+# Validates frontmatter schemas and triggers qmd index updates.
 #
 # Usage:
-#   validate-frontmatter.sh file1.synth.md [file2.ref.md ...]
-#   validate-frontmatter.sh --pre-hook   (PreToolUse: injects schema context)
-#   validate-frontmatter.sh --post-hook  (PostToolUse: validates, exit 2 on failure)
+#   pkm-integrity-hook.sh file1.synth.md [file2.ref.md ...]
+#   pkm-integrity-hook.sh --pre-hook   (PreToolUse: injects schema context)
+#   pkm-integrity-hook.sh --post-hook  (PostToolUse: validates, updates qmd, exit 2 on failure)
 #
 # Exit codes:
 #   0 — all files valid (or no compound-extension files to check)
@@ -19,20 +20,9 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCHEMA_FILE="${SCHEMA_FILE:-$SCRIPT_DIR/schemas/pkm.json}"
 
-# --- helpers ---
+# --- helpers: detection ---
 
-die() { echo "validate-frontmatter: $*" >&2; exit 1; }
-
-check_deps() {
-  local missing=()
-  for cmd in jq yq awk; do
-    command -v "$cmd" &>/dev/null || missing+=("$cmd")
-  done
-  if [[ ${#missing[@]} -gt 0 ]]; then
-    die "missing dependencies: ${missing[*]}"
-  fi
-  [[ -f "$SCHEMA_FILE" ]] || die "schema file not found: $SCHEMA_FILE"
-}
+die() { echo "pkm-integrity-hook: $*" >&2; exit 1; }
 
 get_doc_type() {
   local filepath="$1"
@@ -43,6 +33,19 @@ get_doc_type() {
     *.index.md) echo "index" ;;
     *)          echo "" ;;
   esac
+}
+
+# --- helpers: validation ---
+
+check_deps() {
+  local missing=()
+  for cmd in jq yq awk; do
+    command -v "$cmd" &>/dev/null || missing+=("$cmd")
+  done
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    die "missing dependencies: ${missing[*]}"
+  fi
+  [[ -f "$SCHEMA_FILE" ]] || die "schema file not found: $SCHEMA_FILE"
 }
 
 extract_frontmatter() {
@@ -143,6 +146,15 @@ validate_file() {
   return 0
 }
 
+# --- helpers: indexing ---
+
+qmd_update() {
+  # Trigger qmd index update in the background. Failures are silent —
+  # indexing issues should never block writes.
+  command -v qmd &>/dev/null || return 0
+  qmd update &>/dev/null &
+}
+
 # --- main ---
 
 check_deps
@@ -182,7 +194,7 @@ if [[ "$mode" == "pre" ]]; then
   exit 0
 fi
 
-# PostToolUse hook: validate after write
+# PostToolUse hook: validate after write, then update qmd index
 if [[ "$mode" == "post" ]]; then
   input=$(cat)
   file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
@@ -201,12 +213,14 @@ if [[ "$mode" == "post" ]]; then
     echo "$errors" >&2
     exit 2
   fi
+
+  qmd_update
   exit 0
 fi
 
 # CLI mode
 if [[ ${#files[@]} -eq 0 ]]; then
-  echo "usage: validate-frontmatter.sh [--pre-hook | --post-hook] [file ...]" >&2
+  echo "usage: pkm-integrity-hook.sh [--pre-hook | --post-hook] [file ...]" >&2
   exit 1
 fi
 

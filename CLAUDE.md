@@ -20,6 +20,8 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + rocky linux + mac)
 - `bash/.bash_profile` — Shell entry point; sources `~/.env` first, `~/.bash_profile.local` last
 - `bash/.bash/functions.sh` — Shared helpers (`command_exists`, `missing_command`, `assert`)
+- `scripts/pkm-integrity-hook.sh` — Pre/PostToolUse hook: validates frontmatter schemas, triggers qmd index updates
+- `scripts/qmd-sync.sh` — Discovers PKM directories and registers them as qmd collections
 
 ### Override Pattern
 

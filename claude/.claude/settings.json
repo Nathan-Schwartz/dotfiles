@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${DOTFILES_DIR:-$HOME/dotfiles}/scripts/validate-frontmatter.sh --pre-hook"
+            "command": "${DOTFILES_DIR:-$HOME/dotfiles}/scripts/pkm-integrity-hook.sh --pre-hook"
           }
         ]
       }
@@ -44,11 +44,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${DOTFILES_DIR:-$HOME/dotfiles}/scripts/validate-frontmatter.sh --post-hook"
+            "command": "${DOTFILES_DIR:-$HOME/dotfiles}/scripts/pkm-integrity-hook.sh --post-hook"
           }
         ]
       }
     ]
+  },
+  "mcpServers": {
+    "qmd": {
+      "command": "bash",
+      "args": ["-c", "${DOTFILES_DIR:-$HOME/dotfiles}/scripts/qmd-mcp.sh"]
+    }
   },
   "model": "claude-opus-4-6",
   "effortLevel": "high"

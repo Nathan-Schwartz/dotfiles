@@ -22,10 +22,7 @@ When the type is genuinely ambiguous, ask the user — don't guess.
 
 ## 3. Present manifest
 
-<!-- TODO: When qmd is available, add a step here to search the target directory for
-     semantically related existing files. Include matches in the manifest as a separate
-     "possibly related" tier (distinct from the certain cross-references between files
-     created in the same invocation). See to-pkm.synth.md Phase 1 Step 2. -->
+If qmd MCP tools are available and the target directory is a registered qmd collection, search for semantically related existing files using `qmd_search` or `qmd_deep_search`. Include matches in the manifest as a separate "possibly related" tier (distinct from the certain cross-references between files created in the same invocation).
 
 Present a numbered list inline in the conversation. Each item shows:
 
@@ -122,3 +119,4 @@ Body: categorized list of all created files with their summaries, grouped by typ
 - Atomicity: one idea per file. But "one idea" means one coherent topic, not one sentence.
 - Filenames: kebab-case with compound extension (`.ref.md`, `.synth.md`, `.temp.md`). Descriptive but concise.
 - If the conversation produced nothing worth capturing, say so and stop. Don't manufacture content.
+- **qmd indexing**: A PostToolUse hook automatically updates the qmd index for existing collections. If the target directory is not yet a qmd collection, remind the user to run `qmd-sync.sh <dir>` to register it.

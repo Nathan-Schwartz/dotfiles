@@ -40,3 +40,13 @@ frontmatter `sources` values are expected to be relative paths to other pkm note
 ### Ref Bias
 
 When producing PKM artifacts, actively decompose content to maximize `.ref.md` output. Most sessions contain ref-shaped material (facts, observations) tangled inside reasoning. Separating it means more knowledge lives in the cheapest-to-verify tier, and synths get shorter because they cite refs instead of restating facts.
+
+### qmd (Semantic Search)
+
+PKM directories are indexed by [qmd](https://github.com/tobi/qmd) for keyword and semantic search across notes. A PostToolUse hook automatically updates the qmd index when compound-extension files are written.
+
+- **MCP server**: Available via `qmd mcp` — exposes `qmd_search`, `qmd_vector_search`, `qmd_deep_search`, `qmd_get`, `qmd_multi_get`, `qmd_status` tools.
+- **Collection management**: `scripts/qmd-sync.sh` discovers and registers PKM directories as qmd collections. Each directory becomes its own collection (searchable independently via `-c <name>` or together).
+- **Masks**: Collections use `**/*.{ref,synth,temp,index}.md` to index only compound-extension files.
+- **Embedding**: `qmd embed` generates vector embeddings (required for semantic/hybrid search). Run manually or via `qmd-sync.sh --embed`.
+- **After `/to-pkm`**: New directories need `qmd-sync.sh <dir>` to register. Existing collections update automatically via the hook.
