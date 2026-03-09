@@ -8,9 +8,15 @@ Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU St
 
 ### Stow Modules
 
-Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `iterm`, `mise`. More may be added (claude configs, etc.) — any tool that requires configuration is a candidate.
+Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `iterm`, `mise`, `claude`. Any tool that requires configuration is a candidate for a new module.
 
-New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are loaded via Pathogen. All git submodules (including vim plugins) are part of the dependency upgrade commit flow in `install.sh` — the `upgrade_dependencies` function checks `mise/.tool-versions` and all submodule paths for unstaged changes before and after upgrading. Any new submodule must be included in that flow.
+New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are loaded via Pathogen. All git submodules (including vim plugins) are part of the dependency upgrade commit flow in `install.sh` — the `upgrade_dependencies` function checks `mise/.tool-versions`, `vim/.vim/bundle`, and `vendor/ticket` for unstaged changes before and after upgrading. Any new submodule must be included in that flow.
+
+### Vendor Directory
+
+`vendor/` contains third-party tools managed as git submodules or local scripts:
+- `vendor/ticket/` — git submodule for [tk](https://github.com/wedow/ticket), a bash-based task manager
+- `vendor/tk-plugins/` — custom tk plugins (`ticket-tag`, `ticket-untag`), symlinked into `~/.local/bin/` by `install.sh`
 
 ### Key Files
 
@@ -22,6 +28,8 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `bash/.bash/functions.sh` — Shared helpers (`command_exists`, `missing_command`, `assert`)
 - `scripts/pkm-integrity-hook.sh` — Pre/PostToolUse hook: validates frontmatter schemas, triggers qmd index updates
 - `scripts/qmd-sync.sh` — Discovers PKM directories and registers them as qmd collections
+- `scripts/qmd-mcp.sh` — Wrapper that launches `qmd mcp` for the Claude MCP server integration
+- `scripts/generate-mocs.py` — Generates Maps of Content (`.index.md`) for PKM directories
 
 ### Override Pattern
 
@@ -56,14 +64,14 @@ Run `./test.sh` after changes. It runs:
 - `vint` on `.vimrc`
 - `shellcheck` on all shell scripts
 - `jq` validation on JSON files
-- Assertions that core commands exist (node, python3, bash, vim, rg, mise, delta, biome, stow)
+- Assertions that core commands exist (node, python3, bash, vim, rg, mise, delta, biome, stow, shfmt, jq, jc, tree, pipx, tk)
 
 ## Package Management
 
 **Prefer mise** for any new tool. If mise has a registry entry (check `mise registry` or the [registry](https://github.com/jdx/mise/tree/main/registry)), add it to `mise/.tool-versions` with a pinned version instead of installing via brew/apt/yum/pipx. Fall back to OS packages only for things mise can't manage (e.g. bash, vim, stow, tree) and to pipx for Python-only CLI tools without a mise backend.
 
 - **OS packages**: brew (mac), apt (debian), yum (redhat) — only for tools mise can't manage
-- **Dev tools**: managed by mise via `~/.tool-versions` (node, ripgrep, delta, biome, jq, shellcheck, shfmt, jc)
+- **Dev tools**: managed by mise via `~/.tool-versions` (node, ripgrep, delta, biome, jq, shellcheck, shfmt, jc, yq, qmd)
 - **Python CLI tools**: installed via `pipx` (never raw pip)
 - **npm globals**: none (use project-local tooling instead)
 
@@ -134,6 +142,23 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 - System clipboard integration
 - `gf` opens file in new tab (overridden default)
 - `j`/`k` navigate visual lines (respect wrapping)
+
+## Claude Code (`claude/` stow module)
+
+The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration.
+
+- `settings.json` — Default mode is `plan`. Permissions allow `tk *` and read-only git commands. Hooks run `pkm-integrity-hook.sh` on Write/Edit. MCP server configured for qmd.
+- `commands/to-pkm.md` — `/to-pkm` slash command: converts conversation context into PKM artifacts
+- `commands/fix-pr-comments.md` — `/fix-pr-comments` slash command: addresses unresolved PR review comments
+
+Projects extend permissions and settings at the project level (`<project>/.claude/settings.json`).
+
+## tk (Task Management)
+
+[tk](https://github.com/wedow/ticket) is a bash-based, git-native task manager with zero dependencies. Installed from `vendor/ticket/` submodule, symlinked to `~/.local/bin/tk`.
+
+- `tk` commands are allow-listed in the base Claude Code settings
+- Custom plugins in `vendor/tk-plugins/`: `ticket-tag`, `ticket-untag`
 
 ## Root .gitignore
 
