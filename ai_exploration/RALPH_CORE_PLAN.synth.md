@@ -29,6 +29,7 @@ implement: tk tag
 
 ---
 #	Category	Status	Summary
+1 No formal verification for AC Open  no way to identify if agent closed ticket improperly without manual review.
 5	Critical	Documented	Preflight has no codebase access — evaluates prose, not implementability
 7	Critical	Documented	Agent self-expansion loop. Constraints + known gap documented. author:ralph-agent tag will make it observable.
 8	Fragility	Open	Text-parsing tk ready output — coupled to undocumented format
