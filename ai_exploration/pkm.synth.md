@@ -283,7 +283,8 @@ Claude hooks alone aren't sufficient — they only catch edits made within Claud
 - **Staleness detection granularity.** Grep-based detection finds which synths reference a changed ref, but not whether the change actually affects the synth's conclusions. Is file-level granularity sufficient, or does section-level tracking justify the added complexity?
 
 ## TODO
-
+- figure out how to handle filename/id conflicts and multi-folder topologies
+- consider `stage: axiom` or `kind: normative` in frontmatter to support content like philosophy or guiding principles
 - [ ] Write a staleness detection tool that autonomously identifies stale `*.synth.md` and `*.index.md` files by comparing their `sources:` frontmatter against the current state of referenced files (git history, checksums, or modification times). Should be runnable as a standalone CLI, from vim, from Claude hooks, and from CI.
 - [ ] Write a MOC generator that reads frontmatter from all `*.{ref,synth}.md` files in a directory, groups by topic, computes backlinks by inverting `related` and `sources` fields, and outputs `.index.md` files. Should be re-runnable (index is derived content, always regeneratable from frontmatter).
 - [ ] Write an influence/risk scorer that builds the dependency graph from frontmatter (`sources`, `related`), computes per-document influence (in-degree, transitive dependents), cross-references with trust signals (`auto_summary`, `status: draft`, unreviewed content), and outputs a prioritized review queue. High influence + low trust = review first. This directly operationalizes trust economics: review effort proportional to blast radius, not document count.
