@@ -6,3 +6,4 @@ jq 1.8.1
 shellcheck 0.11.0
 shfmt 3.12.0
 jc 1.25.6
+yq 4.52.4

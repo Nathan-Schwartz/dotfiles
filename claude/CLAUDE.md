@@ -23,3 +23,20 @@ When uncertain whether a claim is Verified or Inferred, classify it as Inferred.
 
 ## Automation
 When performing ad-hoc scripting to validate or explore an issue, consider whether creating a durable, deterministic tool or script is appropriate. These tasks are often recurring, and durable automations both enable contributors and pose no verification cost for repeated use.
+
+## PKM Compound Extensions
+
+Files with compound extensions (`.ref.md`, `.synth.md`, `.temp.md`, `.index.md`) are knowledge base artifacts with enforced frontmatter schemas. A PostToolUse hook validates every Write/Edit — get the frontmatter right the first time. Full schema: `scripts/schemas/pkm.json`.
+
+frontmatter `sources` values are expected to be relative paths to other pkm notes.
+
+### Types
+
+- **`.ref.md`** — External knowledge. Facts, tool behaviors, source summaries. Cheapest to verify (check against source).
+- **`.synth.md`** — Original thinking. Decisions, analysis, designs. Expensive to verify (evaluate reasoning).
+- **`.temp.md`** — Uncommitted notes. Questions, half-formed ideas. No verification burden. Promote to ref/synth when ready.
+- **`.index.md`** — Navigation. Maps, cross-references, session manifests. Derived content.
+
+### Ref Bias
+
+When producing PKM artifacts, actively decompose content to maximize `.ref.md` output. Most sessions contain ref-shaped material (facts, observations) tangled inside reasoning. Separating it means more knowledge lives in the cheapest-to-verify tier, and synths get shorter because they cite refs instead of restating facts.

@@ -1,0 +1,70 @@
+{
+  "compound_extensions": [".ref.md", ".synth.md", ".temp.md", ".index.md"],
+  "types": {
+    "ref": {
+      "extension": ".ref.md",
+      "description": "External knowledge — sources, evidence, literature. Cheapest to verify.",
+      "required": {
+        "summary": "string",
+        "generated": "bool",
+        "created": "datetime",
+        "topics": "string[]",
+        "sources": "string[]"
+      },
+      "optional": {
+        "id": "string",
+        "ai_reviewed_at": "datetime",
+        "human_reviewed_at": "datetime"
+      }
+    },
+    "synth": {
+      "extension": ".synth.md",
+      "description": "Original thinking — analysis, synthesis, design. Expensive to verify.",
+      "required": {
+        "summary": "string",
+        "generated": "bool",
+        "created": "datetime",
+        "topics": "string[]",
+        "sources": "string[]",
+        "status": "enum:draft,partial,complete"
+      },
+      "optional": {
+        "id": "string",
+        "ai_reviewed_at": "datetime",
+        "human_reviewed_at": "datetime"
+      }
+    },
+    "temp": {
+      "extension": ".temp.md",
+      "description": "Uncommitted notes — questions, half-formed ideas. No verification burden.",
+      "required": {
+        "summary": "string",
+        "generated": "bool",
+        "created": "datetime"
+      },
+      "optional": {
+        "id": "string",
+        "topics": "string[]",
+        "sources": "string[]",
+        "ai_reviewed_at": "datetime",
+        "human_reviewed_at": "datetime"
+      }
+    },
+    "index": {
+      "extension": ".index.md",
+      "description": "Navigation and structure — maps, cross-references, session manifests.",
+      "required": {
+        "summary": "string",
+        "generated": "bool",
+        "created": "datetime",
+        "topics": "string[]",
+        "sources": "string[]"
+      },
+      "optional": {
+        "id": "string",
+        "ai_reviewed_at": "datetime",
+        "human_reviewed_at": "datetime"
+      }
+    }
+  }
+}
