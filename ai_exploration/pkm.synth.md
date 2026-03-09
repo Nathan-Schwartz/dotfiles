@@ -5,6 +5,7 @@ topics:
   - knowledge-management
   - compound-extensions
   - frontmatter
+  - stable-references
   - semantic-retrieval
   - trust-economics
   - claude-hooks
@@ -182,6 +183,57 @@ The `auto_summary: true` field signals that the summary was machine-generated an
 
 This doesn't solve the trust problem — it makes it visible. The summary is a claim that itself has an epistemic status.
 
+## Stable Note References
+
+Two complementary link types, each optimized for a different consumer.
+
+### Prose Links (relative paths)
+
+Inline markdown links use relative paths: `[text](../path/to/file.md)`. These are the human navigation layer — readable in raw markdown, `gf`-navigable in vim, Obsidian-compatible, and filesystem-unique by definition.
+
+Prose links are navigational. They exist for readability when reading a document in context. They are fragile to renames and moves — a file rename requires updating every prose link that points to it.
+
+### Frontmatter IDs (namespace-scoped identifiers)
+
+Each document's `id` field is a stable, immutable identifier. Format: `namespace::name` — dot-free to avoid URL formation in renderers, YAML-safe without quoting, and syntactically unambiguous from file paths.
+
+```yaml
+id: concepts::epistemology
+```
+
+Frontmatter relation fields (`sources`, `related`) reference IDs, not filenames:
+
+```yaml
+sources:
+  - pkm::compound-extensions
+  - landscape::heterogeneity
+related:
+  - tooling::dialectic-assessment
+```
+
+IDs are the machine-stable reference layer. They provide typed graph edges — declared relationships that are distinct from contextual prose links, queryable, and invariant across file renames and directory reorganization.
+
+### Manifest: Bridging the Two Layers
+
+An `id → filepath` mapping maintained by Claude hooks on file operations. The manifest bridges IDs and paths:
+
+- **Rename detection**: when a file moves, the manifest updates; ID-based references remain valid
+- **Path recovery**: prose links broken by a rename can be repaired by resolving the target's ID through the manifest
+- **Cross-folder resolution**: IDs are globally unique, so references work across directories without encoding path structure
+
+The manifest is derived content — regeneratable from a scan of all frontmatter. Hook-maintained for convenience, but never the source of truth.
+
+### Search Layer Split
+
+- **qmd** — content discovery. BM25 keyword + semantic vector search + LLM re-ranking. Finds conceptually related documents across terminology gaps. Not aware of the reference graph or frontmatter structure.
+- **Structured index** — structured queries over frontmatter fields, the manifest-resolved edge graph, and reference relationships. Handles queries like "all draft synths with topic X that cite source Y", graph traversals (transitive dependencies, orphan detection, influence scoring), and theory-level analysis (ref quality assessment, high-risk dependency identification). Deserves its own spec — see TODO.
+
+qmd answers "what's related to this concept?" The structured index answers "what references what, and in what state?"
+
+### Deferral Note
+
+The ID layer and manifest are designed but **deferred until sufficient tooling exists to justify the ceremony**. The initial implementation uses prose links (relative paths) only — both in document bodies and in frontmatter `sources`/`related` fields. The ID system activates when: (1) a manifest generator exists, (2) vim navigation can resolve IDs, and (3) at least one consumer (MOC generator, staleness detector, or SQLite index) uses IDs as its primary reference type. Until then, the `id` field in frontmatter serves only as a unique document identifier for qmd keyword search, not as a reference target.
+
 ## Zettelkasten Practices
 
 Several Zettelkasten techniques map naturally onto this system. Some are already baked in; others add value.
@@ -275,20 +327,21 @@ Claude hooks alone aren't sufficient — they only catch edits made within Claud
 
 ## Open Questions
 
-- **Semantic retrieval + frontmatter interaction.** Can the retrieval tool treat frontmatter as structured metadata for filtering (e.g., "findings with status: partial about multi-agent patterns")? Or does it treat the whole file as text? If the latter, structured queries need a separate mechanism.
-- **Cross-project references.** Knowledge bases are scattered across projects. How do cross-project references work? Are retrieval collections project-scoped? Can frontmatter reference documents in other collections?
+- **Cross-repo references.** Within a single machine, the manifest spans directories and IDs are globally unique. But referencing notes in a different git repo (e.g., a work project citing a dotfiles KB note) has no mechanism yet. Is this a real need, or do cross-repo boundaries imply separate knowledge bases?
 - **Migration path.** Existing knowledge bases need retrofitting with compound extensions and frontmatter. Renaming files updates every cross-reference. What happens to existing index files — deprecated, trimmed, or converted?
 - **Summary trust.** `auto_summary` signals the problem but doesn't solve it. Is spot-checking sufficient, or does the summary need a more rigorous review mechanism?
 - **Agent extension naming.** `.synth.md` (knowledgebase: your thinking) and `.synthesis.md` (agent: reconciled assessor output) are conceptually related but operationally different. They live in different contexts (knowledge base directories vs `.ralph/runs/`), but the naming similarity could cause confusion. Worth disambiguating?
 - **Staleness detection granularity.** Grep-based detection finds which synths reference a changed ref, but not whether the change actually affects the synth's conclusions. Is file-level granularity sufficient, or does section-level tracking justify the added complexity?
 
 ## TODO
-- figure out how to handle filename/id conflicts and multi-folder topologies
+- write claude hooks and frontamtter schemas
 - consider `stage: axiom` or `kind: normative` in frontmatter to support content like philosophy or guiding principles
 - [ ] Write a staleness detection tool that autonomously identifies stale `*.synth.md` and `*.index.md` files by comparing their `sources:` frontmatter against the current state of referenced files (git history, checksums, or modification times). Should be runnable as a standalone CLI, from vim, from Claude hooks, and from CI.
 - [ ] Write a MOC generator that reads frontmatter from all `*.{ref,synth}.md` files in a directory, groups by topic, computes backlinks by inverting `related` and `sources` fields, and outputs `.index.md` files. Should be re-runnable (index is derived content, always regeneratable from frontmatter).
 - [ ] Write an influence/risk scorer that builds the dependency graph from frontmatter (`sources`, `related`), computes per-document influence (in-degree, transitive dependents), cross-references with trust signals (`auto_summary`, `status: draft`, unreviewed content), and outputs a prioritized review queue. High influence + low trust = review first. This directly operationalizes trust economics: review effort proportional to blast radius, not document count.
-
+- [ ] Write a manifest generator (`id → filepath` map) from frontmatter scan. Prerequisite for activating the ID reference layer.
+- [ ] Investigate feasibility of adding zettel-style reference-aware search to qmd — ID resolution, backlink traversal, frontmatter-filtered queries.
+- [ ] Design a structured index spec (separate `.synth.md`). Essential components: indexer (frontmatter + link parser), storage (SQLite for metadata; NetworkX-from-SQLite for graph algorithms if use cases exceed backlinks/2-hop neighbors), query interface (CLI and/or MCP), maintenance trigger (file watcher or git hook). The dependency order: indexer → storage → query interface, with maintenance trigger feeding the indexer. The graph algorithm question (SQLite recursive CTEs vs NetworkX vs a real graph store) should be settled by concrete use cases before committing to storage design.
 - [ ] Define a claude.md
   - core methodology
   - prefer atomic/small notes, especially for reference-type notes

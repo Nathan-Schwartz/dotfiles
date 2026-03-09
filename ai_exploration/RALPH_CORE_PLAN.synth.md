@@ -20,6 +20,24 @@ sources:
   - gap_analysis/D12.md
 ---
 
+author:ralph-agent — task created by the executing agent during a ralph loop
+author:planner — task created by /planner decomposition
+(no author tag) — human-created
+ 
+implement: tk tag
+
+
+---
+#	Category	Status	Summary
+5	Critical	Documented	Preflight has no codebase access — evaluates prose, not implementability
+7	Critical	Documented	Agent self-expansion loop. Constraints + known gap documented. author:ralph-agent tag will make it observable.
+8	Fragility	Open	Text-parsing tk ready output — coupled to undocumented format
+10	Fragility	Documented	_resolve_tickets_dir duplication — tracked as tk gap (tk root)
+
+---
+
+
+
 # Ralph Loop: Core Implementation Plan
 
 ## Context
@@ -36,7 +54,7 @@ AI_TOOLING.md defines a full autonomous pipeline (brainstorm → plan → prefli
 - **V2 (Partial)**: Task-per-session is justified by **isolation and verification simplicity** (one clean diff per task for review), NOT cost efficiency. The "quadratic token growth" framing compares against the wrong baseline.
 - **V3 (Partial)**: Preflight filters on **specification clarity**, not task type. The capability cliff (bug-fix vs feature) is a separate concern handled downstream by dialectic assessment and human review. Preflight should stay focused.
 - **D2 (Partial)**: Preflight is a **probabilistic filter with known false-positive bias** (~43pp agent overconfidence). Downstream gates (dialectic, review) are load-bearing, not supplementary. The preflight prompt should use adversarial framing and err toward NEEDS_INPUT.
-- **D12 (Accepted)**: The review pipeline is a downstream confirmation pass. Its verification burden is inversely proportional to upstream gate quality. Defense in depth, not redundancy.
+- **D12 (Accepted)**: The review pipeline is a downstream confirmation pass. Its verification burden is inversely proportional to upstream gate quality. Defense in depth, not redundancy. **Note: v1 ships without the downstream gates (dialectic, review). Until those exist, preflight is the only automated quality gate — the human review of diffs and artifacts is load-bearing, not optional.**
 
 ## Core Scope
 
@@ -85,6 +103,8 @@ The key asymmetry: `/planner` produces well-specified tasks as a byproduct of it
 - **Everything else goes through preflight.** Manual tasks, dependency-wave tasks, imported tasks — if it doesn't have a `planned` tag, preflight evaluates it.
 - **No double-evaluation.** A task either went through the planner (thorough path) or through preflight (fast path), never both.
 
+**Observability gap**: The `planned` tag flattens two very different confidence levels into a single boolean. Ralph cannot distinguish a planner-vetted task (thorough codebase analysis) from a preflight-approved task (one-shot prose clarity check). This information is lost at execution time. **Mitigation for v1**: preflight adds a note (`tk add-note`) recording its evaluation; the planner should do the same with its design notes. The provenance is recoverable from task notes, but ralph doesn't surface it. **Future option**: use distinct tags (`planned:planner`, `planned:preflight`) if routing decisions need to vary by provenance — e.g., skipping review for planner-produced tasks.
+
 ```
                     ┌─────────────┐
                     │  tk create  │
@@ -122,16 +142,27 @@ The key asymmetry: `/planner` produces well-specified tasks as a byproduct of it
 
 ## Implementation
 
-### tk CLI (verified against `vendor/ticket/ticket` source)
+### tk CLI (verified against `tk --help` output, 2026-03-09)
 
-- `tk ready` — returns tasks with status open AND all dependencies closed (vendor/ticket/ticket:707-719). **Dependency resolution is built in** — ralph does not need to check deps separately.
-- `tk ready -T <tag>` — filters by tag. Supported (ticket:654-663).
+- `tk ready` — returns tasks with status open OR in_progress AND all dependencies closed. **Dependency resolution is built in** — ralph does not need to check deps separately. Ralph filters out `in_progress` tasks (already claimed or previously failed) via `grep -v '\[in_progress\]'`.
+- `tk ready -T <tag>` — filters by tag.
 - `tk ready` does NOT support `--format json` or `--limit N`. Output is plain text: `<id>  [P<priority>][<status>] - <title>`. Parse task ID from first field.
-- `tk tag <id> <tag>` — add tag to task
-- `tk update <id> --status in_progress` — claim task
+- `tk start <id>` — set status to in_progress (claim task)
+- `tk status <id> <status>` — update status (open|in_progress|closed)
 - `tk show <id>` — full task context
 - `tk close <id>` — mark done
-- `tk update <id> --note "..."` — add note
+- `tk add-note <id> [text]` — append timestamped note
+- `tk list [-T <tag>]` — list tickets (bundled plugin)
+
+#### tk gaps: commands assumed but not yet available
+
+The pseudocode below assumes tk capabilities that **do not currently exist**:
+
+1. **`tk tag <id> <tag>`** — add a tag to an existing ticket. Tags are set at create time (`--tags`) and stored in YAML frontmatter, but there is no mutation command. Ralph needs this to tag tasks `planned` and `needs_input` in preflight. **Resolution options**: write a tk plugin, write a shell helper that edits frontmatter, or add the command upstream to tk. **Blocking** — must be resolved before ralph can run. The pseudocode uses `tk tag` as-if it exists, with TODO comments marking each call site.
+
+2. **`tk root`** (or `tk config tickets-dir`) — print the resolved `.tickets/` path. tk resolves this by walking parent directories (or `TICKETS_DIR` env var), but doesn't expose the result. Ralph reimplements the walk logic in `_resolve_tickets_dir` to log which ticket store is in scope — useful when multiple projects have `.tickets/` dirs at different levels. **Non-blocking** — the workaround works, but creates drift risk if tk changes its resolution logic. The walk is simple enough that silent drift is unlikely (failure would be loud: "no `.tickets/` found"), but this is still tech debt.
+
+**Resolved: `blocked` status is not needed.** Failed tasks stay `in_progress` (from `tk start`) — this prevents erroneous dependency unblocking (`tk ready` only unblocks deps when predecessors are `closed`). Ralph filters out `in_progress` tasks from `tk ready` output via `grep -v '\[in_progress\]'`, preventing retry loops. A `tk add-note` records the failure. Once `tk tag` exists, adding a `failed` tag will improve discoverability (`tk list -T failed`).
 
 ### File: `bash/.bash/ralph.sh` (create)
 
@@ -153,24 +184,25 @@ Future variables (`RALPH_BUDGET_TOKENS`, `RALPH_BUDGET_USD`, `RALPH_MAX_ROUNDS`,
 Design rationale:
 - **Task-per-session** (V2): Each `claude -p` invocation gets fresh context. Justified by isolation — each task produces one clean diff for independent review, and failed work can't contaminate the next task.
 - **Planned gate** (V1): `tk ready -T planned` ensures only preflight-approved tasks execute. This is a cheap, deterministic control point — minimal ceremony (one tag) for substantial trust gain.
-- **Inline preflight**: When no planned tasks remain but unplanned ready tasks exist, ralph calls `ralph_preflight` to evaluate them. This solves the dependency-wave problem — tasks that become ready mid-loop (because predecessors were just closed) get preflighted and executed without stopping the loop. Controlled by `RALPH_AUTO_PREFLIGHT` (default: true).
+- **Inline preflight**: When no planned tasks remain but unplanned ready tasks exist, ralph calls `ralph_preflight` to evaluate them. This solves the dependency-wave problem — tasks that become ready mid-loop (because predecessors were just closed) get preflighted and executed without stopping the loop. Controlled by `RALPH_AUTO_PREFLIGHT` (default: true). **Trust note**: inline preflight prints per-task evaluation results (PLANNED/NEEDS_INPUT/SKIP) to the terminal in real time. The human can observe which tasks were auto-approved, but this is a post-hoc or passive check — inline preflight trades the planned gate's proactive human checkpoint for throughput. This is an acceptable tradeoff for the dependency-wave case; for higher-stakes projects, set `RALPH_AUTO_PREFLIGHT=false`.
 - **Dependencies for free**: `tk ready` only returns tasks whose dependencies are all closed (ticket:707-719). No additional dependency checking needed.
-- **Claim-before-work**: `tk update --status in_progress` prevents the loop from retrying a task that's already running.
-- **Failure → blocked**: Non-zero exit marks the task blocked with a note. The loop moves on rather than retrying — failed tasks need human attention, not blind retries.
+- **Subshell isolation**: Both `ralph` and `ralph_preflight` use `( )` (subshell) instead of `{ }` so `cd "$project_dir"` doesn't change the caller's working directory.
+- **Claim-before-work**: `tk start` prevents the loop from retrying a task that's already running.
+- **Agent-authoritative completion**: The agent owns `tk close` — it is more informed than ralph about whether the work is actually done. After `claude -p` exits, ralph checks tk state (not exit code) to determine outcome. If the task is `closed` in tk, it succeeded — ralph respects the agent's judgment. If the task is not `closed`, the agent abandoned it (crash, timeout, confusion) — ralph tags it `abandoned`, leaves it `in_progress`, and moves on. `in_progress` prevents retry and blocks dependents by construction. Exit code is captured in artifacts for diagnostics but does not drive the state machine.
 
 ```bash
-ralph() {
+ralph() (
   local project_dir="${1:-.}"
   cd "$project_dir" || return 1
 
-  command_exists tk || { echo "error: tk not found" >&2; return 1; }
-  command_exists claude || { echo "error: claude not found" >&2; return 1; }
+  [ "$(command_exists tk)" = 'true' ] || { echo "error: tk not found" >&2; return 1; }
+  [ "$(command_exists claude)" = 'true' ] || { echo "error: claude not found" >&2; return 1; }
 
   local max_tasks="${RALPH_MAX_TASKS:-0}"
   local auto_preflight="${RALPH_AUTO_PREFLIGHT:-true}"
   local run_dir="${RALPH_RUN_DIR:-.ralph/runs}"
   local run_id
-  run_id=$(date +%Y%m%d-%H%M%S)
+  run_id="$(date +%Y%m%d-%H%M%S)-$(head -c4 /dev/urandom | xxd -p)"
   local run_path="$run_dir/$run_id"
   mkdir -p "$run_path/tasks"
 
@@ -193,14 +225,15 @@ ralph() {
     fi
 
     # Find next planned task (tk ready filters deps automatically)
+    # Filter out in_progress tasks (already claimed or previously failed)
     # Output format: "<id>  [P<priority>][<status>] - <title>"
     local task_line
-    task_line=$(tk ready -T planned 2>/dev/null | head -1)
+    task_line=$(tk ready -T planned 2>/dev/null | grep -v '\[in_progress\]' | head -1)
 
     if [ -z "$task_line" ]; then
       # No planned tasks — check for unplanned ready tasks
       local unplanned
-      unplanned=$(tk ready 2>/dev/null | head -1)
+      unplanned=$(tk ready 2>/dev/null | grep -v '\[in_progress\]' | head -1)
 
       if [ -z "$unplanned" ]; then
         echo "No ready tasks."
@@ -211,7 +244,7 @@ ralph() {
         echo "No planned tasks. Running preflight on ready tasks..."
         ralph_preflight "$project_dir"
         # Re-check: did preflight produce any planned tasks?
-        task_line=$(tk ready -T planned 2>/dev/null | head -1)
+        task_line=$(tk ready -T planned 2>/dev/null | grep -v '\[in_progress\]' | head -1)
         if [ -z "$task_line" ]; then
           echo "Preflight found no tasks ready for execution."
           break
@@ -230,7 +263,7 @@ ralph() {
     echo "=== $task_id ==="
 
     # Claim
-    tk update "$task_id" --status in_progress
+    tk start "$task_id"
 
     # Build prompt — minimal, behavioral norms live in CLAUDE.md
     local task_context
@@ -247,20 +280,45 @@ When finished, close the task: tk close $task_id
 EOF
 )"
 
+    # Snapshot HEAD before execution (for diff capture)
+    local head_before
+    head_before=$(git rev-parse HEAD 2>/dev/null)
+
     # Execute (--output-format json enables cost tracking as a pure extension)
-    if claude -p "$prompt" --output-format json > "$task_dir/claude.json" 2>&1; then
+    # stderr kept separate — mixing it into json corrupts the file for downstream parsing.
+    local exit_code=0
+    claude -p "$prompt" --output-format json > "$task_dir/claude.json" 2>"$task_dir/claude.stderr" || exit_code=$?
+
+    # Agent-authoritative: check tk state, not exit code
+    local task_status
+    task_status=$(tk show "$task_id" 2>/dev/null | grep -m1 '^status:' | awk '{print $2}')
+
+    if [ "$task_status" = "closed" ]; then
       echo "  completed"
-      printf 'status: completed\ntask: %s\ntime: %s\n' "$task_id" "$(date -Iseconds)" > "$task_dir/result.md"
+      printf 'status: completed\ntask: %s\nexit_code: %s\ntime: %s\n' \
+        "$task_id" "$exit_code" "$(date -Iseconds)" > "$task_dir/result.md"
       completed=$((completed + 1))
     else
-      echo "  failed"
-      tk update "$task_id" --status blocked --note "ralph: non-zero exit"
-      printf 'status: failed\ntask: %s\ntime: %s\n' "$task_id" "$(date -Iseconds)" > "$task_dir/result.md"
+      echo "  abandoned (agent exited without closing)"
+      # TODO: tk does not have a 'tag' command — need plugin or helper.
+      tk tag "$task_id" abandoned
+      tk add-note "$task_id" "ralph: agent exited without closing (exit code: $exit_code)"
+      printf 'status: abandoned\ntask: %s\nexit_code: %s\ntime: %s\n' \
+        "$task_id" "$exit_code" "$(date -Iseconds)" > "$task_dir/result.md"
       failed=$((failed + 1))
     fi
 
-    # Capture diff (may be empty if task committed or failed early)
-    git diff > "$task_dir/diff.patch" 2>/dev/null || true
+    # Capture what the agent committed
+    local head_after
+    head_after=$(git rev-parse HEAD 2>/dev/null)
+    if [ "$head_before" != "$head_after" ]; then
+      echo "$head_after" > "$task_dir/commit"
+      git diff "$head_before".."$head_after" > "$task_dir/diff.patch" 2>/dev/null
+    fi
+    # Warn on uncommitted changes — agent should commit its work
+    if ! git diff --quiet 2>/dev/null; then
+      echo "  WARNING: uncommitted changes left in working tree"
+    fi
   done
 
   # Run summary
@@ -272,7 +330,7 @@ total: $((completed + failed))
 EOF
 
   echo "Run artifacts: $run_path"
-}
+)
 
 export -f ralph
 ```
@@ -281,10 +339,10 @@ export -f ralph
 
 Design rationale:
 - **Universal fast-gate**: Preflight is the minimum bar for any task entering the ralph loop, regardless of source. Manually created tasks, dependency-wave tasks that become ready mid-loop, imported tasks — anything without a `planned` tag goes through preflight. Tasks produced by `/planner` (which does thorough analysis) arrive pre-tagged `planned` and skip this check. See [relationship section](#relationship-planner-vs-ralph_preflight).
-- **Specification clarity filter** (V3): Preflight evaluates whether a task is well-specified enough for autonomous execution. It does NOT classify task type (bug vs feature) — that's a separate concern.
+- **Specification clarity filter** (V3): Preflight evaluates whether a task is well-specified enough for autonomous execution. It does NOT classify task type (bug vs feature) — that's a separate concern. **Critical limitation**: preflight sees only `tk show` output — it has no codebase access. It evaluates *clarity of specification language*, not *implementability given what exists*. A task like "fix the parser bug" may read as clear but be ambiguous if three parsers exist. Preflight catches underspecified prose; it cannot catch specification-codebase mismatches. This is a known gap — the downstream execution agent (which has codebase access) is where implementability is actually tested. If preflight proves insufficient, the escape hatch is to give preflight a `--with-context` mode that runs `claude` with a working directory instead of `claude -p`.
 - **Probabilistic filter** (D2): Agent overconfidence means preflight will have false positives (ambiguous tasks classified as READY). The prompt uses adversarial framing and errs toward NEEDS_INPUT. Downstream gates (dialectic, review) compensate.
 - **Adversarial framing** (D2, citing L §11): Asking "what assumptions would you make?" reduces overconfidence by ~15pp vs confirmatory framing.
-- **Idempotent**: Skips tasks already tagged `planned` or `needs_input` by parsing tags from `tk show` frontmatter. Safe to call repeatedly — from the ralph loop inline or standalone. This is also the mechanism that prevents double-evaluation of planner-produced tasks.
+- **Idempotent**: Skips tasks already tagged `planned` or `needs_input` by checking `tk list -T <tag>` — delegates tag matching to tk instead of regex-parsing YAML frontmatter. Safe to call repeatedly — from the ralph loop inline or standalone. This is also the mechanism that prevents double-evaluation of planner-produced tasks.
 - **Tags rejected tasks**: NEEDS_INPUT tasks get a `needs_input` tag (in addition to a note with questions). This prevents the ralph loop from re-triaging the same task on every iteration.
 - **Async notification**: OS-level notification (macOS/Linux) + terminal bell on NEEDS_INPUT. The notification is a best-effort nudge — dismissable, non-persistent. The durable record is the tk tag + note: `tk list -T needs_input` finds outstanding items, `tk show <id>` has the preflight questions. Run artifacts (`claude-output.txt`, etc.) live at the run path logged at startup.
 - **Explicit `.tickets/` logging**: tk resolves `.tickets/` by walking parent directories (or `TICKETS_DIR` env var), so it could be anywhere up the tree. Preflight logs the resolved path at startup so the human knows which ticket store is in scope.
@@ -296,7 +354,7 @@ _ralph_notify() {
   local message="$2"
   printf '\a'  # terminal bell
   case "$OSTYPE" in
-    darwin*) osascript -e "display notification \"$message\" with title \"$title\"" 2>/dev/null ;;
+    darwin*) osascript -e 'display notification "'"$(printf '%s' "$message" | sed 's/["\]/\\&/g')"'" with title "'"$(printf '%s' "$title" | sed 's/["\]/\\&/g')"'"' 2>/dev/null ;;
     linux*)  command_exists notify-send && notify-send "$title" "$message" 2>/dev/null ;;
   esac
 }
@@ -322,12 +380,12 @@ _resolve_tickets_dir() {
 
 export -f _resolve_tickets_dir
 
-ralph_preflight() {
+ralph_preflight() (
   local project_dir="${1:-.}"
   cd "$project_dir" || return 1
 
-  command_exists tk || { echo "error: tk not found" >&2; return 1; }
-  command_exists claude || { echo "error: claude not found" >&2; return 1; }
+  [ "$(command_exists tk)" = 'true' ] || { echo "error: tk not found" >&2; return 1; }
+  [ "$(command_exists claude)" = 'true' ] || { echo "error: claude not found" >&2; return 1; }
 
   # Resolve and log .tickets/ location
   local tickets_dir
@@ -344,7 +402,7 @@ ralph_preflight() {
   local planned=0 needs_input=0 skipped=0
 
   # tk ready output: "<id>  [P<priority>][<status>] - <title>"
-  echo "$task_lines" | while read -r line; do
+  while read -r line; do
     local task_id
     task_id=$(echo "$line" | awk '{print $1}')
     [ -z "$task_id" ] && continue
@@ -353,8 +411,9 @@ ralph_preflight() {
     local task_detail
     task_detail=$(tk show "$task_id")
 
-    # Skip already-evaluated tasks by parsing tags from frontmatter
-    if echo "$task_detail" | grep -q '^tags:.*\(planned\|needs_input\)'; then
+    # Skip already-evaluated tasks — use tk's own tag filtering instead of parsing YAML
+    if tk list -T planned 2>/dev/null | grep -q "^$task_id " || \
+       tk list -T needs_input 2>/dev/null | grep -q "^$task_id "; then
       echo "  SKIP       $task_id (already evaluated)"
       skipped=$((skipped + 1))
       continue
@@ -388,25 +447,28 @@ $task_detail"
     local output
     output=$(claude -p "$preflight_prompt" 2>&1)
 
-    if echo "$output" | grep -q "NEEDS_INPUT"; then
-      tk tag "$task_id" needs_input
-      tk update "$task_id" --note "preflight: $output"
-      echo "  NEEDS_INPUT $task_id — review: tk show $task_id ($tickets_dir/$task_id.md)"
-      _ralph_notify "Ralph: needs input" "$task_id requires clarification. Run: tk show $task_id"
-      needs_input=$((needs_input + 1))
-    else
+    if echo "$output" | grep -q "^READY"; then
+      # TODO: tk does not have a 'tag' command — need plugin or helper to add tags to existing tickets.
       tk tag "$task_id" planned
       echo "  PLANNED     $task_id"
       planned=$((planned + 1))
+    else
+      # Default to NEEDS_INPUT — a false NEEDS_INPUT is cheap, a false READY is expensive.
+      # TODO: tk does not have a 'tag' command — need plugin or helper to add tags to existing tickets.
+      tk tag "$task_id" needs_input
+      tk add-note "$task_id" "preflight: $output"
+      echo "  NEEDS_INPUT $task_id — review: tk show $task_id ($tickets_dir/$task_id.md)"
+      _ralph_notify "Ralph: needs input" "$task_id requires clarification. Run: tk show $task_id"
+      needs_input=$((needs_input + 1))
     fi
-  done
+  done <<< "$task_lines"
 
   echo "---"
   echo "Planned: $planned | Needs input: $needs_input | Skipped: $skipped"
   if [ "$needs_input" -gt 0 ]; then
     echo "Review items needing input: tk list -T needs_input"
   fi
-}
+)
 
 export -f ralph_preflight
 ```
@@ -419,17 +481,29 @@ Add task management section. These are the behavioral norms that apply to every 
 ## Task Management
 - Use `tk ready` to find unblocked tasks
 - Use `tk show <id>` before starting work to understand full context
-- Use `tk update <id> --status in_progress` when starting a task
+- Use `tk start <id>` when starting a task
 - Use `tk close <id>` when done, with a note summarizing what was done
 - Do not work on tasks that are blocked by unfinished dependencies
 - If you encounter work that should be split off, use `tk create` to make a new task
 - If a new task depends on or blocks the current task, use `tk dep` to set dependencies
+- **Do not create tasks that are unrelated to the current task** — only split off work discovered during implementation
 - Verify your work before closing — run tests, check diffs, confirm the change does what the task asked
 ```
 
+### Agent-created tasks and scope expansion
+
+The CLAUDE.md instructions permit the executing agent to `tk create` new tasks and `tk dep` to set dependencies. This is intentional — agents discover necessary sub-work during implementation. But combined with inline preflight (`RALPH_AUTO_PREFLIGHT=true`), this creates a self-feeding loop: agent creates task → preflight auto-approves → ralph executes in the same run.
+
+**Constraints**:
+- `RALPH_MAX_TASKS` bounds total iterations (human-created and agent-created combined)
+- CLAUDE.md restricts `tk create` to work discovered during implementation of the current task (no unrelated tasks)
+- Agent-created tasks still pass through preflight — they don't get automatic `planned` tags
+
+**Known gap**: There is no mechanism to distinguish human-created from agent-created tasks in the queue. `RALPH_MAX_TASKS` is the only hard bound. For v1, this is acceptable — the human reviews diffs post-run. If agent scope creep becomes a problem, options include: a `source:agent` tag on agent-created tasks (for visibility), a separate `RALPH_MAX_AGENT_TASKS` limit, or requiring agent-created tasks to go through planner-level evaluation instead of fast preflight.
+
 ### File: `bash/.bash_profile` (edit)
 
-Add after line 13 (`source ~/.bash/aliases.sh`):
+Add after line 14 (`source ~/.bash/powerline.sh`) — after all existing shell config is loaded:
 ```bash
 source ~/.bash/ralph.sh
 ```
@@ -439,13 +513,15 @@ source ~/.bash/ralph.sh
 ```
 .ralph/
 └── runs/
-    └── 20260308-143022/
+    └── 20260308-143022-a1b2c3d4/
         ├── summary.md
         └── tasks/
             └── <task-id>/
-                ├── result.md           # status, task_id, timestamp
+                ├── result.md           # status, task_id, exit_code, timestamp
                 ├── claude.json         # raw session output (--output-format json)
-                └── diff.patch          # git diff at completion
+                ├── claude.stderr       # stderr from claude invocation
+                ├── commit              # commit hash (only if agent committed)
+                └── diff.patch          # committed diff (only if agent committed)
 ```
 
 Extension-ready:
@@ -479,6 +555,8 @@ Promotion of ralph artifacts into the PKM knowledge base (`.ref.md`, `.synth.md`
 
 Promotion is a separate, lazy process — human-triggered or periodically-triggered — that takes reviewed ralph artifacts as input and produces knowledgebase documents. Ralph makes promotion easy by producing well-structured artifacts with frontmatter (`summary`, `topics`, `sources`); the *decision to promote* happens later.
 
+The `/to-pkm` skill handles a related but distinct case: converting *conversation* content (from any session, not just ralph) into PKM artifacts via manifest-first review. Ralph artifact promotion — selecting which *task outputs* are worth preserving as durable knowledge — remains a separate concern.
+
 ## Verification
 
 1. **Shellcheck**: `shellcheck bash/.bash/ralph.sh`
@@ -489,7 +567,7 @@ Promotion is a separate, lazy process — human-triggered or periodically-trigge
 6. **Idempotent preflight**: Run `ralph_preflight` twice → verify already-tagged tasks are skipped
 7. **Execution**: `ralph` → verify planned task picked up, executed, artifacts written
 8. **Inline preflight**: Create task with dep → close dep → verify ralph auto-preflights and executes the newly-ready task
-9. **Failure**: Create a task designed to fail → verify `blocked` status + note
+9. **Failure**: Create a task designed to fail → verify task stays `in_progress` + note attached + ralph skips it on next iteration
 7. **Stow**: `stow bash` → verify `~/.bash/ralph.sh` symlinked
 8. **Regression**: `./test.sh` passes
 
