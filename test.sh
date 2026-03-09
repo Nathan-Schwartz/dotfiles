@@ -18,7 +18,7 @@ echo "Running vint..."
 vint vim/.vimrc
 
 echo "Running shellcheck..."
-shellcheck --severity=warning test.sh scripts/** bash/.bash_profile bash/.bashrc bash/.bash/**
+shellcheck --severity=warning test.sh scripts/** bash/.bash_profile bash/.bashrc bash/.bash/** vendor/tk-plugins/**
 
 echo "Running jq..."
 jq empty < iterm/darkProfile.json
