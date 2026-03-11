@@ -109,6 +109,9 @@ endif
 " Setup a color theme
 set background=dark
 
+" Let terminal background color show through
+let g:solarized_termtrans=1
+
 try
   colorscheme solarized
 catch /^Vim\%((\a\+)\)\=:E185/
