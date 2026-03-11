@@ -115,36 +115,8 @@ catch /^Vim\%((\a\+)\)\=:E185/
   " deal with it
 endtry
 
-
-command! ToggleBackground :call ToggleBackground()
-
 " Red Git conflict highlighting
 match ErrorMsg '^\(<\|=\|>\)\{7\}\([^=].\+\)\?$'
-
-" Toggle iterm and vim between dark and light
-function! ToggleBackground() abort
-  if &background ==? 'dark'
-    set background=light
-    normal :!echo -e "\033]50;SetProfile=Light\a"
-  elseif &background ==? 'light'
-    set background=dark
-    normal :!echo -e "\033]50;SetProfile=Dark\a"
-  endif
-
-  if !exists('g:loaded_lightline')
-    return
-  endif
-
-  try
-    if g:colors_name =~# 'solarized'
-      runtime autoload/lightline/colorscheme/solarized.vim
-      call lightline#init()
-      call lightline#colorscheme()
-      call lightline#update()
-    endif
-  catch
-  endtry
-endfunction
 
 " ---------- Plugins ---------- {{{1
 " Ack {{{2

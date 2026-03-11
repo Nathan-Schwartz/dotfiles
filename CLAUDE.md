@@ -127,7 +127,6 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 - **Visual search**: `<leader>/` — search for highlighted text
 - **Visual repeat**: `<leader>.` — apply last operation to selected lines; `<leader>o` — apply macro "o" to selected lines
 - **OpenQFTabs**: opens all quickfix results in separate tabs
-- **ToggleBackground**: switches solarized dark/light and iTerm profile
 - `<leader>gf` — follow JS import to source file in new tab
 - `<leader>=` — re-indent entire file
 - `<leader>rel` — reload vimrc
