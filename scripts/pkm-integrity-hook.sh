@@ -63,10 +63,17 @@ format_schema() {
     "Frontmatter schema for .\($t).md:\n" +
     "Required fields:\n" +
     ($schema.required | to_entries | map("  - \(.key) (\(.value))") | join("\n")) +
-    if ($schema.optional | length) > 0 then
+    (if ($schema.optional | length) > 0 then
       "\nOptional fields:\n" +
       ($schema.optional | to_entries | map("  - \(.key) (\(.value))") | join("\n"))
-    else "" end
+    else "" end) +
+    (if ($schema.content_rules | length) > 0 then
+      "\n\nContent rules for .\($t).md:\n" +
+      "Principle: " + $schema.content_rules.principle + "\n\n" +
+      "MUST NOT contain:\n" +
+      ($schema.content_rules.must_not_contain | map("  - " + .) | join("\n")) +
+      "\n\n" + $schema.content_rules.when_in_doubt
+    else "" end)
   ' "$SCHEMA_FILE"
 }
 

@@ -3,7 +3,7 @@
   "types": {
     "ref": {
       "extension": ".ref.md",
-      "description": "External knowledge — sources, evidence, literature. Cheapest to verify.",
+      "description": "External knowledge — facts, tool behaviors, source summaries. Cheapest to verify.",
       "required": {
         "summary": "string",
         "generated": "bool",
@@ -15,11 +15,23 @@
         "id": "string",
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
+      },
+      "content_rules": {
+        "principle": "External knowledge: facts, tool behaviors, source summaries. Every claim must be verifiable against a cited external source.",
+        "must_not_contain": [
+          "Design proposals or options (e.g. 'Option A vs Option B', 'Proposed approach')",
+          "Recommendations or strategic advice (e.g. 'Recommended', 'Should consider')",
+          "Risk assessments or evaluative judgments (e.g. 'high risk', 'maximally friendly')",
+          "Implications sections that reason about what facts mean for unrelated work",
+          "Proposed code changes, implementation sketches, or 'minimal change sets'",
+          "Comparative analysis or trade-off discussion between alternatives"
+        ],
+        "when_in_doubt": "Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in."
       }
     },
     "synth": {
       "extension": ".synth.md",
-      "description": "Original thinking — analysis, synthesis, design. Expensive to verify.",
+      "description": "Original thinking — analysis, decisions, designs, proposals. Expensive to verify.",
       "required": {
         "summary": "string",
         "generated": "bool",
@@ -32,6 +44,15 @@
         "id": "string",
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
+      },
+      "content_rules": {
+        "principle": "Original thinking: analysis, decisions, designs, proposals. Cite .ref.md files for supporting facts rather than restating them inline.",
+        "must_not_contain": [
+          "Raw facts or source documentation that belong in a .ref.md (extract and cite instead)",
+          "Navigation structures, file listings, or cross-reference maps (use .index.md)",
+          "Unstructured scratch notes or questions without analysis (use .temp.md)"
+        ],
+        "when_in_doubt": "If a section is purely factual and verifiable against an external source, extract it to a .ref.md and cite it. Synths should be lean — reasoning and conclusions, not restated evidence."
       }
     },
     "temp": {
@@ -48,6 +69,14 @@
         "sources": "string[]",
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
+      },
+      "content_rules": {
+        "principle": "Scratch space with no verification burden. Capture thoughts quickly; promote to .ref.md or .synth.md when the content solidifies.",
+        "must_not_contain": [
+          "Polished analysis or design decisions that should be a .synth.md",
+          "Verified facts with source citations that should be a .ref.md"
+        ],
+        "when_in_doubt": "Keep it in .temp.md. Temp is the lowest-cost default — it's always safe to start here and promote later."
       }
     },
     "index": {
@@ -64,6 +93,15 @@
         "id": "string",
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
+      },
+      "content_rules": {
+        "principle": "Purely structural. Links, lists, and cross-references to other PKM files. No original content — all substance lives in the files being linked.",
+        "must_not_contain": [
+          "Original analysis or commentary (use .synth.md)",
+          "Factual documentation (use .ref.md)",
+          "Prose paragraphs — index files should be links and brief descriptions, not essays"
+        ],
+        "when_in_doubt": "If you're writing more than a sentence of description per link, the content probably belongs in its own .ref.md or .synth.md."
       }
     }
   }
