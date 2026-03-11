@@ -57,5 +57,7 @@
     }
   },
   "model": "claude-opus-4-6",
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "outputStyle": "explanatory",
+  "editorMode": "vim"
 }
