@@ -86,7 +86,8 @@ __powerline() {
             # promptvars is disabled. Avoid creating unnecessary env var.
             local git="$COLOR_GIT$(__git_info)$RESET"
         fi
-        local hostname="$HOSTNAME$RESET ($(($SHLVL - $SHELL_DEPTH_OFFSET))) "
+        local custom_hostname="${CUSTOM_HOSTNAME:-$HOSTNAME}"
+        local hostname="$custom_hostname$RESET ($(($SHLVL - $SHELL_DEPTH_OFFSET))) "
 
         PS1="$hostname$cwd$git$symbol"
     }
