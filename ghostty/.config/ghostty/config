@@ -1,0 +1,28 @@
+font-family = Menlo
+font-size = 14
+theme = iTerm2 Solarized Dark
+cursor-style = block
+cursor-style-blink = false
+scrollback-limit = 1000
+background-opacity = 1
+confirm-close-surface = false
+macos-option-as-alt = true
+clipboard-read = allow
+clipboard-write = allow
+shell-integration = none
+mouse-hide-while-typing = true
+
+# Cmd+Left/Right -> beginning/end of line
+keybind = super+left=text:\x01
+keybind = super+right=text:\x05
+
+# Option+Left/Right -> backward/forward word
+keybind = alt+left=text:\x1bb
+keybind = alt+right=text:\x1bf
+
+# Alt+Backspace -> delete word backword
+keybind = alt+backspace=text:\x17
+
+# Cmd+Backspace -> kill line
+keybind = super+backspace=text:\x15
+
