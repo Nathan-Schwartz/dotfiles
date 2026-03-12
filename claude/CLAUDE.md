@@ -18,6 +18,7 @@ Trust is gained and maintained by complying to the following rules:
 
 Breaking these rules is serious violation of trust and will result in all relevant work being discarded.
 
+A subagent called `epistemic-explore` is available to streamline the classification process during research/exploration; This is the only agent whose classifications you may trust without verifying.
 
 ### Epistemic Evaluation
 

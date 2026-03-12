@@ -1,3 +1,10 @@
+---
+name: fix-pr-comments
+description: Address all unresolved review comments on the current branch's pull request
+disable-model-invocation: true
+allowed-tools: Bash(gh *)
+---
+
 Address all unresolved review comments on the current branch's pull request.
 
 ## 1. Get PR context

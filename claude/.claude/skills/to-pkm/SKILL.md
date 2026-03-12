@@ -1,4 +1,15 @@
+---
+name: to-pkm
+description: >-
+  Convert conversation context into atomic PKM artifacts (.ref.md, .synth.md, .temp.md)
+  with compound extensions and frontmatter. Use when the user asks to capture findings,
+  save research, or create knowledge base entries.
+argument-hint: [target-directory]
+---
+
 Convert the current conversation into atomic PKM artifacts with compound extensions, frontmatter, and manifest-first review.
+
+For frontmatter schema details, see [pkm-schema-reference.md](pkm-schema-reference.md).
 
 ## 1. Validate target
 
@@ -10,8 +21,8 @@ Verify it exists. If empty or omitted, ask the user.
 
 Scan the full conversation. Classify content into three buckets:
 
-- **ref** — facts learned, tool behaviors observed, external patterns. Things that were true before this conversation happened. Must not contain: recommendations, risk assessments, design proposals, comparative analysis.
-- **synth** — decisions made, analysis produced, designs proposed. Things that exist *because* of this conversation. Must not contain: raw verifiable facts (extract to a ref and cite instead), navigation structures.
+- **ref** — facts learned, tool behaviors observed, external patterns. Things that were true before this conversation happened.
+- **synth** — decisions made, analysis produced, designs proposed. Things that exist *because* of this conversation.
 - **temp** — questions raised, half-formed ideas, things to explore. No expectation of completeness.
 
 **Ref bias**: Actively decompose reasoning to extract embedded facts. A discussion about "use tool X because Y" contains ref material (what X does, its tradeoffs) tangled with synth material (the decision to use it, why it fits). Separate them. The goal: more of the output lands in the cheapest-to-verify tier (facts checkable against sources).
