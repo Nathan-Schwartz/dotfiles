@@ -170,9 +170,9 @@ function python_installs() {
 function upgrade_dependencies() {
   if [ ! "$skip_commits" = true ]; then
     cd "$DOTFILES_DIR"
-    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle vendor/ticket)" ]; then
+    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle vendor/ticket tmux/.tmux/plugins)" ]; then
       log "Committing pre-upgrade state"
-      git add -f mise/.tool-versions vim/.vim/bundle vendor/ticket
+      git add -f mise/.tool-versions vim/.vim/bundle vendor/ticket tmux/.tmux/plugins
       git commit -m "install: pre-upgrade state at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     fi
     cd -
@@ -193,9 +193,9 @@ function upgrade_dependencies() {
 
   if [ ! "$skip_commits" = true ]; then
     cd "$DOTFILES_DIR"
-    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle vendor/ticket)" ]; then
+    if [ -n "$(git diff --name-only -- mise/.tool-versions vim/.vim/bundle vendor/ticket tmux/.tmux/plugins)" ]; then
       log "Committing upgraded dependencies"
-      git add -f mise/.tool-versions vim/.vim/bundle vendor/ticket
+      git add -f mise/.tool-versions vim/.vim/bundle vendor/ticket tmux/.tmux/plugins
       git commit -m "install: upgraded on $(date -u +%Y-%m-%dT%H:%M:%SZ)"
     fi
     cd -

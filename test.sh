@@ -23,6 +23,7 @@ shellcheck --severity=warning test.sh scripts/**.sh bash/.bash_profile bash/.bas
 echo "Running jq..."
 jq empty < iterm/darkProfile.json
 
+assert "$(command_exists tmux)" "true" 'Tmux not installed'
 assert "$(command_exists node)" "true" 'Node not installed'
 assert "$(command_exists python3)" "true" 'Python 3 not installed'
 assert "$(command_exists bash)" "true" 'Bash not installed'

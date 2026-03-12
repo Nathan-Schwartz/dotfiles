@@ -45,6 +45,9 @@ if [ -n "$PS1" ] && [ "$(command_exists brew)" = 'true' ]; then
   fi
 fi
 
+# Used by tmux to load the desired bash executable
+export BASH_PATH="$(which bash)"
+
 # Load any environment-specific aliases, paths, etc
 if [ -a ~/.bash_profile.local ]; then
   source ~/.bash_profile.local

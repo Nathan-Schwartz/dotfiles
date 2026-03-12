@@ -61,3 +61,6 @@
 [submodule "vendor/ticket"]
 	path = vendor/ticket
 	url = https://github.com/wedow/ticket.git
+[submodule "tmux/.tmux/plugins/resurrect"]
+	path = tmux/.tmux/plugins/resurrect
+	url = https://github.com/tmux-plugins/tmux-resurrect.git
