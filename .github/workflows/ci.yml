@@ -16,6 +16,9 @@ on: # yamllint disable-line
   schedule:
     - cron: "0 0 * * *"
 
+env:
+  NODE_LLAMA_CPP_SKIP_DOWNLOAD: "true"
+
 jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
