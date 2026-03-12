@@ -10,8 +10,8 @@ Verify it exists. If empty or omitted, ask the user.
 
 Scan the full conversation. Classify content into three buckets:
 
-- **ref** — facts learned, tool behaviors observed, external patterns. Things that were true before this conversation happened.
-- **synth** — decisions made, analysis produced, designs proposed. Things that exist *because* of this conversation.
+- **ref** — facts learned, tool behaviors observed, external patterns. Things that were true before this conversation happened. Must not contain: recommendations, risk assessments, design proposals, comparative analysis.
+- **synth** — decisions made, analysis produced, designs proposed. Things that exist *because* of this conversation. Must not contain: raw verifiable facts (extract to a ref and cite instead), navigation structures.
 - **temp** — questions raised, half-formed ideas, things to explore. No expectation of completeness.
 
 **Ref bias**: Actively decompose reasoning to extract embedded facts. A discussion about "use tool X because Y" contains ref material (what X does, its tradeoffs) tangled with synth material (the decision to use it, why it fits). Separate them. The goal: more of the output lands in the cheapest-to-verify tier (facts checkable against sources).
@@ -31,7 +31,7 @@ Present a numbered list inline in the conversation. Each item shows:
 - One-line summary
 - Topics
 - `related:` links to other proposed files (certain — created in the same invocation)
-- `sources:` for synths (which refs or conversation content informed them)
+- `sources:` (refs, URLs, files, or notes the content derives from)
 
 Example format:
 
@@ -41,6 +41,7 @@ PROPOSED FILES (confirm/drop/reclassify):
 1. [ref] qmd-capabilities.ref.md
    summary: "qmd provides hybrid BM25 + semantic + LLM re-ranking search via CLI and MCP"
    topics: [semantic-retrieval, qmd, toolchain]
+   sources: [github.com/tobi/qmd]
 
 2. [synth] to-pkm-design.synth.md
    summary: "Design for /to-pkm skill as PKM-native session capture"
@@ -66,10 +67,10 @@ For each confirmed item, write the file to the target directory with frontmatter
 
 ```yaml
 ---
-id: <kebab-case-id>
 summary: "<one-line>"
 topics: [...]
-auto_summary: true
+generated: true
+created: "<ISO-8601 datetime>"
 ---
 ```
 
@@ -80,13 +81,13 @@ status: draft
 sources: [...]
 ```
 
-**Temps** additionally get:
+**Refs** additionally get:
 
 ```yaml
-captured: YYYY-MM-DD
+sources: [...]
 ```
 
-**Refs** get no additional required fields for now. Add `sources:` or `origin:` in frontmatter or body as appropriate to the content.
+Populate `sources:` with the origin of the facts — URLs, filenames, or descriptions of the external source. Every ref must cite where its claims come from.
 
 Add `related:` in frontmatter for cross-references between files created in this invocation.
 
@@ -100,11 +101,11 @@ Filename: `session-YYYY-MM-DD-HHMM.index.md`
 
 ```yaml
 ---
-id: session-YYYY-MM-DD-HHMM
-date: YYYY-MM-DD
 summary: "<one-line session summary>"
 topics: [<union of all created file topics>]
-auto_summary: true
+sources: [<list of all files created in this session>]
+generated: true
+created: "<ISO-8601 datetime>"
 ---
 ```
 
@@ -114,7 +115,7 @@ Body: categorized list of all created files with their summaries, grouped by typ
 
 - **Never write files before manifest confirmation.**
 - **Never edit existing files** in the target directory.
-- Every file gets `auto_summary: true` — nothing claims to be human-reviewed.
+- Every file gets `generated: true` — nothing claims to be human-reviewed.
 - Ref bias means actively decomposing reasoning to extract embedded facts. When the type is genuinely ambiguous, ask.
 - Atomicity: one idea per file. But "one idea" means one coherent topic, not one sentence.
 - Filenames: kebab-case with compound extension (`.ref.md`, `.synth.md`, `.temp.md`). Descriptive but concise.
