@@ -38,24 +38,36 @@ When in doubt, err on the side of the lower classification.
 
 Do not combine verified and inferred claims in a single assertion without labeling each part.
 
+### Epistemic Classification in PKM Artifacts
+
+The classifications above apply to claims within PKM file bodies:
+
+- `.ref.md` files should contain primarily **Verified** claims. If most claims are Inferred or Guess, the content likely belongs in `.synth.md` or `.temp.md` instead.
+- `.synth.md` files naturally contain more **Inferred** claims, but supporting facts should still be Verified and ideally extracted to cited `.ref.md` files.
+- `.temp.md` files have no epistemic burden.
+
 
 ## Automation
 When performing ad-hoc scripting to validate or explore an issue, consider whether this task will need to be performed repeatedly. If so, suggest creating a durable, deterministic tool or script.
 Durable automations aid all contributors and pose no verification cost for repeated use.
 
-## PKM Compound Extensions
+## PKM
 
-Files with compound extensions (`.ref.md`, `.synth.md`, `.temp.md`, `.index.md`) are knowledge base artifacts with enforced frontmatter schemas. A PostToolUse hook validates every Write/Edit — get the frontmatter right the first time. Full schema: `scripts/schemas/pkm.json`.
+Files with compound extensions (`.ref.md`, `.synth.md`, `.temp.md`, `.index.md`) are knowledge base artifacts with enforced frontmatter schemas.
 
-frontmatter `sources` values are expected to be relative paths from the note itself to referenced pkm notes.
+Full type definitions, required/optional frontmatter fields, content boundaries, and "must not contain" rules are available in `~/.claude/references/pkm-schema-reference.md` (generated from `scripts/schemas/pkm.json`).
 
-### Types and Content Rules
+The PreToolUse hook re-injects these rules at write time as a safety net, but correct reasoning depends on reading the reference during planning. Do not circumvent the hook by using sed/echo/mv.
 
-Type definitions, content boundaries, and "must not contain" rules live in `scripts/schemas/pkm.json`. The PreToolUse hook injects these rules before every Write/Edit to a compound-extension file — read them there, not here. Do not circumvent this hook by using sed/echo/mv.
+**Read pkm-schema-reference.md before reasoning about PKM file types** — when classifying content as ref vs synth vs temp, deciding what frontmatter to include, or determining whether content belongs in a given file type.
 
-Most sessions contain ref-shaped material (facts, observations) tangled inside reasoning. Separating it means more knowledge lives in the cheapest-to-verify tier, and synths get shorter because they cite refs instead of restating facts.
+The four types:
+- **ref** — external facts, tool behaviors, source summaries. Cheapest to verify.
+- **synth** — analysis, decisions, designs, proposals. Expensive to verify.
+- **temp** — questions, half-formed ideas, scratch notes. No verification burden.
+- **index** — navigation and cross-references. No original content.
 
-Actively decompose content to create more genuine `.ref.md` output.
+Most sessions contain ref-shaped material (facts, observations) tangled inside reasoning. Actively decompose content to extract refs — more knowledge lands in the cheapest-to-verify tier, and synths get shorter because they cite refs instead of restating facts.
 
 ### qmd (Semantic Search)
 

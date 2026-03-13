@@ -9,7 +9,9 @@ argument-hint: [target-directory]
 
 Convert the current conversation into atomic PKM artifacts with compound extensions, frontmatter, and manifest-first review.
 
-For frontmatter schema details, see [pkm-schema-reference.md](pkm-schema-reference.md).
+!`cat ${CLAUDE_SKILL_DIR}/../../references/epistemic-reference.md`
+
+!`cat ${CLAUDE_SKILL_DIR}/../../references/pkm-schema-reference.md`
 
 ## 1. Validate target
 
@@ -41,8 +43,7 @@ Present a numbered list inline in the conversation. Each item shows:
 - Proposed filename (kebab-case with compound extension)
 - One-line summary
 - Topics
-- `related:` links to other proposed files (certain — created in the same invocation)
-- `sources:` (refs, URLs, files, or notes the content derives from)
+- `sources:` (refs, URLs, files, or notes the content derives from — includes cross-references to other proposed files)
 
 Example format:
 
@@ -57,8 +58,7 @@ PROPOSED FILES (confirm/drop/reclassify):
 2. [synth] to-pkm-design.synth.md
    summary: "Design for /to-pkm skill as PKM-native session capture"
    topics: [session-capture, pkm, trust-economics]
-   sources: [pkm.synth.md, AI_TOOLING.md]
-   related: [qmd-capabilities.ref.md]
+   sources: [pkm.synth.md, AI_TOOLING.md, qmd-capabilities.ref.md]
 
 3. [temp] scratch-obsolescence.temp.md
    summary: "Does /scratch serve a purpose now that .temp.md exists?"
@@ -72,35 +72,9 @@ Reply with any changes, or confirm to write all. Examples:
 
 ## 4. Write confirmed files
 
-For each confirmed item, write the file to the target directory with frontmatter and body content.
+For each confirmed item, write the file to the target directory. Use the required and optional frontmatter fields from the schema reference above for each type.
 
-**All types** get:
-
-```yaml
----
-summary: "<one-line>"
-topics: [...]
-generated: true
-created: "<ISO-8601 datetime>"
----
-```
-
-**Synths** additionally get:
-
-```yaml
-status: draft
-sources: [...]
-```
-
-**Refs** additionally get:
-
-```yaml
-sources: [...]
-```
-
-Populate `sources:` with the origin of the facts — URLs, filenames, or descriptions of the external source. Every ref must cite where its claims come from.
-
-Add `related:` in frontmatter for cross-references between files created in this invocation.
+Include cross-references to other files created in this invocation in the `sources:` list alongside external sources.
 
 **Body content**: Write the actual substance — not a summary of the conversation, but the knowledge itself. For refs, document the facts clearly. For synths, capture the reasoning and decisions. For temps, capture the question or idea with enough context to be useful later.
 
@@ -122,6 +96,16 @@ created: "<ISO-8601 datetime>"
 
 Body: categorized list of all created files with their summaries, grouped by type (Refs, Synths, Temp).
 
+## 6. Update search index
+
+After all files are written, update vector embeddings so semantic search can find the new content:
+
+```
+qmd embed
+```
+
+The PostToolUse hook keeps the keyword index current automatically, but vector embeddings require this explicit step.
+
 ## Rules
 
 - **Never write files before manifest confirmation.**
@@ -131,4 +115,4 @@ Body: categorized list of all created files with their summaries, grouped by typ
 - Atomicity: one idea per file. But "one idea" means one coherent topic, not one sentence.
 - Filenames: kebab-case with compound extension (`.ref.md`, `.synth.md`, `.temp.md`). Descriptive but concise.
 - If the conversation produced nothing worth capturing, say so and stop. Don't manufacture content.
-- **qmd indexing**: A PostToolUse hook automatically updates the qmd index for existing collections. If the target directory is not yet a qmd collection, remind the user to run `qmd-sync.sh <dir>` to register it.
+- **qmd indexing**: A PostToolUse hook automatically updates the qmd keyword index for existing collections. If the target directory is not yet a qmd collection, remind the user to run `qmd-sync.sh <dir>` to register it.

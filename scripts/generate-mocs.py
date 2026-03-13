@@ -132,7 +132,7 @@ def scan_documents(base_dir):
                 "sources": fm.get("sources", [])
                 if isinstance(fm.get("sources"), list)
                 else [],
-                "related": fm.get("related", [])
+                "related": fm.get("related", [])  # legacy field, read for backlink compat
                 if isinstance(fm.get("related"), list)
                 else [],
                 "status": fm.get("status", ""),
@@ -178,8 +178,6 @@ def format_entry(doc, backlinks, out_dir):
 
     if doc["sources"]:
         parts.append(f"  - sources: {', '.join(doc['sources'])}")
-    if doc["related"]:
-        parts.append(f"  - related: {', '.join(doc['related'])}")
 
     # Backlinks: other PKM docs that reference this document
     refs = set()
@@ -208,6 +206,10 @@ def generate_moc(topic, docs, backlinks, topic_map, out_dir):
         ),
     }
 
+    source_list = sorted(set(
+        os.path.relpath(d["path"], out_dir) for d in docs
+    ))
+
     lines = [
         "---",
         f'summary: "Map of content for {topic}"',
@@ -215,6 +217,11 @@ def generate_moc(topic, docs, backlinks, topic_map, out_dir):
         f'created: "{now}"',
         "topics:",
         f"  - {topic}",
+        "sources:",
+    ]
+    for src in source_list:
+        lines.append(f"  - {src}")
+    lines += [
         "---",
         "",
         f"# {topic}",
@@ -246,9 +253,15 @@ def generate_moc(topic, docs, backlinks, topic_map, out_dir):
 
 
 def clean_generated_mocs(directory):
-    """Remove *.index.md files that were previously generated (generated: true)."""
+    """Remove topic MOCs that were previously generated (generated: true).
+
+    Skips session-*.index.md files — those are created by /to-pkm and
+    should not be cleaned by MOC regeneration.
+    """
     removed = []
     for path in directory.glob("*.index.md"):
+        if path.name.startswith("session-"):
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):

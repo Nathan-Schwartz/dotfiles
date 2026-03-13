@@ -16,6 +16,13 @@
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
       },
+      "field_hints": {
+        "summary": "one-line description",
+        "generated": "always true for AI-generated",
+        "created": "ISO-8601",
+        "topics": "classification tags",
+        "sources": "where the facts come from (URLs, filenames, relative paths to PKM notes)"
+      },
       "content_rules": {
         "principle": "External knowledge: facts, tool behaviors, source summaries. Every claim must be verifiable against a cited external source.",
         "must_not_contain": [
@@ -45,6 +52,14 @@
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
       },
+      "field_hints": {
+        "summary": "one-line description of the analysis or decision",
+        "generated": "always true for AI-generated",
+        "created": "ISO-8601",
+        "topics": "classification tags",
+        "sources": "cited refs, URLs, files",
+        "status": "draft, partial, or complete"
+      },
       "content_rules": {
         "principle": "Original thinking: analysis, decisions, designs, proposals. Cite .ref.md files for supporting facts rather than restating them inline.",
         "must_not_contain": [
@@ -70,6 +85,11 @@
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
       },
+      "field_hints": {
+        "summary": "one-line description",
+        "generated": "always true for AI-generated",
+        "created": "ISO-8601"
+      },
       "content_rules": {
         "principle": "Scratch space with no verification burden. Capture thoughts quickly; promote to .ref.md or .synth.md when the content solidifies.",
         "must_not_contain": [
@@ -93,6 +113,13 @@
         "id": "string",
         "ai_reviewed_at": "datetime",
         "human_reviewed_at": "datetime"
+      },
+      "field_hints": {
+        "summary": "one-line description",
+        "generated": "always true for AI-generated",
+        "created": "ISO-8601",
+        "topics": "classification tags",
+        "sources": "files being indexed"
       },
       "content_rules": {
         "principle": "Purely structural. Links, lists, and cross-references to other PKM files. No original content — all substance lives in the files being linked.",

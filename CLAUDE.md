@@ -147,11 +147,13 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration.
 
 - `settings.json` — Default mode is `plan`. Permissions allow `tk *` and read-only git commands. Hooks run `pkm-integrity-hook.sh` on Write/Edit. MCP server configured for qmd.
-- `skills/to-pkm/SKILL.md` — `/to-pkm` skill: converts conversation context into PKM artifacts. Model-invocable.
-- `skills/to-pkm/pkm-schema-reference.md` — PKM frontmatter schema reference, loaded by the skill on demand.
+- `references/epistemic-reference.md` — Canonical epistemic classification definitions (V/I/G). Injected into skills via `!`cat``.
+- `references/pkm-schema-reference.md` — PKM frontmatter schema reference, generated from `scripts/schemas/pkm.json`. Injected into skills via `!`cat``.
+- `skills/to-pkm/SKILL.md` — `/to-pkm` skill: converts conversation context into PKM artifacts. Injects both references.
 - `skills/fix-pr-comments/SKILL.md` — `/fix-pr-comments` skill: addresses unresolved PR review comments. User-only (`disable-model-invocation: true`).
-- `skills/pkm-research/SKILL.md` — Reference material for epistemically classified PKM output. Not user-invocable; preloaded into the `epistemic-explore` agent.
-- `agents/epistemic-explore.md` — Research subagent with enforced epistemic classification (Verified/Inferred/Guess). Optionally persists findings as `.ref.md` artifacts.
+- `skills/epistemic-classification/SKILL.md` — Thin wrapper injecting epistemic reference. Not user-invocable; for agents needing epistemic rigor without PKM.
+- `skills/epistemic-pkm-research/SKILL.md` — Injects both references + behavioral guidance for research. Not user-invocable; preloaded into `epistemic-explore`.
+- `agents/epistemic-explore.md` — Research subagent with enforced epistemic classification. Preloads `epistemic-pkm-research` skill. Optionally persists findings as `.ref.md` artifacts.
 
 Projects extend permissions and settings at the project level (`<project>/.claude/settings.json`).
 
