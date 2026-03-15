@@ -10,9 +10,9 @@ user-invocable: false
 
 This skill provides behavioral guidance for producing epistemically classified PKM artifacts. It is preloaded into the epistemic-explore agent as reference material.
 
-!`cat ${CLAUDE_SKILL_DIR}/../../references/epistemic-reference.md`
+!`cat ~/.claude/references/epistemic-reference.md`
 
-!`cat ${CLAUDE_SKILL_DIR}/../../references/pkm-schema-reference.md`
+!`cat ~/.claude/references/pkm-schema-reference.md`
 
 ## When to Write vs. When to Return
 

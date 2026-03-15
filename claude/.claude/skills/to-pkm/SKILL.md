@@ -9,9 +9,9 @@ argument-hint: [target-directory]
 
 Convert the current conversation into atomic PKM artifacts with compound extensions, frontmatter, and manifest-first review.
 
-!`cat ${CLAUDE_SKILL_DIR}/../../references/epistemic-reference.md`
+!`cat ~/.claude/references/epistemic-reference.md`
 
-!`cat ${CLAUDE_SKILL_DIR}/../../references/pkm-schema-reference.md`
+!`cat ~/.claude/references/pkm-schema-reference.md`
 
 ## 1. Validate target
 

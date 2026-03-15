@@ -7,4 +7,4 @@ description: >-
 user-invocable: false
 ---
 
-!`cat ${CLAUDE_SKILL_DIR}/../../references/epistemic-reference.md`
+!`cat ~/.claude/references/epistemic-reference.md`
