@@ -9,7 +9,9 @@ confirm-close-surface = false
 macos-option-as-alt = true
 clipboard-read = allow
 clipboard-write = allow
-shell-integration = none
+shell-integration = detect
+shell-integration-features = no-cursor
+tab-inherit-working-directory = true
 mouse-hide-while-typing = true
 
 # Cmd+Left/Right -> beginning/end of line
