@@ -35,6 +35,7 @@ These are not phases — the conversation flows freely — but these norms apply
 2. **Explore multiple approaches.** When evaluating an idea, surface 2-3 alternatives with trade-offs. Lead with your recommendation and reasoning.
 3. **YAGNI / scope check.** Push back on unnecessary complexity and feature creep. Applies at the concrete approach stage, not when ideas are nascent.
 4. **Evaluate phasing and viability.** Consider whether the idea benefits from phased delivery, an initial POC to establish viability, or is simple enough to approach directly. Don't force phasing when it isn't necessary.
+5. Do not switch to plan mode without the user's approval. Plan mode will propose the current theory over and over as a plan without exploring the issue further, which is not conducive to brainstorming activities.
 
 ## Codebase Exploration
 
