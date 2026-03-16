@@ -144,18 +144,44 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 
 ## Claude Code (`claude/` stow module)
 
-The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration.
+The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration. Two layers govern behavior:
 
-- `settings.json` — Default mode is `plan`. Permissions allow `tk *` and read-only git commands. PostToolUse hook runs `pkm-integrity-hook.sh` on Write/Edit for PKM validation. MCP server configured for qmd.
-- `references/epistemic-reference.md` — Canonical epistemic classification definitions (V/I/G). Injected into skills via `!`cat``.
-- `references/pkm-schema-reference.md` — PKM frontmatter schema reference, generated from `scripts/schemas/pkm.json`. Injected into skills via `!`cat``.
-- `skills/to-pkm/SKILL.md` — `/to-pkm` skill: converts conversation context into PKM artifacts. Injects both references.
-- `skills/fix-pr-comments/SKILL.md` — `/fix-pr-comments` skill: addresses unresolved PR review comments. User-only (`disable-model-invocation: true`).
-- `skills/epistemic-classification/SKILL.md` — Thin wrapper injecting epistemic reference. Not user-invocable; for agents needing epistemic rigor without PKM.
-- `skills/epistemic-pkm-research/SKILL.md` — Injects both references + behavioral guidance for research. Not user-invocable; preloaded into `epistemic-explore`.
-- `agents/epistemic-explore.md` — Research subagent with enforced epistemic classification. Preloads `epistemic-pkm-research` skill. Optionally persists findings as `.ref.md` artifacts.
+### Global CLAUDE.md
 
-Projects extend permissions and settings at the project level (`<project>/.claude/settings.json`).
+`claude/CLAUDE.md` stows to `~/CLAUDE.md` and loads in every Claude Code session. It defines:
+
+- **Trust economics** — all interactions evaluated by verification cost, not automation savings
+- **Universally applicable rules** — no guessing intent, no unverified premises, mandatory epistemic classification (V/I/G) on all claims
+- **PKM system** — compound-extension files (`.ref.md`, `.synth.md`, `.temp.md`, `.index.md`) with enforced frontmatter schemas, ref-bias decomposition, and qmd semantic search integration
+- **Automation policy** — prefer durable scripts over ad-hoc when a task will recur
+
+Projects extend behavior at the project level (`<project>/.claude/settings.json` and `<project>/CLAUDE.md`).
+
+### settings.json
+
+Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `outputStyle: explanatory`, `editorMode: vim`. Shell is set to `/usr/local/bin/bash`.
+
+**Permissions (allowlist):** `tk *`, read-only git (`status`, `diff`, `log`, `show`, `rev-parse`, `remote -v`), and bash utilities (`which`, `pwd`, `file`, `wc`, `tree`, `ls`, `stat`). Everything else requires approval.
+
+**PostToolUse hook:** Every `Write|Edit` runs `pkm-integrity-hook.sh` which validates PKM frontmatter schemas and updates the qmd keyword index for compound-extension files.
+
+**MCP server:** qmd (via `scripts/qmd-mcp.sh`) provides semantic and keyword search across PKM collections.
+
+### Skills
+
+- **`/to-pkm`** — Converts conversation context into PKM artifacts. Manifest-first: proposes files, waits for confirmation before writing. Checks qmd for duplicates. Generates a session `.index.md`. Injects both reference docs.
+- **`/fix-pr-comments`** — Addresses unresolved PR review comments. User-only (`disable-model-invocation: true`). Tool-sandboxed to `Bash(gh *)` only.
+- **`epistemic-classification`** — Not user-invocable. Thin wrapper injecting epistemic reference for agents that need V/I/G rigor without PKM.
+- **`epistemic-pkm-research`** — Not user-invocable. Injects epistemic + PKM references with behavioral guidance (ref vs synth selection, qmd duplicate checking, return vs persist modes). Preloaded into `epistemic-explore`.
+
+### Agents
+
+- **`epistemic-explore`** — Research subagent with enforced epistemic classification. Tools: Read, Grep, Glob, Bash, Write, Edit. Has qmd MCP access. Output must use V/I/G tiers plus a mandatory "Not Checked" section. Two modes: return findings to caller (default) or persist as `.ref.md` artifacts when instructed.
+
+### Reference Docs
+
+- `references/epistemic-reference.md` — Canonical V/I/G classification definitions. Injected into skills via dynamic inclusion.
+- `references/pkm-schema-reference.md` — PKM frontmatter schema reference, generated from `scripts/schemas/pkm.json`. Injected into skills via dynamic inclusion.
 
 ## tk (Task Management)
 
