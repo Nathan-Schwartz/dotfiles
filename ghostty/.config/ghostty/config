@@ -19,10 +19,16 @@ keybind = super+right=text:\x05
 # Option+Left/Right -> backward/forward word
 keybind = alt+left=text:\x1bb
 keybind = alt+right=text:\x1bf
+keybind = alt+shift+left=text:\x1bb
+keybind = alt+shift+right=text:\x1bf
 
 # Alt+Backspace -> delete word backword
 keybind = alt+backspace=text:\x17
 
 # Cmd+Backspace -> kill line
 keybind = super+backspace=text:\x15
+
+# Cmd+Shift+Left/Right -> reorder tabs
+keybind = super+shift+left=move_tab:-1
+keybind = super+shift+right=move_tab:1
 
