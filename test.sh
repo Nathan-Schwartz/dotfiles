@@ -20,9 +20,7 @@ vint vim/.vimrc
 echo "Running shellcheck..."
 shellcheck --severity=warning test.sh scripts/**.sh bash/.bash_profile bash/.bashrc bash/.bash/** vendor/tk-plugins/**
 
-echo "Running jq..."
-jq empty < iterm/darkProfile.json
-
+echo "Checking tool availability..."
 assert "$(command_exists tmux)" "true" 'Tmux not installed'
 assert "$(command_exists node)" "true" 'Node not installed'
 assert "$(command_exists python3)" "true" 'Python 3 not installed'

@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-Personal dotfiles repo managing configs for bash, vim, git, and iterm via GNU Stow symlinks. Currently in use on macOS, CentOS, and Debian. CI runs on Ubuntu, Rocky Linux, and macOS.
+Personal dotfiles repo managing configs for bash, vim, git, and ghostty via GNU Stow symlinks. Currently in use on macOS, CentOS, and Debian. CI runs on Ubuntu, Rocky Linux, and macOS.
 
 ## Architecture
 
 ### Stow Modules
 
-Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `iterm`, `mise`, `claude`. Any tool that requires configuration is a candidate for a new module.
+Each top-level directory is a stow module. Running `stow <module>` symlinks its contents into `$HOME`. Current modules: `bash`, `vim`, `git`, `ghostty`, `mise`, `tmux`, `claude`. Any tool that requires configuration is a candidate for a new module.
 
 New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are loaded via Pathogen. All git submodules (including vim plugins) are part of the dependency upgrade commit flow in `install.sh` — the `upgrade_dependencies` function checks `mise/.tool-versions`, `vim/.vim/bundle`, and `vendor/ticket` for unstaged changes before and after upgrading. Any new submodule must be included in that flow.
 
