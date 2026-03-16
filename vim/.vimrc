@@ -291,6 +291,31 @@ function! PrintFilePath() abort
   return fnamemodify(expand('%'), ':~:.')
 endfunction
 
+" Fix lightline contrast (base03 fg is too close to base00/accent backgrounds)
+" Replace base03 foreground with base02 across all modes
+" vint: -ProhibitUnusedVariable
+function! s:PatchLightlineSolarized() abort
+  let l:p = g:lightline#colorscheme#solarized#palette
+  let l:base03 = [l:p.normal.left[0][0], l:p.normal.left[0][2]]
+  let l:base02 = [l:p.normal.middle[0][1], l:p.normal.middle[0][3]]
+  for l:mode in values(l:p)
+    for l:group in values(l:mode)
+      for l:entry in l:group
+        if l:entry[0] ==# l:base03[0] && l:entry[2] ==# l:base03[1]
+          let l:entry[0] = l:base02[0]
+          let l:entry[2] = l:base02[1]
+        endif
+      endfor
+    endfor
+  endfor
+  call lightline#colorscheme()
+endfunction
+
+augroup LightlineContrast
+  autocmd!
+  autocmd VimEnter * call s:PatchLightlineSolarized()
+augroup END
+
 " ---------- NERDTree ---------- {{{2
 " Automatically delete the buffer of the file you just deleted with NerdTree:
 let g:NERDTreeAutoDeleteBuffer = 1
