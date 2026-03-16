@@ -42,4 +42,14 @@ set keyseq-timeout 100
 
 set bell-style none
 
-set keymap vi
+set keymap vi-insert
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\eb": backward-word
+"\ef": forward-word
+
+set keymap vi-command
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\eb": backward-word
+"\ef": forward-word
