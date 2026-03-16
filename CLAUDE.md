@@ -26,7 +26,7 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `.github/workflows/ci.yml` — GitHub Actions CI (ubuntu + rocky linux + mac)
 - `bash/.bash_profile` — Shell entry point; sources `~/.env` first, `~/.bash_profile.local` last
 - `bash/.bash/functions.sh` — Shared helpers (`command_exists`, `missing_command`, `assert`)
-- `scripts/pkm-integrity-hook.sh` — Pre/PostToolUse hook: validates frontmatter schemas, triggers qmd index updates
+- `scripts/pkm-integrity-hook.sh` — PostToolUse hook: validates frontmatter schemas, triggers qmd index updates
 - `scripts/qmd-sync.sh` — Discovers PKM directories and registers them as qmd collections
 - `scripts/qmd-mcp.sh` — Wrapper that launches `qmd mcp` for the Claude MCP server integration
 - `scripts/generate-mocs.py` — Generates Maps of Content (`.index.md`) for PKM directories
@@ -146,7 +146,7 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 
 The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration.
 
-- `settings.json` — Default mode is `plan`. Permissions allow `tk *` and read-only git commands. Hooks run `pkm-integrity-hook.sh` on Write/Edit. MCP server configured for qmd.
+- `settings.json` — Default mode is `plan`. Permissions allow `tk *` and read-only git commands. PostToolUse hook runs `pkm-integrity-hook.sh` on Write/Edit for PKM validation. MCP server configured for qmd.
 - `references/epistemic-reference.md` — Canonical epistemic classification definitions (V/I/G). Injected into skills via `!`cat``.
 - `references/pkm-schema-reference.md` — PKM frontmatter schema reference, generated from `scripts/schemas/pkm.json`. Injected into skills via `!`cat``.
 - `skills/to-pkm/SKILL.md` — `/to-pkm` skill: converts conversation context into PKM artifacts. Injects both references.

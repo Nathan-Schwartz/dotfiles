@@ -27,17 +27,6 @@
     ]
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${DOTFILES_DIR:-$HOME/dotfiles}/scripts/pkm-integrity-hook.sh --pre-hook"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",

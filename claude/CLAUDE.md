@@ -57,7 +57,7 @@ Files with compound extensions (`.ref.md`, `.synth.md`, `.temp.md`, `.index.md`)
 
 Full type definitions, required/optional frontmatter fields, content boundaries, and "must not contain" rules are available in `~/.claude/references/pkm-schema-reference.md` (generated from `scripts/schemas/pkm.json`).
 
-The PreToolUse hook re-injects these rules at write time as a safety net, but correct reasoning depends on reading the reference during planning. Do not circumvent the hook by using sed/echo/mv.
+A PostToolUse hook validates frontmatter after every write and sends correction feedback on failure. Correct reasoning depends on reading the reference during planning. Do not circumvent the hook by using sed/echo/mv.
 
 **Read pkm-schema-reference.md before reasoning about PKM file types** — when classifying content as ref vs synth vs temp, deciding what frontmatter to include, or determining whether content belongs in a given file type.
 

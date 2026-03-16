@@ -4,7 +4,6 @@
 #
 # Usage:
 #   pkm-integrity-hook.sh file1.synth.md [file2.ref.md ...]
-#   pkm-integrity-hook.sh --pre-hook   (PreToolUse: injects schema context)
 #   pkm-integrity-hook.sh --post-hook  (PostToolUse: validates, updates qmd, exit 2 on failure)
 #
 # Exit codes:
@@ -54,27 +53,6 @@ extract_frontmatter() {
     return 1
   fi
   awk 'NR==1 && /^---$/{next} /^---$/{exit} {print}' "$file"
-}
-
-format_schema() {
-  local doc_type="$1"
-  jq -r --arg t "$doc_type" '
-    .types[$t] as $schema |
-    "Frontmatter schema for .\($t).md:\n" +
-    "Required fields:\n" +
-    ($schema.required | to_entries | map("  - \(.key) (\(.value))") | join("\n")) +
-    (if ($schema.optional | length) > 0 then
-      "\nOptional fields:\n" +
-      ($schema.optional | to_entries | map("  - \(.key) (\(.value))") | join("\n"))
-    else "" end) +
-    (if ($schema.content_rules | length) > 0 then
-      "\n\nContent rules for .\($t).md:\n" +
-      "Principle: " + $schema.content_rules.principle + "\n\n" +
-      "MUST NOT contain:\n" +
-      ($schema.content_rules.must_not_contain | map("  - " + .) | join("\n")) +
-      "\n\n" + $schema.content_rules.when_in_doubt
-    else "" end)
-  ' "$SCHEMA_FILE"
 }
 
 validate_file() {
@@ -171,35 +149,10 @@ files=()
 
 for arg in "$@"; do
   case "$arg" in
-    --pre-hook)  mode="pre" ;;
     --post-hook) mode="post" ;;
     *)           files+=("$arg") ;;
   esac
 done
-
-# PreToolUse hook: inject schema context before write
-if [[ "$mode" == "pre" ]]; then
-  input=$(cat)
-  file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
-
-  if [[ -z "$file_path" ]]; then
-    exit 0
-  fi
-
-  doc_type=$(get_doc_type "$file_path")
-  if [[ -z "$doc_type" ]]; then
-    exit 0
-  fi
-
-  schema_context=$(format_schema "$doc_type")
-  jq -n --arg ctx "$schema_context" '{
-    hookSpecificOutput: {
-      hookEventName: "PreToolUse",
-      additionalContext: $ctx
-    }
-  }'
-  exit 0
-fi
 
 # PostToolUse hook: validate after write, then update qmd index
 if [[ "$mode" == "post" ]]; then
@@ -227,7 +180,7 @@ fi
 
 # CLI mode
 if [[ ${#files[@]} -eq 0 ]]; then
-  echo "usage: pkm-integrity-hook.sh [--pre-hook | --post-hook] [file ...]" >&2
+  echo "usage: pkm-integrity-hook.sh [--post-hook] [file ...]" >&2
   exit 1
 fi
 
