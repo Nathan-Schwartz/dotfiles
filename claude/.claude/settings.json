@@ -8,7 +8,7 @@
   },
   "includeGitInstructions": true,
   "permissions": {
-    "defaultMode": "plan",
+    "defaultMode": "default",
     "allow": [
       "Bash(which *)",
       "Bash(pwd)",
