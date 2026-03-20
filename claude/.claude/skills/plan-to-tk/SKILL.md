@@ -54,6 +54,7 @@ If prerequisites fail:
 ## Phase 1: Read & Parse Plan
 
 - Read the plan file at `$0`
+- The plan may be a plain markdown file (from plan mode) or a PKM artifact (`.synth.md`). If it has YAML frontmatter, parse it — epistemic classifications in the body are meaningful. Do not decompose Guess-level claims into tickets without flagging them.
 - Assess the plan's level of detail (specific files/changes vs directional approach)
 - Extract: goal, approach, key components, any existing structure
 
@@ -144,7 +145,7 @@ For each ticket, write:
 - **Title**: clear, action-oriented
 - **Description** (`-d`): enough context for a fresh claude session to understand the work without external references
 - **Design** (`--design`): implementation approach, key files to modify, and acceptance criteria
-- **Test expectations**: when the ticket involves code changes, the design must include expectations for test coverage — updating existing tests to reflect changes and writing new tests where appropriate
+- **Verification expectations**: when the ticket involves code changes, the design must include expectations for quality checks — tests (updating existing tests and writing new ones where appropriate), linting, compilation, and any other project-specific checks. Be specific about what to run.
 
 ## Phase 4: Verify Decomposition
 

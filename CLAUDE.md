@@ -146,6 +146,8 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 
 The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration. Two layers govern behavior:
 
+One emerging core philosophy is that I want all of my workflows to be composable with variable supervision.
+
 ### Global CLAUDE.md
 
 `claude/CLAUDE.md` stows to `~/CLAUDE.md` and loads in every Claude Code session. It defines:
@@ -171,6 +173,8 @@ Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `ou
 
 - **`/to-pkm`** — Converts conversation context into PKM artifacts. Manifest-first: proposes files, waits for confirmation before writing. Checks qmd for duplicates. Generates a session `.index.md`. Injects both reference docs.
 - **`/fix-pr-comments`** — Addresses unresolved PR review comments. User-only (`disable-model-invocation: true`). Tool-sandboxed to `Bash(gh *)` only.
+- **`/execute`** — Interactive execution of tk tickets with human approval gates. Dispatches subagents per task using the shared core execution flow, presents results for review. Uses dynamic context injection (`!`tk ready -T planned``) for task selection. Accepts optional task ID argument.
+- **`tk`** — Not user-invocable. Canonical reference for tk commands, state machine, and workflow conventions (planned gate, abandoned tag, dependency direction). Loaded automatically when tk-related work comes up.
 - **`epistemic-classification`** — Not user-invocable. Thin wrapper injecting epistemic reference for agents that need V/I/G rigor without PKM.
 - **`epistemic-pkm-research`** — Not user-invocable. Injects epistemic + PKM references with behavioral guidance (ref vs synth selection, qmd duplicate checking, return vs persist modes). Preloaded into `epistemic-explore`.
 
@@ -182,6 +186,7 @@ Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `ou
 
 - `references/epistemic-reference.md` — Canonical V/I/G classification definitions. Injected into skills via dynamic inclusion.
 - `references/pkm-schema-reference.md` — PKM frontmatter schema reference, generated from `scripts/schemas/pkm.json`. Injected into skills via dynamic inclusion.
+- `references/core-execute.md` — Shared per-ticket execution flow (load context, do work with TDD lean, self-check, report). Referenced by `/execute` skill and ralph's prompt.
 
 ## tk (Task Management)
 

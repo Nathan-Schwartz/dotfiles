@@ -92,6 +92,14 @@
 # TASK_TOO_LARGE  Task exceeds what one agent session can handle → partial
 #                 work or abandon. Mitigation: human decomposes before tagging.
 #
+# CONCURRENT_CLAIM  Ralph and an interactive /execute session claim the same
+#                 task. tk start has no guard against re-starting an in_progress
+#                 task, so both succeed and work on it simultaneously. Ralph
+#                 filters out in_progress tasks, but /execute does not — and
+#                 even with filtering, a race window exists between listing and
+#                 claiming. Mitigation: avoid running ralph while an interactive
+#                 session is executing planned tasks.
+#
 # =============================================================================
 
 # OS notification + terminal bell
@@ -165,9 +173,14 @@ ralph() (
     local task_context
     task_context=$(tk show "$task_id")
 
+    local core_flow
+    core_flow=$(cat "$HOME/.claude/references/core-execute.md" 2>/dev/null || echo "Implement this task and verify your work.")
+
     local prompt
     prompt="$(cat <<EOF
-Implement this task and verify your work.
+$core_flow
+
+---
 
 Task details:
 $task_context
