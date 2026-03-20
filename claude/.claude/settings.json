@@ -23,7 +23,8 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(ls *)",
-      "Bash(stat *)"
+      "Bash(stat *)",
+      "Bash(cat ~/.claude/references/*)"
     ]
   },
   "hooks": {
@@ -47,6 +48,5 @@
   },
   "model": "claude-opus-4-6",
   "effortLevel": "high",
-  "outputStyle": "explanatory",
-  "editorMode": "vim"
+  "outputStyle": "explanatory"
 }
