@@ -146,7 +146,38 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 
 The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration. Two layers govern behavior:
 
-One emerging core philosophy is that I want all of my workflows to be composable with variable supervision.
+### Development Pipeline
+
+The workflow is a progression of formalization — from fuzzy intuition to concrete implementation:
+
+```
+intuition → clarity → plan → tickets → implementation
+```
+
+Skills help move along this spectrum. Each transition increases structure and commitment. Not every step is required — enter wherever your starting point is, exit whenever you have what you need.
+
+| Transition | Skill | Input | Output |
+|---|---|---|---|
+| intuition → clarity | `/brainstorm` | fuzzy idea, spidey sense | understanding, defined problem |
+| clarity → plan | `/brainstorm` (planning transition) | defined problem + approach | `.synth.md` plan via `/to-pkm` |
+| plan → tickets | `/plan-to-tk` | plan file or `.synth.md` | tk tickets with dependencies |
+| tickets → implementation | `/execute` or ralph | tk tickets tagged `planned` | committed code |
+
+`/to-pkm` is not a pipeline step — it's a utility that captures knowledge at any point on the spectrum. Brainstorm output, research findings, execution learnings — whatever is worth persisting.
+
+#### Design Principles
+
+1. **Progressive formalization.** The pipeline moves from loose to structured. Each step refines, never regresses. Epistemic rigor scales with commitment: brainstorm tolerates Guesses, plans require Verified claims in the approach, tickets must be execution-ready.
+
+2. **Composable with variable supervision.** Each skill works independently. Supervision is a parameter, not a separate implementation. The same core logic serves both collaborative (human-gated) and autonomous (ralph) execution.
+
+3. **Flexible input, strict output.** Each skill accepts messy input and produces structured output (Postel's law). A brainstorm synth, a rough plan file, or a bare conversation can all feed `/plan-to-tk`. But every ticket it produces meets the same contract: tagged `planned`, sufficiently specified, ralph-ready.
+
+4. **Session-independent.** The pipeline is designed to span multiple sessions. Artifacts (`.synth.md`, tk tickets) are the durable handoff mechanism, not conversation context. Brainstorm today, plan next week, execute next month.
+
+5. **PKM as interchange.** Structured artifacts are how knowledge moves between steps. `.synth.md` files carry plans, `.ref.md` files carry research, tk tickets carry execution specs. All are searchable via qmd across sessions.
+
+6. **Shared core, separate wrappers.** Where multiple skills need the same behavior (e.g., per-ticket execution), it's defined once as a reference doc. Skills and scripts are wrappers that add supervision and context.
 
 ### Global CLAUDE.md
 
@@ -161,9 +192,9 @@ Projects extend behavior at the project level (`<project>/.claude/settings.json`
 
 ### settings.json
 
-Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `outputStyle: explanatory`, `editorMode: vim`. Shell is set to `/usr/local/bin/bash`.
+Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `outputStyle: explanatory`. Shell is set to `/usr/local/bin/bash`.
 
-**Permissions (allowlist):** `tk *`, read-only git (`status`, `diff`, `log`, `show`, `rev-parse`, `remote -v`), and bash utilities (`which`, `pwd`, `file`, `wc`, `tree`, `ls`, `stat`). Everything else requires approval.
+**Permissions (allowlist):** `tk *`, read-only git (`status`, `diff`, `log`, `show`, `rev-parse`, `remote -v`), bash utilities (`which`, `pwd`, `file`, `wc`, `tree`, `ls`, `stat`), and `cat ~/.claude/references/*`. Everything else requires approval.
 
 **PostToolUse hook:** Every `Write|Edit` runs `pkm-integrity-hook.sh` which validates PKM frontmatter schemas and updates the qmd keyword index for compound-extension files.
 
@@ -171,8 +202,10 @@ Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `ou
 
 ### Skills
 
+- **`/brainstorm`** — Adaptive dialogue for shaping ideas. Posture shifts from nurturing (nascent ideas) to constructive challenge (defined problems) to full rigor (concrete approaches). Can transition into planning when the conversation converges — shifts focus from exploration to specification, enables proactive codebase research, and targets a structured plan (goal, scope, constraints, approach, risks, verification) captured as a `.synth.md` via `/to-pkm`.
 - **`/to-pkm`** — Converts conversation context into PKM artifacts. Manifest-first: proposes files, waits for confirmation before writing. Checks qmd for duplicates. Generates a session `.index.md`. Injects both reference docs.
 - **`/fix-pr-comments`** — Addresses unresolved PR review comments. User-only (`disable-model-invocation: true`). Tool-sandboxed to `Bash(gh *)` only.
+- **`/plan-to-tk`** — Converts a plan file into actionable tk tickets with dependencies. Accepts plain markdown or `.synth.md` (respects epistemic classifications). Researches codebase via orthogonal `epistemic-explore` agents, decomposes into tickets with verification expectations, establishes dependency graph. Supports collaborative/autonomous supervision modes. Every ticket tagged `planned` and ralph-ready.
 - **`/execute`** — Interactive execution of tk tickets with human approval gates. Dispatches subagents per task using the shared core execution flow, presents results for review. Uses dynamic context injection (`!`tk ready -T planned``) for task selection. Accepts optional task ID argument.
 - **`tk`** — Not user-invocable. Canonical reference for tk commands, state machine, and workflow conventions (planned gate, abandoned tag, dependency direction). Loaded automatically when tk-related work comes up.
 - **`epistemic-classification`** — Not user-invocable. Thin wrapper injecting epistemic reference for agents that need V/I/G rigor without PKM.

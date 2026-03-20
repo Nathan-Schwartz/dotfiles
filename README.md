@@ -15,6 +15,8 @@
   - [Tmux](#tmux)
   - [Bash](#bash)
   - [Scripts](#scripts)
+  - [Git](#git)
+  - [Claude Code](#claude-code)
 <!-- vim-markdown-toc -->
 
 
@@ -99,3 +101,26 @@ Removing dependencies is distro specific.
 
 - My approach to .gitconfig is inspired by [nicksp's dotfiles](https://github.com/nicksp/dotfiles).
 - I have a global gitignore and various git aliases
+
+### Claude Code
+
+The `claude/` stow module provides a structured AI development workflow built on composable skills, epistemic classification, and a personal knowledge management (PKM) system.
+
+#### Skill Workflow
+
+The workflow is a progression of formalization
+```
+intuition → clarity → plan → tickets → code implementation
+```
+
+Skills help move along this spectrum. Each transition increases structure and commitment. Not every step is required — enter wherever your starting point is, exit whenever you have what you need.
+
+| Transition | Skill | Input | Output |
+|---|---|---|---|
+| intuition → clarity | `/brainstorm` | fuzzy idea, spidey sense | understanding, defined problem |
+| clarity → plan | `/brainstorm` (planning transition) | defined problem + approach | `.synth.md` plan via `/to-pkm` |
+| plan → tickets | `/plan-to-tk` | plan file or `.synth.md` | tk tickets with dependencies |
+| tickets → implementation | `/execute` or ralph | tk tickets tagged `planned` | committed code |
+
+`/to-pkm` is not a pipeline step — it's a utility that captures knowledge at any point on the spectrum.
+
