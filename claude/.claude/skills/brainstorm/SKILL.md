@@ -54,8 +54,32 @@ Epistemic classification is enforced per the reference above, but the expectatio
 - Claims about the existing system or constraints must still be classified honestly.
 - Do not let unverified premises quietly become load-bearing assumptions. If a claim matters to the direction, flag its classification.
 
-## Output
+## Outcomes
 
-- Flexible — sometimes a session produces a document, sometimes just clarity. Do not mandate an artifact.
-- If the session converges on something worth writing down, ask the user where to put it.
-- Never auto-commit.
+There are several acceptable outcomes:
+- User gains clarity and will naturally terminate the session.
+- The idea and findings are captured with `/to-pkm`.
+- The user wants to move forward with the idea and shifts gears to planning.
+
+### Planning
+
+Planning may (but is not required to) use the native "plan" mode.
+
+**Once we are planning, the focus shifts from "exploration" to "specification".**
+
+This has several implications
+- A core objective is to evaluate claims classified as guess/inferred/unchecked.
+- You are no longer prohibited from proactive exploration (an unvetted plan is a bad plan)
+- You are encouraged to collaboratively highlight gaps, potential issues, or underspecification in the plan.
+
+
+A good plan articulates each of the following aspects:
+- Goal: what "done" looks like, observable and verifiable
+- Scope: what's in, what's out, explicit boundaries
+- Approach: grounded in codebase research, cites actual files/patterns
+- Verification: how to confirm the work is correct after execution
+- Constraints: things we can't change which must be taken into account
+- Risks: what could go wrong and mitigations
+
+Unless explicitly stated otherwise, plans should be created as pkm artifacts. This may be achieved using the `/to-pkm` skill, but either way you are ultimately responsible for ensuring that the plan and supporting evidence are fully captured in the resulting files.
+
