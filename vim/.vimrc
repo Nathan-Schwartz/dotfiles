@@ -258,6 +258,7 @@ highlight GitGutterAdd ctermfg=2
 highlight GitGutterChange ctermfg=3
 highlight GitGutterDelete ctermfg=1
 highlight GitGutterChangeDelete ctermfg=4
+highlight Visual cterm=NONE ctermbg=0 ctermfg=NONE
 
 " Keep gutter open
 if exists('&signcolumn')  " Vim 7.4.2201
