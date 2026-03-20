@@ -7,6 +7,7 @@
 #
 # Environment:
 #   RALPH_MAX_TASKS  — max tasks per run; 0 = unlimited (default: 0)
+#   RALPH_LOG_DIR    — directory for session logs (default: .ralph/runs)
 #
 # =============================================================================
 # STATE MACHINE
@@ -139,6 +140,8 @@ ralph() (
   fi
 
   local max_tasks="${RALPH_MAX_TASKS:-0}"
+  local log_dir="${RALPH_LOG_DIR:-.ralph/runs}"
+  mkdir -p "$log_dir"
   local completed=0
   local failed=0
 
@@ -190,7 +193,8 @@ EOF
 )"
 
     local exit_code=0
-    claude -p "$prompt" --output-format json > /dev/null 2>&1 || exit_code=$?
+    local log_file="$log_dir/${task_id}.json"
+    claude -p "$prompt" --permission-mode acceptEdits --allowedTools "Bash(git add *),Bash(git commit *)" --output-format json > "$log_file" 2>&1 || exit_code=$?
 
     # --- EVAL ---
     # Agent-authoritative: check tk state, not exit code.
@@ -199,12 +203,12 @@ EOF
     task_status=$(tk show "$task_id" 2>/dev/null | grep -m1 '^status:' | awk '{print $2}') || true
 
     if [ "$task_status" = "closed" ]; then
-      echo "  completed"
+      echo "  completed — log: $log_file"
       completed=$((completed + 1))
     else
-      echo "  abandoned (exit code: $exit_code)"
+      echo "  abandoned (exit code: $exit_code) — log: $log_file"
       tk tag "$task_id" abandoned 2>/dev/null || true
-      tk add-note "$task_id" "ralph: agent exited without closing (exit code: $exit_code)"
+      tk add-note "$task_id" "ralph: agent exited without closing (exit code: $exit_code). Log: $log_file"
       _ralph_notify "Ralph: task abandoned" "$task_id — agent exited without closing"
       failed=$((failed + 1))
     fi
