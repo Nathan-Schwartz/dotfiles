@@ -4,7 +4,7 @@
 
 - Configurations and workflows for vim, bash, git, ghostty, and tmux
 - Tmux and Vim plugins are included as git submodules, but other deps are installed using `scripts/install.sh`
-- Currently in use on macOS, Raspbian, CentOS, and Debian (CI only runs on Ubuntu and Mac though)
+- Currently in use on macOS, CentOS, and Debian (CI runs on Ubuntu, Rocky Linux, and macOS)
 
 <!-- vim-markdown-toc GFM -->
 # Outline
@@ -52,7 +52,7 @@ To disable configs without removing the repo
 
 ```bash
 # remove symlinks
-stow --delete vim bash git ghostty mise tmux
+stow --delete vim bash git ghostty mise tmux claude
 ```
 
 Removing dependencies is distro specific.
