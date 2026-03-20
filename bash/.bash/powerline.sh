@@ -29,31 +29,37 @@ __powerline() {
         hash git 2>/dev/null || return     # git not found
         local git_eng="env LANG=C git"     # force git output in English to make our work easier
 
-        # get current branch name
-        local ref=$($git_eng symbolic-ref --short HEAD 2>/dev/null)
+        local ref marks
 
-        if [[ -n "$ref" ]]; then
-            # prepend branch symbol
-            ref=$SYMBOL_GIT_BRANCH$ref
-        else
-            # get tag name or short unique hash
-            ref=$($git_eng describe --tags --always 2>/dev/null)
-        fi
-
-        [[ -n "$ref" ]] || return # not a git repo
-
-        local marks
-
-        # scan first two lines of output from `git status`
+        # Parse branch, ahead/behind, and dirty state from a single git status call
         while IFS= read -r line; do
-            if [[ $line =~ ^## ]]; then # header line
+            if [[ $line =~ ^## ]]; then # header line: ## branch...remote [ahead N, behind N]
+                if [[ $line =~ ^##\ (.+)\.\.\. ]]; then
+                    ref=${BASH_REMATCH[1]}
+                elif [[ $line =~ ^##\ (.+) ]]; then
+                    ref=${BASH_REMATCH[1]}
+                fi
                 [[ $line =~ ahead\ ([0-9]+) ]] && marks+=" $SYMBOL_GIT_PUSH${BASH_REMATCH[1]}"
                 [[ $line =~ behind\ ([0-9]+) ]] && marks+=" $SYMBOL_GIT_PULL${BASH_REMATCH[1]}"
             else # branch is modified if output contains more lines after the header line
                 marks="$SYMBOL_GIT_MODIFIED$marks"
                 break
             fi
-        done < <($git_eng status --porcelain --branch 2>/dev/null) # note the space between the two <
+        done < <($git_eng status --porcelain --branch 2>/dev/null)
+
+        # Detached HEAD or new repo — fall back to symbolic-ref then describe
+        if [[ -z "$ref" || "$ref" == "HEAD (no branch)" || "$ref" == No\ commits* || "$ref" == Initial\ commit* ]]; then
+            ref=$($git_eng symbolic-ref --short HEAD 2>/dev/null)
+            if [[ -n "$ref" ]]; then
+                ref=$SYMBOL_GIT_BRANCH$ref
+            else
+                ref=$($git_eng describe --tags --always 2>/dev/null)
+            fi
+        else
+            ref=$SYMBOL_GIT_BRANCH$ref
+        fi
+
+        [[ -n "$ref" ]] || return # not a git repo
 
         # print the git branch segment without a trailing newline
         printf " $ref$marks"

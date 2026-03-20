@@ -10,6 +10,7 @@
   editor = vim
   excludesfile = ~/.gitignore_global
   ignorecase = false
+  untrackedcache = true
   # Use delta for syntax-highlighted, side-by-side diffs
   pager = delta
 [interactive]
