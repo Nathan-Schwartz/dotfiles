@@ -154,14 +154,15 @@ The workflow is a progression of formalization — from fuzzy intuition to concr
 intuition → clarity → plan → tickets → implementation
 ```
 
-Skills help move along this spectrum. Each transition increases structure and commitment. Not every step is required — enter wherever your starting point is, exit whenever you have what you need.
+Skills help move along this spectrum. Each transition increases structure and commitment. Not every step is required — enter wherever your starting point is, exit whenever you have what you need. Implementation planning and execution support multiple levels of supervision.
 
-| Transition | Skill | Input | Output |
-|---|---|---|---|
-| intuition → clarity | `/brainstorm` | fuzzy idea, spidey sense | understanding, defined problem |
-| clarity → plan | `/brainstorm` (planning transition) | defined problem + approach | `.synth.md` plan via `/to-pkm` |
-| plan → tickets | `/plan-to-tk` | plan file or `.synth.md` | tk tickets with dependencies |
-| tickets → implementation | `/execute` or ralph | tk tickets tagged `planned` | committed code |
+| Transition | Skill | Supervision | Input | Output |
+|---|---|---|---|---|
+| intuition → clarity | `/brainstorm` | interactive | fuzzy idea, spidey sense | understanding, defined problem |
+| clarity → plan | `/brainstorm` (planning) | interactive | defined problem + approach | `.synth.md` plan via `/to-pkm` |
+| plan → tickets | `/plan-to-tk` | interactive or autonomous | plan file or `.synth.md` | tk tickets with dependencies |
+| tickets → code | `/execute` | interactive | tk tickets tagged `planned` | committed code |
+| tickets → code | ralph | autonomous | tk tickets tagged `planned` | committed code |
 
 `/to-pkm` is not a pipeline step — it's a utility that captures knowledge at any point on the spectrum. Brainstorm output, research findings, execution learnings — whatever is worth persisting.
 

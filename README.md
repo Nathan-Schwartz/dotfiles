@@ -113,14 +113,38 @@ The workflow is a progression of formalization
 intuition → clarity → plan → tickets → code implementation
 ```
 
-Skills help move along this spectrum. Each transition increases structure and commitment. Not every step is required — enter wherever your starting point is, exit whenever you have what you need.
+Skills help move along this spectrum. Each transition increases structure and commitment. Not every step is required — enter wherever your starting point is, exit whenever you have what you need. Implementation planning and execution support multiple levels of supervision.
 
-| Transition | Skill | Input | Output |
+| Transition | Skill | Supervision | Input | Output |
+|---|---|---|---|---|
+| intuition → clarity | `/brainstorm` | interactive | fuzzy idea, spidey sense | understanding, defined problem |
+| clarity → plan | `/brainstorm` (planning) | interactive | defined problem + approach | `.synth.md` plan via `/to-pkm` |
+| plan → tickets | `/plan-to-tk` | interactive or autonomous | plan file or `.synth.md` | tk tickets with dependencies |
+| tickets → code | `/execute` | interactive | tk tickets tagged `planned` | committed code |
+| tickets → code | ralph | autonomous | tk tickets tagged `planned` | committed code |
+
+`/to-pkm` is a general knowledge capture tool which generates files according to my PKM definitions.
+
+#### Personal Knowledge Management (PKM)
+
+Knowledge is captured in files with compound extensions which declare their type and verification cost.
+
+| Type | Extension | Contents | Verification cost |
 |---|---|---|---|
-| intuition → clarity | `/brainstorm` | fuzzy idea, spidey sense | understanding, defined problem |
-| clarity → plan | `/brainstorm` (planning transition) | defined problem + approach | `.synth.md` plan via `/to-pkm` |
-| plan → tickets | `/plan-to-tk` | plan file or `.synth.md` | tk tickets with dependencies |
-| tickets → implementation | `/execute` or ralph | tk tickets tagged `planned` | committed code |
+| **ref** | `.ref.md` | External facts, tool behaviors, source summaries | Low — every claim cites a verifiable source |
+| **synth** | `.synth.md` | Analysis, decisions, designs, proposals | High — reasoning must be evaluated |
+| **temp** | `.temp.md` | Questions, half-formed ideas, scratch notes | None |
+| **index** | `.index.md` | Navigation and cross-references | None — no original content |
 
-`/to-pkm` is not a pipeline step — it's a utility that captures knowledge at any point on the spectrum.
+Separating facts from analysis is the core value proposition. This practice keeps individual files small and focused — easier to fact-check, cheaper to load into AI context, and less prone to polluting AI context.
+
+All PKM files have enforced frontmatter schemas validated by a PostToolUse hook. PKM directories are indexed by [qmd](https://github.com/tobi/qmd) for keyword and semantic search across sessions.
+
+#### Epistemic Classification
+
+My configs do their best to ensure that every claim Claude produces is classified by how it can be verified:
+
+- **Verified** — cites evidence the reader can confirm in one step (file:line, URL, command output)
+- **Inferred** — states evidence, conclusion, and the reasoning connecting them
+- **Guess** — explicitly marked as unverified
 
