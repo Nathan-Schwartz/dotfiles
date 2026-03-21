@@ -30,6 +30,9 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `scripts/qmd-sync.sh` — Discovers PKM directories and registers them as qmd collections
 - `scripts/qmd-mcp.sh` — Wrapper that launches `qmd mcp` for the Claude MCP server integration
 - `scripts/generate-mocs.py` — Generates Maps of Content (`.index.md`) for PKM directories
+- `bash/.bash/ralph.sh` — Ralph autonomous executor (task-per-session loop backed by tk + claude CLI)
+- `tmux/.tmux/scripts/claude-status.sh` — Detects Claude Code state (working/waiting/idle) in a tmux pane
+- `tmux/.tmux/scripts/claude-dashboard.sh` — Interactive Claude session dashboard (status + window switcher)
 
 ### Override Pattern
 
@@ -142,6 +145,36 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 - `gf` opens file in new tab (overridden default)
 - `j`/`k` navigate visual lines (respect wrapping)
 
+## Tmux
+
+Prefix is `Ctrl-Space`. Key bindings use vi-style navigation. Solarized dark theme matches vim.
+
+### Claude Integration
+
+The tmux status bar shows per-window Claude Code state via `claude-status.sh`:
+- `●` — Claude is working
+- `?` — Claude is waiting for input (approval prompt)
+- `○` — Claude is idle
+- (blank) — not a Claude pane
+
+`<prefix> W` opens the Claude session dashboard (`claude-dashboard.sh`) — a popup showing all windows with their Claude status, working directory, and git branch. Navigate with j/k, Enter to switch.
+
+### Bash Helpers
+
+- `tma` — start or resume the main tmux session
+- `tmk` — kill all tmux sessions
+- `tmclaude [name]` — open Claude Code in a named tmux window (defined in `bash/.bash/aliases.sh`). Works from inside or outside tmux, and from popups.
+
+### Key Bindings
+
+- `<prefix> Enter` — scratch terminal popup (80%, exits on shell exit)
+- `<prefix> W` — Claude session dashboard
+- `<prefix> w` — built-in window/session tree picker
+- `<prefix> Tab` — toggle to last active window
+- `<prefix> v` / `<prefix> s` — split vertical / horizontal
+- `Ctrl h/j/k/l` — navigate panes (shared with vim-tmux-navigator)
+- `Alt h/j/k/l` — resize panes
+
 ## Claude Code (`claude/` stow module)
 
 The `claude/` stow module symlinks into `~/.claude/` and provides the base Claude Code configuration. Two layers govern behavior:
@@ -193,7 +226,7 @@ Projects extend behavior at the project level (`<project>/.claude/settings.json`
 
 ### settings.json
 
-Default mode is `plan`. Model is `claude-opus-4-6` with `effortLevel: high`, `outputStyle: explanatory`. Shell is set to `/usr/local/bin/bash`.
+Default mode is `default`. Model is `claude-opus-4-6` with `effortLevel: high`, `outputStyle: explanatory`. Shell is set to `/usr/local/bin/bash`.
 
 **Permissions (allowlist):** `tk *`, read-only git (`status`, `diff`, `log`, `show`, `rev-parse`, `remote -v`), bash utilities (`which`, `pwd`, `file`, `wc`, `tree`, `ls`, `stat`), and `cat ~/.claude/references/*`. Everything else requires approval.
 
