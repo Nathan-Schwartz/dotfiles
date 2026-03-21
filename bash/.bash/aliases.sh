@@ -16,6 +16,35 @@ alias einstall='$EDITOR ~/dotfiles/scripts/install.sh'
 alias tma='tmux new-session -A -s mainsession'
 alias tmk='tmux kill-server'
 
+# Start a named Claude Code window in tmux
+# Usage: tmclaude [name]  (defaults to current directory basename)
+tmclaude() {
+    local name="${1:-$(basename "$PWD")}"
+    if [[ -z "$TMUX" ]]; then
+        # Outside tmux: create session if needed, add claude window, then attach.
+        # Uses -d (detached) so we can set up the window before attaching.
+        if tmux has-session -t mainsession 2>/dev/null; then
+            tmux new-window -t mainsession -n "$name" -c "$PWD" "claude"
+        else
+            tmux new-session -d -s mainsession -n "$name" -c "$PWD" "claude"
+        fi
+        tmux set-option -t mainsession -w automatic-rename off
+        tmux attach -t mainsession
+    elif [[ -n "$IN_POPUP" ]]; then
+        # In a popup (set via -e IN_POPUP=1 on display-popup in tmux.conf):
+        # create a new window and exit to dismiss the popup.
+        tmux new-window -n "$name" -c "$PWD" "claude"
+        tmux set-option -w automatic-rename off
+        exit
+    else
+        # In a regular tmux window: take over the current window.
+        # exec replaces the shell so the window closes when claude exits.
+        tmux rename-window "$name"
+        tmux set-option -w automatic-rename off
+        exec claude
+    fi
+}
+
 # Common typos
 alias vmi='vim'
 alias g="git"
