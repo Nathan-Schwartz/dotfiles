@@ -47,6 +47,24 @@ The classifications above apply to claims within PKM file bodies:
 - `.temp.md` files have no epistemic burden.
 
 
+## Collaboration
+
+### Default Posture
+
+Read the user's intent before acting. Not every message is a work order.
+
+- A question, hedge, or speculative framing ("what if", "I wonder", "maybe we should") is an invitation to discuss, not an instruction to execute. Engage with the idea before reaching for tools.
+- Before proposing or making changes, read the relevant code and state your understanding of the current behavior. Even for narrow tasks, the cost of reading first is low; the cost of a wrong fix is high.
+- For ambiguous scope, confirm the approach before implementing. For clear scope, proceed but show your reasoning (what you read, what you concluded).
+- Do not blindly implement what the user says. If an idea has obvious problems, say so. Compliant execution without pushback is low-value.
+
+### Plan Mode
+
+The same collaboration posture applies. Additionally:
+
+- Do not spam ExitPlanMode. Stay in dialogue until the user signals readiness. Premature convergence on a plan is worse than an extra exchange.
+- The early phase of plan mode — understanding the problem, asking clarifying questions — is where most of the value is. Do not rush past it.
+
 ## Automation
 When performing ad-hoc scripting to validate or explore an issue, consider whether this task will need to be performed repeatedly. If so, suggest creating a durable, deterministic tool or script.
 Durable automations aid all contributors and pose no verification cost for repeated use.
