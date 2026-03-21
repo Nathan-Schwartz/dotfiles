@@ -97,10 +97,13 @@ All agents MUST use epistemic classification (Verified/Inferred/Guess) on their 
 
 Collect agent findings and form an assessment: does the plan hold up?
 
-- **If plan needs amendment**:
-  - `collaborative`: present findings from each lens, discuss with user via `AskUserQuestion`, iterate until the plan is solid
-  - `autonomous`: amend the plan understanding internally based on Verified/Inferred findings (never amend based on Guesses alone) and proceed
 - **If plan holds up**: proceed to decomposition
+- **If plan needs amendment**:
+  - `collaborative`: present findings as a structured review (not a dump of agent output), then iterate with the user until the plan is solid, then proceed to decomposition. The review structure:
+    1. **Organize by severity**: blockers (Verified findings that contradict plan assumptions), concerns (Inferred findings suggesting risk), and informational (context that enriches but doesn't challenge)
+    2. **Group by theme**: related findings presented together so the user sees the full picture. For each group, present the evidence and a recommended resolution — the user may accept, discuss, or ignore the recommendation.
+    3. **Confirm the amended understanding**: after all issues are addressed, summarize how the plan differs from the original. Get explicit confirmation before proceeding to decomposition.
+  - `autonomous`: amend the plan understanding internally based on Verified/Inferred findings (never amend based on Guesses alone). If blockers exist that require human judgment to resolve, trigger contract failure rather than guessing. Proceed to decomposition.
 
 ## Phase 3: Decompose
 
@@ -239,6 +242,17 @@ Always output:
 - Dependency graph / execution order
 - Which tickets `tk ready` surfaces first
 - Source plan file path (`$0`) for provenance
+
+## Phase 7: Next Steps
+
+Do NOT offer to begin implementation. The tickets are the durable handoff artifact.
+
+Direct the user to use the `/execute` skill for interactive ticket implementation or `$ ralph` for autonomous itcket implemtnation. Note that:
+- `/execute` can be run in a new session — tickets contain all necessary context.
+- `/execute` can be run in multiple parallel sessions, but it is highly recommended to hand-pick tasks for this because:
+    1. parallel tasks that touch the same files will interfere with one another and the commits would not be atomic.
+    2. there is no guarantee that `/execute` won't pick up a task that's in progress in another session.
+- `$ ralph` cannot request permissions and will fail if it doesn't have permissions it needs to complete the task (e.g., running tests, installing packages).
 
 ## Examples
 

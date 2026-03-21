@@ -20,8 +20,18 @@ If a task ID is provided as `$0`, execute that specific task. Otherwise, select 
 ### Task Selection
 
 - If `$0` is provided, use that task ID
-- Otherwise, review the ready tasks above and pick the most appropriate one (respecting dependency order — earlier tasks unblock later ones)
+- Otherwise, review the ready tasks above and pick the most appropriate one:
+  - **Prefer `open` tasks over `in_progress` ones** — an `in_progress` task may be claimed by another session
+  - Respect dependency order — earlier tasks unblock later ones
 - If no tasks are ready, inform the user and stop
+
+### Parallel Safety
+
+Multiple `/execute` sessions can run concurrently on independent tasks:
+
+1. **Claim verification**: After `tk start <task_id>`, if the task was already `in_progress` (not `open`), another session may own it. Ask the user whether to proceed or pick a different task.
+2. **Independent tasks only**: Parallel sessions should work on tasks that don't modify the same files. If two tasks touch the same files, run them sequentially to avoid git merge conflicts.
+3. **Dependency awareness**: Closing a task in one session may make new tasks ready for other sessions. This is expected and safe.
 
 ### Per-Task Execution
 
