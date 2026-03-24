@@ -24,7 +24,8 @@
       "Bash(git log *)",
       "Bash(ls *)",
       "Bash(stat *)",
-      "Bash(cat ~/.claude/references/*)"
+      "Bash(cat ~/.claude/references/*)",
+      "Bash(bash ~/dotfiles/scripts/tk-triage-context.sh *)"
     ]
   },
   "hooks": {
