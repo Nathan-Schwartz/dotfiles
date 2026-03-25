@@ -187,6 +187,9 @@ function upgrade_dependencies() {
   log "Symlinking vendor tools"
   mkdir -p "$HOME/.local/bin"
   ln -sf "$DOTFILES_DIR/vendor/ticket/ticket" "$HOME/.local/bin/tk"
+  for plugin in "$DOTFILES_DIR"/vendor/ticket/plugins/ticket-*; do
+    [ -f "$plugin" ] && ln -sf "$plugin" "$HOME/.local/bin/$(basename "$plugin")"
+  done
   for plugin in "$DOTFILES_DIR"/vendor/tk-plugins/ticket-*; do
     [ -f "$plugin" ] && ln -sf "$plugin" "$HOME/.local/bin/$(basename "$plugin")"
   done
