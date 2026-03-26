@@ -5,7 +5,6 @@ description: >-
   Researches the codebase to vet the plan, decomposes into tickets,
   verifies the decomposition, and creates tickets in tk.
 argument-hint: <plan-file-path> [autonomous]
-disable-model-invocation: true
 ---
 
 Convert a plan file into actionable tk tickets. The plan file path is provided as `$0`. The supervision level is `$1` — if absent or anything other than "autonomous", default to collaborative mode.
@@ -263,12 +262,12 @@ Always output:
 
 Do NOT offer to begin implementation. The tickets are the durable handoff artifact.
 
-Direct the user to use the `/execute` skill for interactive ticket implementation or `$ ralph` for autonomous itcket implemtnation. Note that:
+Direct the user to use the `/execute` skill for interactive ticket implementation or `$ ralph` for autonomous ticket implementation. Note that:
 - `/execute` can be run in a new session — tickets contain all necessary context.
 - `/execute` can be run in multiple parallel sessions, but it is highly recommended to hand-pick tasks for this because:
     1. parallel tasks that touch the same files will interfere with one another and the commits would not be atomic.
     2. there is no guarantee that `/execute` won't pick up a task that's in progress in another session.
-- `$ ralph` cannot request permissions and will fail if it doesn't have permissions it needs to complete the task (e.g., running tests, installing packages).
+- `$ ralph` runs each task with `--permission-mode acceptEdits` (file edits auto-accepted) and `--allowedTools "Bash(git add *),Bash(git commit *)"` (only git add and git commit). It inherits both global and project-level `settings.json` permissions — so if a project allowlists the tools its tasks need (e.g., test runners, build commands), ralph can execute them. Tasks that need tools not covered by any settings.json allowlist or ralph's `--allowedTools` will fail because the non-interactive agent cannot request permission.
 
 ## Examples
 
