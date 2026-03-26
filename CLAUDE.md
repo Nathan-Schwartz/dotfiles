@@ -15,7 +15,7 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 ### Vendor Directory
 
 `vendor/` contains third-party tools managed as git submodules or local scripts:
-- `vendor/ticket/` — git submodule for [tk](https://github.com/wedow/ticket), a bash-based task manager
+- `vendor/ticket/` — git submodule for [tk](https://github.com/Nathan-Schwartz/ticket), a bash-based task manager
 
 ### Key Files
 
@@ -32,6 +32,7 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `bash/.bash/ralph.sh` — Ralph autonomous executor (task-per-session loop backed by tk + claude CLI)
 - `tmux/.tmux/scripts/claude-status.sh` — Detects Claude Code state (working/waiting/idle) in a tmux pane
 - `tmux/.tmux/scripts/claude-dashboard.sh` — Interactive Claude session dashboard (status + window switcher)
+- `claude/.claude/statusline.sh` — Claude Code statusline (session info, context window, rate limits, cost)
 
 ### Override Pattern
 
@@ -162,7 +163,7 @@ The tmux status bar shows per-window Claude Code state via `claude-status.sh`:
 
 - `tma` — start or resume the main tmux session
 - `tmk` — kill all tmux sessions
-- `tmclaude [name]` — open Claude Code in a named tmux window (defined in `bash/.bash/aliases.sh`). Works from inside or outside tmux, and from popups.
+- `tmc` / `tmclaude [name]` — open Claude Code in a named tmux window (defined in `bash/.bash/aliases.sh`). Works from inside or outside tmux, and from popups.
 
 ### Key Bindings
 
@@ -257,7 +258,7 @@ Default mode is `default`. Model is `claude-opus-4-6` with `effortLevel: high`, 
 
 ## tk (Task Management)
 
-[tk](https://github.com/wedow/ticket) is a bash-based, git-native task manager with zero dependencies. Installed from `vendor/ticket/` submodule, symlinked to `~/.local/bin/tk`.
+[tk](https://github.com/Nathan-Schwartz/ticket) is a bash-based, git-native task manager with zero dependencies. Installed from `vendor/ticket/` submodule, symlinked to `~/.local/bin/tk`.
 
 - `tk` commands are allow-listed in the base Claude Code settings
 
