@@ -50,5 +50,10 @@
   },
   "model": "claude-opus-4-6",
   "effortLevel": "high",
-  "outputStyle": "explanatory"
+  "outputStyle": "explanatory",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 1
+  }
 }
