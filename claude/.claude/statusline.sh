@@ -81,7 +81,7 @@ if [ -n "$FIVE_H" ]; then
         RESETS_IN=$(printf ' (resets in %dh:%02dm)' "$RESETS_HH" "$RESETS_MM")
     fi
     # RATE=" ${RATE_COLOR}${RATE_BAR}${RESET} ${FIVE_H_INT}% of 5h limit${RESETS_IN}"
-    RATE=" | ${RATE_COLOR}${FIVE_H_INT}%${RESET} ${DIM}of${RESET} tokens ${DIM}used${RESET}${DIM}${RESETS_IN}${RESET}"
+    RATE=" | ${RATE_COLOR}${FIVE_H_INT}%${RESET} ${DIM}of${RESET} tokens${DIM}${RESETS_IN}${RESET}"
 fi
 
 # --- Cost ---
