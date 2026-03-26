@@ -90,10 +90,6 @@ function brew_installs() {
   log "Updating Brew"
   brew update
 
-  # Upgrade any already-installed formulae.
-  log "Upgrading Brew"
-  brew upgrade
-
   log "Installing Brew packages"
   brew install git python3 pipx bash stow vim tree mise bash-completion rsync coreutils
 
