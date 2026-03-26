@@ -15,6 +15,7 @@ alias einstall='$EDITOR ~/dotfiles/scripts/install.sh'
 # Tmux
 alias tma='tmux new-session -A -s mainsession'
 alias tmk='tmux kill-server'
+alias tmc='tmclaude'
 
 # Start a named Claude Code window in tmux
 # Usage: tmclaude [name]  (defaults to current directory basename)
