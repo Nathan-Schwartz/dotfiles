@@ -20,6 +20,7 @@ alias tmk='tmux kill-server'
 # Usage: tmclaude [name]  (defaults to current directory basename)
 tmclaude() {
     local name="${1:-$(basename "$PWD")}"
+    name="${name%"${name##*[![:space:]]}"}" # strip trailing whitespace
     if [[ -z "$TMUX" ]]; then
         # Outside tmux: create session if needed, add claude window, then attach.
         # Uses -d (detached) so we can set up the window before attaching.
