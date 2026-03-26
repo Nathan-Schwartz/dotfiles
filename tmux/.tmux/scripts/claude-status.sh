@@ -51,6 +51,10 @@ if $has_input_field; then
         echo "○"
     fi
 # No input field — check for active prompts
+elif echo "$filtered" | grep -qF 'Do you want to proceed?'; then
+    echo "?"
+elif echo "$filtered" | grep -qF 'Esc to cancel'; then
+    echo "?"
 elif echo "$filtered" | grep -qF 'Enter to select'; then
     echo "?"
 elif echo "$filtered" | grep -qE '\[(y/n|Y/n)\]'; then
