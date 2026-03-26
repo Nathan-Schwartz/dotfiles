@@ -28,6 +28,7 @@ while IFS=$'\t' read -r idx name pane_id pane_dir; do
     status=$("$SCRIPT_DIR/claude-status.sh" "$pane_id")
     case "$status" in
         "●") WIN_LABEL[$i]="${YELLOW}● working${RESET}" ;;
+        "!") WIN_LABEL[$i]="${RED}! approve${RESET}" ;;
         "?") WIN_LABEL[$i]="${RED}? waiting${RESET}" ;;
         "○") WIN_LABEL[$i]="${GREEN}○ idle${RESET}" ;;
         *)   WIN_LABEL[$i]="${DIM}  shell${RESET}" ;;

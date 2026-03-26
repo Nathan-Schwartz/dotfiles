@@ -4,6 +4,7 @@
 #
 # Indicators:
 #   ● — Claude is working
+#   ! — Claude needs permission approval
 #   ? — Claude is waiting for input
 #   ○ — Claude is idle
 #   (empty) — Not a Claude pane
@@ -51,8 +52,9 @@ if $has_input_field; then
         echo "○"
     fi
 # No input field — check for active prompts
+# Permission approval prompt (tool wants to run something)
 elif echo "$filtered" | grep -qF 'Do you want to proceed?'; then
-    echo "?"
+    echo "!"
 elif echo "$filtered" | grep -qF 'Esc to cancel'; then
     echo "?"
 elif echo "$filtered" | grep -qF 'Enter to select'; then
