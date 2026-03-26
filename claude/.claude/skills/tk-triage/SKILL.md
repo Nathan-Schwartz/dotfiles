@@ -34,6 +34,7 @@ Triage stalled tk tickets. Surface abandoned and in-progress work, examine times
 
    - Run `tk show <id>` for full details (status, tags, creation timestamp, notes)
    - Check for partial commits: `git log --oneline --all --grep="tk(<id>)"` — an abandoned ticket with commits means partial work exists in the repo
+   - **Review claim history**: Extract all "Started by" and "Claim relinquished by" notes from the ticket file. These reveal how many times the ticket was claimed, by whom, and whether competing claims caused relinquishments. Multiple claims with no completion is a strong signal the ticket needs rework. Use: `grep -E "^(Started by|Claim relinquished by)" "$(tk dir)/<id>.md"`
    - Check for a ralph log at `${RALPH_LOG_DIR:-.ralph/runs}/<id>.json`. If it exists, read it and extract:
      - `result` — what the agent reported
      - `subtype` — success or error
@@ -55,6 +56,8 @@ Triage stalled tk tickets. Surface abandoned and in-progress work, examine times
    | Commits exist but ticket open | **Partial work** | Agent committed changes but didn't complete all acceptance criteria |
    | `in_progress`, no `abandoned` tag, no ralph log | **Stale claim** | Claimed by `/execute` or ralph but session ended without closing or abandoning — likely user closed terminal or switched context |
    | `in_progress`, no `abandoned` tag, has ralph log | **Missed abandonment** | Ralph ran but failed to tag — check log for details |
+   | Multiple "Started by" notes, no close | **Repeated claim failure** | Ticket claimed multiple times without completion — may be underspecified, too large, or orphaned by double-relinquish (both claimers saw each other and both backed off) |
+   | "Claim relinquished" notes present | **Claim contention** | Competing claims detected — check whether someone actually owns it now. Double-relinquish can leave a ticket in_progress with no owner |
 
 4. **Present the triage report** as a structured summary per ticket:
 
@@ -67,6 +70,7 @@ Triage stalled tk tickets. Surface abandoned and in-progress work, examine times
    | Ralph Outcome | success/error, duration, cost, turns |
    | Failure Mode | classification from step 3 |
    | Partial Work | commits found via `git log --grep` |
+   | Claim History | who claimed, how many times, any relinquishments |
    | Downstream Impact | tickets blocked by this one |
    | Agent Notes | any `tk add-note` content from the agent (agents are told to note what's blocking them) |
 

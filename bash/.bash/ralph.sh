@@ -93,18 +93,28 @@
 # TASK_TOO_LARGE  Task exceeds what one agent session can handle → partial
 #                 work or abandon. Mitigation: human decomposes before tagging.
 #
-# CONCURRENT_CLAIM  Handled. --if=open on tk start rejects stale claims: if
-#                 the ticket has already moved to in_progress, start fails
-#                 (check-and-set). -s open on tk ready filters out in_progress
-#                 tickets at the source, so they never appear in the selection.
-#                 A TOCTOU window exists between the ready listing and the start
-#                 claim, but --if=open catches it — the start will fail and the
-#                 loop continues to the next task. tk start's read-after-write
-#                 race detection provides a second safety net: if two sessions
-#                 both pass the --if=open check within the same 5-minute window,
-#                 the second claimant detects the competing "Started by" note
-#                 and relinquishes. Net effect: concurrent ralph + /execute is
-#                 safe; both will skip tasks claimed by the other.
+# CONCURRENT_CLAIM  Mitigated, not eliminated. Three layers reduce the
+#                 window but none are airtight:
+#                 1. -s open on tk ready filters out in_progress tickets at
+#                    the source, so claimed tasks rarely appear in selection.
+#                 2. --if=open on tk start is a check-and-set: if the ticket
+#                    moved to in_progress between ready and start, the claim
+#                    fails and the loop picks the next task.
+#                 3. tk start's read-after-write detection: if two sessions
+#                    both pass --if=open within a configurable window (default
+#                    5 min), the later claimant detects the competing "Started
+#                    by" note and relinquishes.
+#                 Known gaps:
+#                 - RAW window is finite. A claim arriving after the window
+#                   expires won't detect the original — two sessions own it.
+#                 - Double relinquish: if two claimers arrive near-simultaneously,
+#                   both may see each other's note and both relinquish, leaving
+#                   the ticket in_progress with no actual owner.
+#                 - Claims prevent duplicate work, not conflicts. Even with
+#                   clean claims, plan-to-tk's contention deps are best-effort
+#                   — parallel tasks may still touch the same files.
+#                 Net effect: concurrent ralph + /execute is unlikely to
+#                 collide, but /tk-triage should audit for orphaned claims.
 #
 # =============================================================================
 
