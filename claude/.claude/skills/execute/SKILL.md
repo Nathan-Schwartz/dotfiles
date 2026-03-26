@@ -29,7 +29,7 @@ If a task ID is provided as `$0`, execute that specific task. Otherwise, select 
 
 Multiple `/execute` sessions can run concurrently on independent tasks:
 
-1. **Claim verification**: After `tk start <task_id>`, if the task was already `in_progress` (not `open`), another session may own it. Ask the user whether to proceed or pick a different task.
+1. **Claim verification**: Use `tk start --if=open <task_id>` as the first-line guard — it atomically claims the task only if it's still `open`, failing otherwise. If it fails, another session likely claimed it: inform the user and ask whether to proceed on that task anyway or pick a different one. The human decides — `--if=open` catches the common case, but it's not perfect (e.g., a task you yourself started earlier), so the advisory matters.
 2. **Independent tasks only**: Parallel sessions should work on tasks that don't modify the same files. If two tasks touch the same files, run them sequentially to avoid git merge conflicts.
 3. **Dependency awareness**: Closing a task in one session may make new tasks ready for other sessions. This is expected and safe.
 
@@ -37,7 +37,7 @@ Multiple `/execute` sessions can run concurrently on independent tasks:
 
 For each task:
 
-1. **Claim**: `tk start <task_id>`
+1. **Claim**: `tk start --if=open <task_id>`. If this fails, inform the user that the task may already be claimed by another session and ask which task to try instead.
 
 2. **Execute**: Dispatch a subagent (using the Agent tool) to implement the task. The subagent prompt must include:
    - The full output of `tk show <task_id>`

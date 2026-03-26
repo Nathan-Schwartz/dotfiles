@@ -16,7 +16,6 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 
 `vendor/` contains third-party tools managed as git submodules or local scripts:
 - `vendor/ticket/` — git submodule for [tk](https://github.com/wedow/ticket), a bash-based task manager
-- `vendor/tk-plugins/` — custom tk plugins (`ticket-tag`, `ticket-untag`), symlinked into `~/.local/bin/` by `install.sh`
 
 ### Key Files
 
@@ -261,7 +260,6 @@ Default mode is `default`. Model is `claude-opus-4-6` with `effortLevel: high`, 
 [tk](https://github.com/wedow/ticket) is a bash-based, git-native task manager with zero dependencies. Installed from `vendor/ticket/` submodule, symlinked to `~/.local/bin/tk`.
 
 - `tk` commands are allow-listed in the base Claude Code settings
-- Custom plugins in `vendor/tk-plugins/`: `ticket-tag`, `ticket-untag`
 
 ## Root .gitignore
 

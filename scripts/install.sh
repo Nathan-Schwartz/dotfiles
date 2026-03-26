@@ -190,9 +190,6 @@ function upgrade_dependencies() {
   for plugin in "$DOTFILES_DIR"/vendor/ticket/plugins/ticket-*; do
     [ -f "$plugin" ] && ln -sf "$plugin" "$HOME/.local/bin/$(basename "$plugin")"
   done
-  for plugin in "$DOTFILES_DIR"/vendor/tk-plugins/ticket-*; do
-    [ -f "$plugin" ] && ln -sf "$plugin" "$HOME/.local/bin/$(basename "$plugin")"
-  done
 
   if [ ! "$skip_commits" = true ]; then
     cd "$DOTFILES_DIR"

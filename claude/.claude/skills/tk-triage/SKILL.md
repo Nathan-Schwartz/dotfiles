@@ -41,17 +41,7 @@ Triage stalled tk tickets. Surface abandoned and in-progress work, examine times
      - `total_cost_usd` — cost of the run
      - `num_turns` — how many turns the agent took (key for failure classification)
      - `permission_denials` — tool permissions that blocked the agent
-   - **Map dependency impact** — tk has no reverse dep tree, so build one:
-     1. Find direct dependents: `grep -rl '<id>' .tickets/*.md` and check which tickets list it in their `deps:` field
-     2. For each dependent found, recursively find its dependents the same way
-     3. Run `tk dep tree <id>` on the stalled ticket itself to show its own dependencies (context for why it may be stuck)
-     4. Present the full cascade as an indented tree showing what's blocked downstream:
-        ```
-        <stalled-id> [in_progress, abandoned] Stalled ticket title   ← THIS IS STUCK
-        ├── <dep-a> [open] Blocked ticket A                          ← blocked
-        │   └── <dep-a1> [open] Transitively blocked                 ← blocked
-        └── <dep-b> [open] Another blocked ticket                    ← blocked
-        ```
+   - **Map dependency impact**: Run `tk dep tree --reverse <id>` to show which tickets depend on this one recursively (the full downstream cascade). Also run `tk dep tree <id>` to show its own dependencies (context for why it may be stuck). Present both trees in the report.
 
 3. **Classify failure mode** (Inferred — cite evidence from log and ticket notes):
 

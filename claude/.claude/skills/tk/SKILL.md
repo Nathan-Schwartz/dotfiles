@@ -72,9 +72,13 @@ tk create "<title>" [options]       # Create ticket, prints ID
   -a, --assignee <name>            # Assignee
   --external-ref <ref>             # External reference (e.g., gh-123)
   --parent <id>                    # Parent ticket ID
+  --id <custom-id>                 # Custom ticket ID (default: auto-generated)
+  --dir <subdir>                   # Put ticket in subdirectory (auto-creates if needed)
   --tags <tag1,tag2>               # Comma-separated tags
 
-tk start <id>                       # open → in_progress
+tk start <id> [--if=STATUS] [--by=NAME]  # open → in_progress
+  --if=STATUS                      # Assert current status before transitioning (fails if mismatch)
+  --by=NAME                        # Record claim attribution (falls back to git user.name / $USER)
 tk close <id>                       # → closed
 tk reopen <id>                      # → open
 tk status <id> <status>             # Set arbitrary status
@@ -85,17 +89,29 @@ tk status <id> <status>             # Set arbitrary status
 ```bash
 tk dep <id> <dep-id>                # id depends on dep-id
 tk undep <id> <dep-id>              # Remove dependency
-tk dep tree [--full] <id>           # Show dependency tree
+tk dep tree [--full] [--reverse] <id>  # Show dependency tree
+  --reverse                         # Show reverse tree (which tickets depend on this one)
 tk dep cycle                        # Find cycles in open tickets
 ```
 
 ### Querying
 
 ```bash
-tk ready [-a <assignee>] [-T <tag>] # Tickets with deps resolved
-tk blocked [-a <assignee>] [-T <tag>] # Tickets with unresolved deps
-tk list [--status=<status>]         # List tickets
-tk closed [--limit=N]               # Recently closed tickets
+tk ready [-s STATUS] [--dir X] [-a <assignee>] [-T <tag>]
+                                    # Tickets with deps resolved
+  -s, --status=STATUS               # Filter by specific status (default: open + in_progress)
+  --dir X                           # Filter by subdirectory
+tk blocked [-s STATUS] [--dir X] [-a <assignee>] [-T <tag>]
+                                    # Tickets with unresolved deps
+  -s, --status=STATUS               # Filter by specific status (default: open + in_progress)
+  --dir X                           # Filter by subdirectory
+tk list [--status=<status>] [--dir X] [-a <assignee>] [-T <tag>]
+                                    # List tickets (plugin)
+  --dir X                           # Filter by subdirectory
+  --summary                         # Show directory progress summary
+tk closed [--limit=N] [--dir X] [-a <assignee>] [-T <tag>]
+                                    # Recently closed tickets
+  --dir X                           # Filter by subdirectory
 tk show <id>                        # Display ticket details
 ```
 
@@ -108,6 +124,28 @@ tk untag <id> <tag> [<tag2>...]     # Remove tags (plugin)
 tk link <id> <id> [<id>...]         # Link tickets (symmetric)
 tk unlink <id> <target-id>          # Remove link
 ```
+
+### Utility
+
+```bash
+tk dir                              # Print resolved .tickets/ path
+tk super <cmd> [args]               # Bypass plugins, run built-in command directly
+tk help                             # List commands and installed plugins
+```
+
+## Plugin System
+
+Executables named `tk-<cmd>` or `ticket-<cmd>` in PATH are invoked automatically when you run `tk <cmd>`. This allows custom commands or overrides of built-ins.
+
+Plugins receive two environment variables:
+- `TICKETS_DIR` — path to the resolved `.tickets/` directory
+- `TK_SCRIPT` — absolute path to the tk script (use `"$TK_SCRIPT" super <cmd>` to call built-ins from within a plugin)
+
+Use `tk super <cmd>` to bypass plugins and run the built-in directly.
+
+**Plugin descriptions** (shown in `tk help`):
+- Scripts: comment `# tk-plugin: description` in first 10 lines
+- Binaries: `--tk-describe` flag outputs `tk-plugin: description`
 
 ## Examples
 

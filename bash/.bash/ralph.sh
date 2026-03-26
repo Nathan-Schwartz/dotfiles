@@ -20,7 +20,7 @@
 #
 # Task Lifecycle Within Ralph:
 #
-#   open + planned tag ──[tk start]──▸ in_progress ──[claude -p]──▸ ?
+#   open + planned tag ──[tk start --if=open]──▸ in_progress ──[claude -p]──▸ ?
 #                                                                   │
 #                                           ┌───────────────────────┤
 #                                           │                       │
@@ -32,7 +32,7 @@
 #                                                            (failed)
 #
 # Loop States:
-#   SELECT  ──▸ pick next task from tk ready -T planned (skip in_progress)
+#   SELECT  ──▸ pick next task from tk ready -T planned -s open
 #   CLAIM   ──▸ tk start (open → in_progress)
 #   EXECUTE ──▸ claude -p with task context
 #   EVAL    ──▸ check tk status: closed = completed, else = abandoned
@@ -93,13 +93,18 @@
 # TASK_TOO_LARGE  Task exceeds what one agent session can handle → partial
 #                 work or abandon. Mitigation: human decomposes before tagging.
 #
-# CONCURRENT_CLAIM  Ralph and an interactive /execute session claim the same
-#                 task. tk start has no guard against re-starting an in_progress
-#                 task, so both succeed and work on it simultaneously. Ralph
-#                 filters out in_progress tasks, but /execute does not — and
-#                 even with filtering, a race window exists between listing and
-#                 claiming. Mitigation: avoid running ralph while an interactive
-#                 session is executing planned tasks.
+# CONCURRENT_CLAIM  Handled. --if=open on tk start rejects stale claims: if
+#                 the ticket has already moved to in_progress, start fails
+#                 (check-and-set). -s open on tk ready filters out in_progress
+#                 tickets at the source, so they never appear in the selection.
+#                 A TOCTOU window exists between the ready listing and the start
+#                 claim, but --if=open catches it — the start will fail and the
+#                 loop continues to the next task. tk start's read-after-write
+#                 race detection provides a second safety net: if two sessions
+#                 both pass the --if=open check within the same 5-minute window,
+#                 the second claimant detects the competing "Started by" note
+#                 and relinquishes. Net effect: concurrent ralph + /execute is
+#                 safe; both will skip tasks claimed by the other.
 #
 # =============================================================================
 
@@ -154,10 +159,10 @@ ralph() (
       break
     fi
 
-    # Get next planned task, filtering out in_progress (already claimed or failed)
+    # Get next open planned task (-s open filters at tk level, no grep needed)
     # tk ready output format: "<id>  [P<priority>][<status>] - <title>"
     local task_line
-    task_line=$(tk ready -T planned 2>/dev/null | grep -v '\[in_progress\]' | head -1) || true
+    task_line=$(tk ready -T planned -s open 2>/dev/null | head -1) || true
 
     if [ -z "$task_line" ]; then
       echo "No ready planned tasks."
@@ -170,7 +175,12 @@ ralph() (
     echo "=== $task_id ==="
 
     # --- CLAIM ---
-    tk start "$task_id"
+    # --if=open: fail if already claimed (check-and-set, prevents TOCTOU race)
+    # --by=ralph: attribution for triage
+    if ! tk start --if=open --by=ralph "$task_id"; then
+      echo "  skipped — claimed by another session"
+      continue
+    fi
 
     # --- EXECUTE ---
     local task_context

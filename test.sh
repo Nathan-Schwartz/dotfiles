@@ -18,7 +18,7 @@ echo "Running vint..."
 vint vim/.vimrc
 
 echo "Running shellcheck..."
-shellcheck --severity=warning test.sh scripts/**.sh bash/.bash_profile bash/.bashrc bash/.bash/** vendor/tk-plugins/**
+shellcheck --severity=warning test.sh scripts/**.sh bash/.bash_profile bash/.bashrc bash/.bash/**
 
 echo "Checking tool availability..."
 assert "$(command_exists tmux)" "true" 'Tmux not installed'
