@@ -47,8 +47,8 @@ lr() {
 }
 
 # --- Context bar ---
-if [ "$PCT" -ge 90 ] 2>/dev/null; then BAR_COLOR="$RED"
-elif [ "$PCT" -ge 70 ] 2>/dev/null; then BAR_COLOR="$YELLOW"
+if [ "$PCT" -ge 80 ] 2>/dev/null; then BAR_COLOR="$RED"
+elif [ "$PCT" -ge 50 ] 2>/dev/null; then BAR_COLOR="$YELLOW"
 else BAR_COLOR="$GREEN"; fi
 
 BAR_WIDTH=10
