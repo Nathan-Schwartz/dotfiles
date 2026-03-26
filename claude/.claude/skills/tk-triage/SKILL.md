@@ -3,7 +3,7 @@ name: tk-triage
 description: >-
   Review abandoned and in-progress tk tickets with timestamps and ralph logs.
   Use to audit stalled work and decide what to do about it.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 Triage stalled tk tickets. Surface abandoned and in-progress work, examine timestamps and ralph execution logs, classify failure modes, and help the user decide next steps.
