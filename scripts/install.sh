@@ -182,6 +182,7 @@ function upgrade_dependencies() {
   mise upgrade
 
   log "Updating git submodules"
+  git -C "$DOTFILES_DIR" submodule sync --recursive
   git -C "$DOTFILES_DIR" submodule update --force --recursive --init --remote
 
   log "Symlinking vendor tools"
