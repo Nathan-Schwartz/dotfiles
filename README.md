@@ -125,6 +125,8 @@ Skills help move along this spectrum. Each transition increases structure and co
 
 `/to-pkm` is a general knowledge capture tool which generates files according to my PKM definitions.
 
+`/tk-triage` audits stalled work — surfaces abandoned and in-progress tickets, reads ralph execution logs, classifies failure modes, and helps decide next steps.
+
 #### Personal Knowledge Management (PKM)
 
 Knowledge is captured in files with compound extensions which declare their type and verification cost.
