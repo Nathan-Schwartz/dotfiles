@@ -127,6 +127,8 @@ Break the plan into discrete tk tickets.
 - **Single capability** (most plans): parent is a **feature**, children are **tasks**
 - **Multiple distinct capabilities**: parent is an **epic**, children are **features** — this likely means the plan is too large for one pass, which should trigger the contract failure
 
+Features group tasks by **what they deliver** (a capability, component, or subsystem), not when they execute. If your proposed features map to "Phase 1, Phase 2, Phase 3" or "bug fixes, then features, then enhancements," you've created phases, not features. Restructure so each feature represents a coherent capability.
+
 ### Dependency direction
 
 Children block their parents. Work flows bottom-up:
@@ -141,6 +143,19 @@ Task (do first) ──blocks──► Feature ──blocks──► Epic (comple
 - Between siblings with ordering constraints: `tk dep <downstream_id> <upstream_id>`
 
 This ensures `tk ready` surfaces leaf tasks first — the actual work for ralph to execute.
+
+### Dependency types
+
+There are two kinds of ordering constraints between sibling tasks:
+
+- **Logical**: task B consumes the output/artifact of task A. Fixed order.
+- **Contention**: tasks modify the same file(s) and must be serialized to avoid conflicts, but either could go first. Pick the order that minimizes blocking (e.g., smaller task first to unblock the chain faster).
+
+Both are expressed via `tk dep`. The distinction matters during decomposition — logical deps come from the plan's structure, contention deps come from file-overlap analysis.
+
+### File-contention analysis
+
+After decomposition, map each task to the files it will modify. Tasks that write to the same file(s) MUST be serialized via contention deps. This is a mechanical constraint — even logically independent changes conflict at the file level when executed in parallel sessions.
 
 ### Ticket content
 
@@ -160,6 +175,7 @@ Agent-driven audit of the proposed ticket structure. This always runs regardless
 - **Gaps**: is there work that falls between tickets?
 - **Sizing**: is any ticket too large for a single ralph session? Is any ticket too trivial to be standalone?
 - **Dependencies**: are ordering constraints correct? Check the proposed dependency graph for cycles before any tickets are created.
+- **Parallelism safety**: look at which tasks `tk ready` would surface simultaneously. Do any of them modify the same files? If so, add contention deps.
 - **Clarity**: could ralph (a fresh claude session receiving only the output of `tk show <id>`) execute each ticket without needing additional context?
 
 ### If issues are found
