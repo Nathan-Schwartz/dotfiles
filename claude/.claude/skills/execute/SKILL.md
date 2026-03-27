@@ -53,13 +53,18 @@ For each task:
    - The diff of changes (use `git diff` or `git diff --cached` as appropriate)
 
 4. **Human Gate**: Ask the user to approve or reject the work:
-   - **Approved**: `tk close <task_id>`. Check if there are more ready tasks and offer to continue.
+   - **Approved**: `tk close <task_id>`. Then **re-run `tk ready -T planned`** (the earlier list may be stale — other sessions, ralph, or manual changes can alter state) and present the fresh list. Ask the user whether to continue. The user may simply approve continuing (you pick the best candidate) or specify a task ID. **Do not start the next task without explicit approval.**
    - **Rejected with rationale**: Incorporate the feedback and dispatch another subagent attempt. Do not re-run `tk start` (task is already in_progress).
 
-### Stopping
+### Continuation
 
-The loop continues until:
-- The user declines to continue to the next task
+Never autonomously pick up a new task. After each completed task, you **must** get explicit user approval before proceeding. The user may:
+- Approve continuing (you select the best candidate from the fresh ready list)
+- Approve continuing and specify a task ID
+- Decline or stop
+
+The loop stops when:
+- The user declines to continue
 - No more ready tasks remain
 - The user explicitly stops
 
