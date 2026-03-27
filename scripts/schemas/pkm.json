@@ -24,14 +24,15 @@
         "sources": "where the facts come from (URLs, filenames, relative paths to PKM notes)"
       },
       "content_rules": {
-        "principle": "External knowledge: facts, tool behaviors, source summaries. Every claim must be verifiable against a cited external source.",
+        "principle": "External knowledge: facts, tool behaviors, source summaries. Cite sources as inline markdown links (`[text](path-or-url)`) — every frontmatter `sources` entry must appear as a link in the body. Every claim must be verifiable against a cited external source.",
         "must_not_contain": [
           "Design proposals or options (e.g. 'Option A vs Option B', 'Proposed approach')",
           "Recommendations or strategic advice (e.g. 'Recommended', 'Should consider')",
           "Risk assessments or evaluative judgments (e.g. 'high risk', 'maximally friendly')",
           "Implications sections that reason about what facts mean for unrelated work",
           "Proposed code changes, implementation sketches, or 'minimal change sets'",
-          "Comparative analysis or trade-off discussion between alternatives"
+          "Comparative analysis or trade-off discussion between alternatives",
+          "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant."
         ],
         "when_in_doubt": "Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in."
       }
@@ -61,11 +62,12 @@
         "status": "draft, partial, or complete"
       },
       "content_rules": {
-        "principle": "Original thinking: analysis, decisions, designs, proposals. Cite .ref.md files for supporting facts rather than restating them inline.",
+        "principle": "Original thinking: analysis, decisions, designs, proposals. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body, anchoring it to the content it supports. Do not restate facts from refs; link to them.",
         "must_not_contain": [
           "Raw facts or source documentation that belong in a .ref.md (extract and cite instead)",
           "Navigation structures, file listings, or cross-reference maps (use .index.md)",
-          "Unstructured scratch notes or questions without analysis (use .temp.md)"
+          "Unstructured scratch notes or questions without analysis (use .temp.md)",
+          "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant."
         ],
         "when_in_doubt": "If a section is purely factual and verifiable against an external source, extract it to a .ref.md and cite it. Synths should be lean — reasoning and conclusions, not restated evidence."
       }
@@ -91,10 +93,11 @@
         "created": "ISO-8601"
       },
       "content_rules": {
-        "principle": "Scratch space with no verification burden. Capture thoughts quickly; promote to .ref.md or .synth.md when the content solidifies.",
+        "principle": "Scratch space with no verification burden. Capture thoughts quickly; promote to .ref.md or .synth.md when the content solidifies. If sources are listed, cite them as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body.",
         "must_not_contain": [
           "Polished analysis or design decisions that should be a .synth.md",
-          "Verified facts with source citations that should be a .ref.md"
+          "Verified facts with source citations that should be a .ref.md",
+          "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant."
         ],
         "when_in_doubt": "Keep it in .temp.md. Temp is the lowest-cost default — it's always safe to start here and promote later."
       }
@@ -122,11 +125,12 @@
         "sources": "files being indexed"
       },
       "content_rules": {
-        "principle": "Purely structural. Links, lists, and cross-references to other PKM files. No original content — all substance lives in the files being linked.",
+        "principle": "Purely structural. Links, lists, and cross-references to other PKM files. No original content — all substance lives in the files being linked. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body.",
         "must_not_contain": [
           "Original analysis or commentary (use .synth.md)",
           "Factual documentation (use .ref.md)",
-          "Prose paragraphs — index files should be links and brief descriptions, not essays"
+          "Prose paragraphs — index files should be links and brief descriptions, not essays",
+          "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant."
         ],
         "when_in_doubt": "If you're writing more than a sentence of description per link, the content probably belongs in its own .ref.md or .synth.md."
       }

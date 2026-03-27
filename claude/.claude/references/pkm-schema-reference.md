@@ -24,7 +24,7 @@ Facts, tool behaviors, source summaries. Cheapest to verify.
 
 **Optional:** `ai_reviewed_at`, `human_reviewed_at`, `id`
 
-**Content rules:** External knowledge: facts, tool behaviors, source summaries. Every claim must be verifiable against a cited external source.
+**Content rules:** External knowledge: facts, tool behaviors, source summaries. Cite sources as inline markdown links (`[text](path-or-url)`) — every frontmatter `sources` entry must appear as a link in the body. Every claim must be verifiable against a cited external source.
 
 **Must NOT contain:**
 - Design proposals or options (e.g. 'Option A vs Option B', 'Proposed approach')
@@ -33,6 +33,7 @@ Facts, tool behaviors, source summaries. Cheapest to verify.
 - Implications sections that reason about what facts mean for unrelated work
 - Proposed code changes, implementation sketches, or 'minimal change sets'
 - Comparative analysis or trade-off discussion between alternatives
+- Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.
 
 **When in doubt:** Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in.
 
@@ -50,12 +51,13 @@ Analysis, decisions, designs, proposals. Expensive to verify.
 
 **Optional:** `ai_reviewed_at`, `human_reviewed_at`, `id`
 
-**Content rules:** Original thinking: analysis, decisions, designs, proposals. Cite .ref.md files for supporting facts rather than restating them inline.
+**Content rules:** Original thinking: analysis, decisions, designs, proposals. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body, anchoring it to the content it supports. Do not restate facts from refs; link to them.
 
 **Must NOT contain:**
 - Raw facts or source documentation that belong in a .ref.md (extract and cite instead)
 - Navigation structures, file listings, or cross-reference maps (use .index.md)
 - Unstructured scratch notes or questions without analysis (use .temp.md)
+- Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.
 
 **When in doubt:** If a section is purely factual and verifiable against an external source, extract it to a .ref.md and cite it. Synths should be lean — reasoning and conclusions, not restated evidence.
 
@@ -70,11 +72,12 @@ Questions, half-formed ideas. No verification burden.
 
 **Optional:** `ai_reviewed_at`, `human_reviewed_at`, `id`, `sources`, `topics`
 
-**Content rules:** Scratch space with no verification burden. Capture thoughts quickly; promote to .ref.md or .synth.md when the content solidifies.
+**Content rules:** Scratch space with no verification burden. Capture thoughts quickly; promote to .ref.md or .synth.md when the content solidifies. If sources are listed, cite them as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body.
 
 **Must NOT contain:**
 - Polished analysis or design decisions that should be a .synth.md
 - Verified facts with source citations that should be a .ref.md
+- Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.
 
 **When in doubt:** Keep it in .temp.md. Temp is the lowest-cost default — it's always safe to start here and promote later.
 
@@ -91,12 +94,13 @@ Maps, cross-references, session manifests.
 
 **Optional:** `ai_reviewed_at`, `human_reviewed_at`, `id`
 
-**Content rules:** Purely structural. Links, lists, and cross-references to other PKM files. No original content — all substance lives in the files being linked.
+**Content rules:** Purely structural. Links, lists, and cross-references to other PKM files. No original content — all substance lives in the files being linked. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body.
 
 **Must NOT contain:**
 - Original analysis or commentary (use .synth.md)
 - Factual documentation (use .ref.md)
 - Prose paragraphs — index files should be links and brief descriptions, not essays
+- Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.
 
 **When in doubt:** If you're writing more than a sentence of description per link, the content probably belongs in its own .ref.md or .synth.md.
 

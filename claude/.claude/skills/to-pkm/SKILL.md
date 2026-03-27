@@ -78,6 +78,8 @@ Include cross-references to other files created in this invocation in the `sourc
 
 **Body content**: Write the actual substance — not a summary of the conversation, but the knowledge itself. For refs, document the facts clearly. For synths, capture the reasoning and decisions. For temps, capture the question or idea with enough context to be useful later.
 
+**Inline citations**: Every entry in a file's frontmatter `sources:` must appear as an inline markdown link (`[text](path)`) in the body. The link anchors the source to the specific content it supports — a claim, a section, or an argument. No phantom sources (listed in frontmatter but never linked in the body). Citation granularity can vary — per-claim, per-section, per-argument — as long as the connection between source and content is clear.
+
 ## 5. Generate session index
 
 Write a session index file to the target directory:
