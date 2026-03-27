@@ -39,6 +39,15 @@ Synths should be lean — reasoning and conclusions, not restated evidence. A sy
 
 An `.index.md` is purely navigational — it lists and links to other files with brief descriptions, nothing more. It contains no original analysis, no argument, no cited evidence chain. If you find yourself writing prose that reasons over a collection of refs, that is a `.synth.md` that cites those refs, not an index.
 
+### .ref.md is not a catalog
+
+A `.ref.md` does factual extraction — it captures the substance of its sources, not just pointers to them. If the body is a list of external links with one-line summaries rather than extracted facts, the file is doing index-shaped work for external sources. Either:
+
+- **Deepen**: Extract the actual facts from those sources into a coherent document. The sources become citations backing specific claims, not the content itself.
+- **Split**: Create individual refs per source (or per logical grouping) so each one does meaningful extraction.
+
+The test: if someone deleted the source URLs, would the ref still contain useful knowledge? If not, it's a catalog, not a reference.
+
 ## Duplicate Checking
 
 This may be skipped if qmd is inaccessible via mcp, but you must check.

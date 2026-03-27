@@ -34,8 +34,9 @@ Facts, tool behaviors, source summaries. Cheapest to verify.
 - Proposed code changes, implementation sketches, or 'minimal change sets'
 - Comparative analysis or trade-off discussion between alternatives
 - Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.
+- Catalogs or listings of many external sources with only light summaries (extract the substantive facts, or split into individual refs per source)
 
-**When in doubt:** Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in.
+**When in doubt:** Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in. If the body reads like a list of links with one-line descriptions rather than extracted facts, either deepen the extraction or split into individual refs.
 
 ### synth (`.synth.md`) — Original thinking
 
