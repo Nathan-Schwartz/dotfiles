@@ -29,7 +29,7 @@
 # Clone repo and all submodules
 git clone https://github.com/Nathan-Schwartz/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-git submodule update --force --recursive --init --remote
+git submodule update --force --init --remote
 
 # Install stow however you like.
 # The install script (./scripts/install.sh) will install stow but also many other things.

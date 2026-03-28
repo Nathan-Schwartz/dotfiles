@@ -179,7 +179,7 @@ function upgrade_dependencies() {
 
   log "Updating git submodules"
   git -C "$DOTFILES_DIR" submodule sync --recursive
-  git -C "$DOTFILES_DIR" submodule update --force --recursive --init --remote
+  git -C "$DOTFILES_DIR" submodule update --force --init --remote
 
   log "Symlinking vendor tools"
   mkdir -p "$HOME/.local/bin"
