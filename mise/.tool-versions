@@ -7,5 +7,8 @@ shellcheck      0.11.0
 shfmt           3.12.0
 jc              1.25.6
 yq              4.52.4
+go              1.26.1
+ollama          0.18.3
+go:github.com/jrswab/axe 1.6.1
 tmux            3.6a
 npm:@tobilu/qmd 1.1.5

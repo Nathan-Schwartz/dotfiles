@@ -47,6 +47,14 @@ tmclaude() {
     fi
 }
 
+# Axe — resolve agents from dotfiles for commands that support it
+axe() {
+  case "$1" in
+    run|agents|gc) command axe --agents-dir ~/dotfiles/axe/agents "$@" ;;
+    *) command axe "$@" ;;
+  esac
+}
+
 # Common typos
 alias vmi='vim'
 alias g="git"

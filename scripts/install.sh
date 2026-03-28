@@ -20,6 +20,7 @@ function main() {
 
   mise_installs
   python_installs
+  ollama_setup
   upgrade_dependencies
   log "Good to go!"
 }
@@ -161,6 +162,28 @@ function python_installs() {
 
   # vim-vint uses pkg_resources which requires setuptools in its virtualenv
   pipx inject vim-vint 'setuptools<82' --force
+}
+
+function ollama_setup() {
+  log "Pulling ollama models"
+  ollama serve &>/dev/null &
+  local ollama_pid=$!
+
+  local retries=0
+  until curl -sf http://localhost:11434/ >/dev/null 2>&1; do
+    retries=$((retries + 1))
+    if [ "$retries" -ge 75 ]; then
+      log "ollama serve failed to start"
+      kill "$ollama_pid" 2>/dev/null || true
+      return 1
+    fi
+    sleep 0.2
+  done
+
+  ollama pull qwen3.5:4b
+
+  kill "$ollama_pid" 2>/dev/null || true
+  wait "$ollama_pid" 2>/dev/null || true
 }
 
 function upgrade_dependencies() {

@@ -50,6 +50,12 @@ if [ -f ~/dotfiles/vendor/ticket/completions/ticket-completion.bash ]; then
   source ~/dotfiles/vendor/ticket/completions/ticket-completion.bash
 fi
 
+# Start ollama server if installed and not already running
+if [ "$(command_exists ollama)" = 'true' ] && ! curl -sf http://localhost:11434/ >/dev/null 2>&1; then
+  ollama serve &>/dev/null &
+  disown
+fi
+
 # Used by tmux to load the desired bash executable
 export BASH_PATH="$(which bash)"
 

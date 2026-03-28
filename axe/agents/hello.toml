@@ -1,0 +1,4 @@
+name = "hello"
+description = "Placeholder agent to verify the axe + ollama pipeline works"
+model = "ollama/qwen3.5:4b"
+system_prompt = "You are a concise unix tool. Read stdin, respond with a single short sentence."
