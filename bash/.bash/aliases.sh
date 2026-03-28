@@ -50,7 +50,8 @@ tmclaude() {
 # Axe — resolve agents from dotfiles for commands that support it
 axe() {
   case "$1" in
-    run|agents|gc) command axe --agents-dir ~/dotfiles/axe/agents "$@" ;;
+    run) command axe --agents-dir ~/dotfiles/axe/agents --timeout 300 "$@" ;;
+    agents|gc) command axe --agents-dir ~/dotfiles/axe/agents "$@" ;;
     *) command axe "$@" ;;
   esac
 }
