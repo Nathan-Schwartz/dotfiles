@@ -30,7 +30,7 @@ GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
 CODEMAP_DIR="$GIT_ROOT/.codemap"
 CODEMAP_JSON="$CODEMAP_DIR/codemap.json"
 CODEMAP_MD="$CODEMAP_DIR/codemap.md"
-CODEMAP_META="$CODEMAP_DIR/meta.json"
+CODEMAP_META="$CODEMAP_DIR/codemap.meta.json"
 mkdir -p "$CODEMAP_DIR"
 
 # --- helpers ---
@@ -148,12 +148,17 @@ stale_count=$(echo "$stale_list" | grep -c $'\t' || true)
 echo "codemap-refresh: $total_count files discovered, $stale_count stale, pool size $PARALLEL" >&2
 
 if [[ "$stale_count" -gt 0 ]]; then
-  # Dispatch parallel pool — pass file and hash as args
-  echo "$stale_list" | xargs -P "$PARALLEL" -I{} bash -c '
-    file="${1%%	*}"
-    hash="${1##*	}"
-    process_file "$file" "$hash" "$2"
-  ' _ {} "$TMPDIR_BASE"
+  # Dispatch parallel pool
+  active=0
+  while IFS=$'\t' read -r file hash; do
+    process_file "$file" "$hash" "$TMPDIR_BASE" &
+    active=$((active + 1))
+    if [[ "$active" -ge "$PARALLEL" ]]; then
+      wait -n 2>/dev/null || true
+      active=$((active - 1))
+    fi
+  done <<< "$stale_list"
+  wait
 fi
 
 # --- assembly ---
@@ -209,5 +214,5 @@ if ls "$TMPDIR_BASE"/*.json &>/dev/null; then
   update_count=$(ls "$TMPDIR_BASE"/*.json | wc -l | tr -d ' ')
 fi
 echo "codemap-refresh: updated $update_count entries, $err_count errors" >&2
-echo "codemap-refresh: wrote $CODEMAP_DIR/{codemap.json,codemap.md,meta.json}" >&2
+echo "codemap-refresh: wrote $CODEMAP_DIR/{codemap.json,codemap.md,codemap.meta.json}" >&2
 echo "codemap-refresh: raw outputs in /tmp/codemap-raw/" >&2

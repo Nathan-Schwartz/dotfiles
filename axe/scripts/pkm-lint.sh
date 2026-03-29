@@ -147,15 +147,21 @@ err_count=$(echo "$errors" | jq -r 'length')
 if [[ "$OUTPUT_JSON" == true ]]; then
   echo "$sorted"
 else
-  # Human-readable linter output
+  # Human-readable linter output with color
+  RED=$'\033[31m'
+  YELLOW=$'\033[33m'
+  RESET=$'\033[0m'
+
   echo "$sorted" | jq -r '.[] |
     "\(.file)",
     (.issues[] |
-      "  \(.line_numbers // [0] | map(tostring) | join(","))  \(.severity)  \(.rule)  \(.message)"
+      "  Lines: \(.line_numbers // [0] | map(tostring) | join(","))  \(.severity)  \(.rule)  \(.message)"
     ),
-    ""'
+    ""' | sed \
+      -e "s/  error  /  ${RED}error${RESET}  /" \
+      -e "s/  warning  /  ${YELLOW}warning${RESET}  /"
 
-  echo "high=$high medium=$medium low=$low clean=$clean errors=$err_count"
+  echo "high=${RED}${high}${RESET} medium=${YELLOW}${medium}${RESET} low=$low clean=$clean errors=$err_count"
 fi
 
 # Errors to stderr

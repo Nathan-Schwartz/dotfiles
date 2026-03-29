@@ -96,6 +96,25 @@ The pipeline mechanics are solid — staleness caching, parallel dispatch, JSON 
 ## Output
 
 ### pkm-lint
+
+#### human readable
+
+ NORMAL  schwartz (1) ~/dotfiles ⑂axe*  rm -rf /tmp/pkm-lint-raw && ./axe/scripts/pkm-lint.sh vendor/ticket/pkm/
+pkm-lint: found 3 files, pool size 4
+vendor/ticket/pkm/upstream-pr-fork-mapping.ref.md
+  3,5  error  ref-contains-analysis  Body contains design proposals, option comparisons ("Option A vs B"), recommendations ("should consider"), risk assessments, or trade-off discussion. These belong in a .synth.md.
+
+vendor/ticket/pkm/tk-update-porting-strategy.synth.md
+  5,10  warning  synth-missing-reasoning  Body states conclusions without supporting evidence or reasoning chain.
+
+vendor/ticket/pkm/session-2026-03-25-1200.index.md
+  1,5  warning  index-has-prose  Body contains prose paragraphs (more than one sentence of description per link).
+
+high=1 medium=1 low=1 clean=0 errors=0
+pkm-lint: raw outputs in /tmp/pkm-lint-raw/
+
+#### json
+
  NORMAL  schwartz (1) ~/dotfiles ⑂axe*  rm -rf /tmp/pkm-lint-raw && ./axe/scripts/pkm-lint.sh vendor/ticket/pkm/
 pkm-lint: found 3 files, pool size 4
 pkm-lint: high=1 medium=1 low=1 clean=0 errors=0
