@@ -181,6 +181,7 @@ function ollama_setup() {
   done
 
   ollama pull qwen3.5:4b
+  ollama pull llama3:latest
 
   kill "$ollama_pid" 2>/dev/null || true
   wait "$ollama_pid" 2>/dev/null || true

@@ -1,0 +1,8 @@
+name = "codemap-entry"
+description = "Generate a codemap entry (summary + when_to_use + public interface) for a single source file"
+model = "ollama/llama3"
+skill = "~/dotfiles/axe/skills/codemap-entry"
+
+[params]
+temperature = 0.2
+max_tokens = 512

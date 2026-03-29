@@ -1,0 +1,8 @@
+name = "pkm-lint"
+description = "Semantic lint and review of a single PKM compound-extension file"
+model = "ollama/llama3"
+skill = "~/dotfiles/axe/skills/pkm-lint"
+
+[params]
+temperature = 0.1
+max_tokens = 1024

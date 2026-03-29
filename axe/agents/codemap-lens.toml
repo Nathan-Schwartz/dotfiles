@@ -1,0 +1,8 @@
+name = "codemap-lens"
+description = "Select the minimal set of files relevant to a task using a codemap"
+model = "ollama/llama3"
+skill = "~/dotfiles/axe/skills/codemap-lens"
+
+[params]
+temperature = 0.1
+max_tokens = 1024

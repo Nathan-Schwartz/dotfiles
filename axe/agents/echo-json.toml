@@ -1,0 +1,8 @@
+name = "echo-json"
+description = "Verify skill loading and JSON output compliance"
+model = "ollama/llama3"
+skill = "~/dotfiles/axe/skills/echo-json"
+
+[params]
+temperature = 0.1
+max_tokens = 128
