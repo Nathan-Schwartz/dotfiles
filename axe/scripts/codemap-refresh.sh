@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Discover source files, generate codemap entries in parallel via axe,
-# assemble into codemap.json and codemap.md.
+# assemble into .codemap/ at the git root.
 #
 # Usage:
 #   codemap-refresh.sh 'src/**/*.ts' 'lib/**/*.py'
@@ -11,88 +11,35 @@ set -euo pipefail
 # Environment:
 #   AXE_AGENTS_DIR  — path to agents directory (default: ./axe/agents)
 #   AXE_PARALLEL    — max concurrent axe invocations (default: 4)
-#   CODEMAP_JSON    — output path for JSON codemap (default: .codemap.json)
-#   CODEMAP_MD      — output path for markdown codemap (default: .codemap.md)
 
 AGENTS_DIR="${AXE_AGENTS_DIR:-./axe/agents}"
 PARALLEL="${AXE_PARALLEL:-4}"
-CODEMAP_JSON="${CODEMAP_JSON:-.codemap.json}"
-CODEMAP_MD="${CODEMAP_MD:-.codemap.md}"
 TMPDIR_BASE="${TMPDIR:-/tmp}/codemap-refresh.$$"
 
 cleanup() { rm -rf "$TMPDIR_BASE"; }
 trap cleanup EXIT
 mkdir -p "$TMPDIR_BASE"
 
-# --- file discovery ---
+# --- git root + codemap paths ---
 
-discover_files() {
-  if [[ $# -gt 0 ]]; then
-    # Glob args: expand each pattern
-    for pattern in "$@"; do
-      # Use bash globbing (requires globstar for **)
-      local files
-      files=$(bash -O globstar -c "printf '%s\n' $pattern" 2>/dev/null) || true
-      echo "$files"
-    done
-  else
-    # Stdin fallback
-    cat
-  fi
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "codemap-refresh: not in a git repository" >&2
+  exit 1
 }
 
-# --- staleness check ---
+CODEMAP_DIR="$GIT_ROOT/.codemap"
+CODEMAP_JSON="$CODEMAP_DIR/codemap.json"
+CODEMAP_MD="$CODEMAP_DIR/codemap.md"
+CODEMAP_META="$CODEMAP_DIR/meta.json"
+mkdir -p "$CODEMAP_DIR"
+
+# --- helpers ---
 
 hash_file() {
   if command -v sha256sum &>/dev/null; then
     sha256sum "$1" | cut -d' ' -f1
   else
     shasum -a 256 "$1" | cut -d' ' -f1
-  fi
-}
-
-is_stale() {
-  local file="$1" hash="$2"
-  if [[ ! -f "$CODEMAP_JSON" ]]; then
-    return 0
-  fi
-  local existing
-  existing=$(jq -r --arg f "$file" '.[$f].hash // ""' "$CODEMAP_JSON" 2>/dev/null)
-  [[ "$hash" != "$existing" ]]
-}
-
-# --- per-file worker ---
-
-process_file() {
-  local file="$1" outdir="$2"
-  local hash
-  hash=$(hash_file "$file")
-
-  if ! is_stale "$file" "$hash"; then
-    return 0
-  fi
-
-  local safe_name
-  safe_name=$(echo "$file" | tr '/' '_')
-  local raw_file="/tmp/codemap-raw/$safe_name.out"
-  mkdir -p /tmp/codemap-raw
-
-  local raw
-  if raw=$(cat "$file" | axe run codemap-entry \
-    --agents-dir "$AGENTS_DIR" \
-    -p "File: $file" \
-    --timeout 300 2>/dev/null); then
-    echo "$raw" > "$raw_file"
-    local cleaned
-    if cleaned=$(echo "$raw" | extract_json); then
-      jq -n --arg f "$file" --arg h "$hash" --argjson r "$cleaned" \
-        '{($f): ($r + {hash: $h})}' > "$outdir/$safe_name.json"
-    else
-      echo "{\"error\": \"non-json response\", \"file\": \"$file\"}" > "$outdir/$safe_name.err"
-    fi
-  else
-    echo "axe exited non-zero" > "$raw_file"
-    echo "{\"error\": \"axe failed\", \"file\": \"$file\"}" > "$outdir/$safe_name.err"
   fi
 }
 
@@ -117,38 +64,118 @@ p
   return 1
 }
 
-export -f process_file hash_file is_stale extract_json
-export AGENTS_DIR CODEMAP_JSON
+# --- file discovery ---
+
+discover_files() {
+  if [[ $# -gt 0 ]]; then
+    for pattern in "$@"; do
+      bash -O globstar -c "printf '%s\n' $pattern" 2>/dev/null || true
+    done
+  else
+    cat
+  fi
+}
+
+# --- staleness filter ---
+# Reads the existing codemap once, hashes each discovered file, emits only stale/new ones.
+# Outputs: file<TAB>hash per line
+
+filter_stale() {
+  local existing="{}"
+  if [[ -f "$CODEMAP_JSON" ]]; then
+    existing=$(cat "$CODEMAP_JSON")
+  fi
+
+  while IFS= read -r file; do
+    [[ -f "$file" ]] || continue
+    local hash
+    hash=$(hash_file "$file")
+    local existing_hash
+    existing_hash=$(echo "$existing" | jq -r --arg f "$file" '.[$f].hash // ""')
+    if [[ "$hash" != "$existing_hash" ]]; then
+      printf '%s\t%s\n' "$file" "$hash"
+    fi
+  done
+}
+
+# --- per-file worker ---
+
+process_file() {
+  local file="$1" hash="$2" outdir="$3"
+  local safe_name
+  safe_name=$(echo "$file" | tr '/' '_')
+
+  local raw_file="/tmp/codemap-raw/$safe_name.out"
+  mkdir -p /tmp/codemap-raw
+
+  local raw
+  if raw=$(cat "$file" | axe run codemap-entry \
+    --agents-dir "$AGENTS_DIR" \
+    -p "File: $file" \
+    --timeout 300 2>/dev/null); then
+    echo "$raw" > "$raw_file"
+    local cleaned
+    if cleaned=$(echo "$raw" | extract_json); then
+      jq -n --arg f "$file" --arg h "$hash" --argjson r "$cleaned" \
+        '{($f): ($r + {hash: $h})}' > "$outdir/$safe_name.json"
+    else
+      echo "{\"error\": \"non-json response\", \"file\": \"$file\"}" > "$outdir/$safe_name.err"
+    fi
+  else
+    echo "axe exited non-zero" > "$raw_file"
+    echo "{\"error\": \"axe failed\", \"file\": \"$file\"}" > "$outdir/$safe_name.err"
+  fi
+}
+
+export -f process_file hash_file extract_json
+export AGENTS_DIR
 
 # --- main ---
 
-file_list=$(discover_files "$@" | sort -u | grep -v '^$')
-file_count=$(echo "$file_list" | wc -l | tr -d ' ')
+all_files=$(discover_files "$@" | sort -u | grep -v '^$')
 
-if [[ -z "$file_list" ]]; then
+if [[ -z "$all_files" ]]; then
   echo "codemap-refresh: no files to process" >&2
   exit 0
 fi
 
-echo "codemap-refresh: discovered $file_count files, pool size $PARALLEL" >&2
+total_count=$(echo "$all_files" | wc -l | tr -d ' ')
 
-# Dispatch parallel pool
-echo "$file_list" | xargs -P "$PARALLEL" -I{} bash -c 'process_file "$1" "$2"' _ {} "$TMPDIR_BASE"
+# Filter to stale/new files only (reads codemap once)
+stale_list=$(echo "$all_files" | filter_stale)
+stale_count=$(echo "$stale_list" | grep -c $'\t' || true)
+
+echo "codemap-refresh: $total_count files discovered, $stale_count stale, pool size $PARALLEL" >&2
+
+if [[ "$stale_count" -gt 0 ]]; then
+  # Dispatch parallel pool — pass file and hash as args
+  echo "$stale_list" | xargs -P "$PARALLEL" -I{} bash -c '
+    file="${1%%	*}"
+    hash="${1##*	}"
+    process_file "$file" "$hash" "$2"
+  ' _ {} "$TMPDIR_BASE"
+fi
 
 # --- assembly ---
 
-# Merge new results with existing codemap
+# Load existing codemap
 existing="{}"
 if [[ -f "$CODEMAP_JSON" ]]; then
   existing=$(cat "$CODEMAP_JSON")
 fi
 
+# Merge new entries
 if ls "$TMPDIR_BASE"/*.json &>/dev/null; then
   new_entries=$(cat "$TMPDIR_BASE"/*.json | jq -s 'add // {}')
 else
   new_entries="{}"
 fi
 merged=$(echo "$existing" "$new_entries" | jq -s '.[0] * .[1]')
+
+# Prune deleted files — only keep entries whose file still exists in the discovered set
+merged=$(echo "$merged" | jq --argjson files "$(echo "$all_files" | jq -R -s 'split("\n") | map(select(. != ""))')" '
+  with_entries(select(.key as $k | $files | index($k)))
+')
 
 echo "$merged" | jq '.' > "$CODEMAP_JSON"
 
@@ -157,6 +184,16 @@ echo "$merged" | jq -r '
   to_entries | sort_by(.key)[] |
   "- \(.key)\n  - summary: \(.value.summary // "unknown")\n  - when to use: \(.value.when_to_use // "unknown")\n  - public interface: \(.value.public_interface // [] | join(", "))"
 ' > "$CODEMAP_MD"
+
+# Write metadata
+jq -n \
+  --arg globs "$*" \
+  --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --argjson total "$total_count" \
+  --argjson stale "$stale_count" \
+  --argjson entries "$(echo "$merged" | jq 'length')" \
+  '{globs: $globs, last_run: $timestamp, files_discovered: $total, files_updated: $stale, entries: $entries}' \
+  > "$CODEMAP_META"
 
 # Report
 if ls "$TMPDIR_BASE"/*.err &>/dev/null; then
@@ -167,11 +204,10 @@ else
   err_count=0
 fi
 
+update_count=0
 if ls "$TMPDIR_BASE"/*.json &>/dev/null; then
-  stale_count=$(ls "$TMPDIR_BASE"/*.json | wc -l | tr -d ' ')
-else
-  stale_count=0
+  update_count=$(ls "$TMPDIR_BASE"/*.json | wc -l | tr -d ' ')
 fi
-echo "codemap-refresh: updated $stale_count entries, $err_count errors" >&2
-echo "codemap-refresh: wrote $CODEMAP_JSON and $CODEMAP_MD" >&2
+echo "codemap-refresh: updated $update_count entries, $err_count errors" >&2
+echo "codemap-refresh: wrote $CODEMAP_DIR/{codemap.json,codemap.md,meta.json}" >&2
 echo "codemap-refresh: raw outputs in /tmp/codemap-raw/" >&2
