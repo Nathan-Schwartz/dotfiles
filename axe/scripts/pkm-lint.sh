@@ -40,19 +40,24 @@ lint_file() {
   local safe_name
   safe_name=$(echo "$file" | tr '/' '_')
 
+  local raw_file="/tmp/pkm-lint-raw/$safe_name.out"
+  mkdir -p /tmp/pkm-lint-raw
+
   local raw
   if raw=$(cat "$file" | axe run pkm-lint \
     --agents-dir "$AGENTS_DIR" \
     -p "File: $file" \
     --timeout 300 2>/dev/null); then
+    echo "$raw" > "$raw_file"
     local cleaned
     if cleaned=$(echo "$raw" | extract_json); then
       echo "$cleaned" > "$outdir/$safe_name.json"
     else
       jq -n --arg f "$file" --arg r "$raw" \
-        '{file: $f, error: "non-json response", raw: $r}' > "$outdir/$safe_name.err"
+        '{file: $f, error: "non-json response"}' > "$outdir/$safe_name.err"
     fi
   else
+    echo "axe exited non-zero" > "$raw_file"
     jq -n --arg f "$file" '{file: $f, error: "axe failed"}' > "$outdir/$safe_name.err"
   fi
 }
@@ -61,14 +66,17 @@ lint_file() {
 extract_json() {
   local input
   input=$(cat)
-  # Try 1: find raw JSON lines (no fences)
   local attempt
+  # Try 1: raw JSON (no fences)
   if attempt=$(echo "$input" | sed -n '/^[{\[]/,/^[}\]]/p' | jq '.' 2>/dev/null) && [[ -n "$attempt" ]]; then
     echo "$attempt"
     return 0
   fi
-  # Try 2: strip markdown fences, then find JSON
-  if attempt=$(echo "$input" | sed '/^```[a-z]*$/d; /^```$/d' | sed -n '/^[{\[]/,/^[}\]]/p' | jq '.' 2>/dev/null) && [[ -n "$attempt" ]]; then
+  # Try 2: extract content between ``` fences
+  if attempt=$(echo "$input" | sed -n '/^```/,/^```/{
+/^```/d
+p
+}' | jq '.' 2>/dev/null) && [[ -n "$attempt" ]]; then
     echo "$attempt"
     return 0
   fi
@@ -96,15 +104,24 @@ echo "$file_list" | xargs -P "$PARALLEL" -I{} bash -c 'lint_file "$1" "$2"' _ {}
 # --- report ---
 
 # Collect all results
-results=$(cat "$TMPDIR_BASE"/*.json 2>/dev/null | jq -s '.' || echo "[]")
-errors=$(cat "$TMPDIR_BASE"/*.err 2>/dev/null | jq -s '.' || echo "[]")
+if ls "$TMPDIR_BASE"/*.json &>/dev/null; then
+  results=$(cat "$TMPDIR_BASE"/*.json | jq -s '.')
+else
+  results="[]"
+fi
+
+if ls "$TMPDIR_BASE"/*.err &>/dev/null; then
+  errors=$(cat "$TMPDIR_BASE"/*.err | jq -s '.')
+else
+  errors="[]"
+fi
 
 # Summary by priority
-high=$(echo "$results" | jq '[.[] | select(.review_priority == "high")] | length')
-medium=$(echo "$results" | jq '[.[] | select(.review_priority == "medium")] | length')
-low=$(echo "$results" | jq '[.[] | select(.review_priority == "low")] | length')
-clean=$(echo "$results" | jq '[.[] | select(.review_priority == "none")] | length')
-err_count=$(echo "$errors" | jq 'length')
+high=$(echo "$results" | jq -r '[.[] | select(.review_priority == "high")] | length')
+medium=$(echo "$results" | jq -r '[.[] | select(.review_priority == "medium")] | length')
+low=$(echo "$results" | jq -r '[.[] | select(.review_priority == "low")] | length')
+clean=$(echo "$results" | jq -r '[.[] | select(.review_priority == "none")] | length')
+err_count=$(echo "$errors" | jq -r 'length')
 
 echo "pkm-lint: high=$high medium=$medium low=$low clean=$clean errors=$err_count" >&2
 
@@ -122,3 +139,5 @@ echo "$results" | jq '[
 if [[ "$err_count" -gt 0 ]]; then
   echo "$errors" | jq -r '.[] | "\(.file): \(.error)"' >&2
 fi
+
+echo "pkm-lint: raw outputs in /tmp/pkm-lint-raw/" >&2

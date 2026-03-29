@@ -43,7 +43,13 @@ discover_files() {
 
 # --- staleness check ---
 
-hash_file() { shasum -a 256 "$1" | cut -d' ' -f1; }
+hash_file() {
+  if command -v sha256sum &>/dev/null; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | cut -d' ' -f1
+  fi
+}
 
 is_stale() {
   local file="$1" hash="$2"
@@ -68,11 +74,15 @@ process_file() {
 
   local safe_name
   safe_name=$(echo "$file" | tr '/' '_')
+  local raw_file="/tmp/codemap-raw/$safe_name.out"
+  mkdir -p /tmp/codemap-raw
+
   local raw
   if raw=$(cat "$file" | axe run codemap-entry \
     --agents-dir "$AGENTS_DIR" \
     -p "File: $file" \
     --timeout 300 2>/dev/null); then
+    echo "$raw" > "$raw_file"
     local cleaned
     if cleaned=$(echo "$raw" | extract_json); then
       jq -n --arg f "$file" --arg h "$hash" --argjson r "$cleaned" \
@@ -81,6 +91,7 @@ process_file() {
       echo "{\"error\": \"non-json response\", \"file\": \"$file\"}" > "$outdir/$safe_name.err"
     fi
   else
+    echo "axe exited non-zero" > "$raw_file"
     echo "{\"error\": \"axe failed\", \"file\": \"$file\"}" > "$outdir/$safe_name.err"
   fi
 }
@@ -89,14 +100,17 @@ process_file() {
 extract_json() {
   local input
   input=$(cat)
-  # Try 1: find raw JSON lines (no fences)
   local attempt
+  # Try 1: raw JSON (no fences)
   if attempt=$(echo "$input" | sed -n '/^[{\[]/,/^[}\]]/p' | jq '.' 2>/dev/null) && [[ -n "$attempt" ]]; then
     echo "$attempt"
     return 0
   fi
-  # Try 2: strip markdown fences, then find JSON
-  if attempt=$(echo "$input" | sed '/^```[a-z]*$/d; /^```$/d' | sed -n '/^[{\[]/,/^[}\]]/p' | jq '.' 2>/dev/null) && [[ -n "$attempt" ]]; then
+  # Try 2: extract content between ``` fences
+  if attempt=$(echo "$input" | sed -n '/^```/,/^```/{
+/^```/d
+p
+}' | jq '.' 2>/dev/null) && [[ -n "$attempt" ]]; then
     echo "$attempt"
     return 0
   fi
@@ -150,3 +164,4 @@ fi
 stale_count=$(ls "$TMPDIR_BASE"/*.json 2>/dev/null | wc -l | tr -d ' ')
 echo "codemap-refresh: updated $stale_count entries, $error_count errors" >&2
 echo "codemap-refresh: wrote $CODEMAP_JSON and $CODEMAP_MD" >&2
+echo "codemap-refresh: raw outputs in /tmp/codemap-raw/" >&2
