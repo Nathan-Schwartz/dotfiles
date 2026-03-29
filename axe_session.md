@@ -36,6 +36,8 @@ axe/
 
 Both scripts log raw LLM outputs to `/tmp/{pkm-lint-raw,codemap-raw}/` for debugging.
 
+Pool size is configurable via `AXE_PARALLEL` env var (default: 4). Example: `AXE_PARALLEL=8 ./axe/scripts/codemap-refresh.sh 'src/**/*.ts'`
+
 ## Model Selection
 
 Started with `ollama/qwen3.5:4b` (thinking model). Axe could not extract response content — qwen3.5 produces a thinking block followed by the actual response, and axe's ollama integration loses the post-thinking content. The `server: response contains no content` error was consistent regardless of `/no_think` system prompt or temperature settings.

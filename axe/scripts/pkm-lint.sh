@@ -5,12 +5,14 @@ set -euo pipefail
 #
 # Usage:
 #   pkm-lint.sh [directory ...]          # scan directories for *.{ref,synth,temp,index}.md
+#   pkm-lint.sh --json [directory ...]   # machine-readable JSON output
 #   find notes -name '*.ref.md' | pkm-lint.sh   # stdin fallback
 #
 # Environment:
 #   AXE_AGENTS_DIR  — path to agents directory (default: ./axe/agents)
 #   AXE_PARALLEL    — max concurrent axe invocations (default: 4)
 
+OUTPUT_JSON=false
 AGENTS_DIR="${AXE_AGENTS_DIR:-./axe/agents}"
 PARALLEL="${AXE_PARALLEL:-4}"
 TMPDIR_BASE="${TMPDIR:-/tmp}/pkm-lint.$$"
@@ -88,7 +90,16 @@ export AGENTS_DIR
 
 # --- main ---
 
-file_list=$(discover_files "$@" | sort -u | grep -v '^$')
+# Parse flags
+dirs=()
+for arg in "$@"; do
+  case "$arg" in
+    --json) OUTPUT_JSON=true ;;
+    *)      dirs+=("$arg") ;;
+  esac
+done
+
+file_list=$(discover_files "${dirs[@]}" | sort -u | grep -v '^$')
 file_count=$(echo "$file_list" | wc -l | tr -d ' ')
 
 if [[ -z "$file_list" ]]; then
@@ -116,26 +127,38 @@ else
   errors="[]"
 fi
 
-# Summary by priority
-high=$(echo "$results" | jq -r '[.[] | select(.review_priority == "high")] | length')
-medium=$(echo "$results" | jq -r '[.[] | select(.review_priority == "medium")] | length')
-low=$(echo "$results" | jq -r '[.[] | select(.review_priority == "low")] | length')
-clean=$(echo "$results" | jq -r '[.[] | select(.review_priority == "none")] | length')
-err_count=$(echo "$errors" | jq -r 'length')
-
-echo "pkm-lint: high=$high medium=$medium low=$low clean=$clean errors=$err_count" >&2
-
-# Output: all results with issues, sorted by priority (high first)
-echo "$results" | jq '[
+# Sort by priority
+sorted=$(echo "$results" | jq '[
   .[] | select(.issues | length > 0)
 ] | sort_by(
   if .review_priority == "high" then 0
   elif .review_priority == "medium" then 1
   elif .review_priority == "low" then 2
   else 3 end
-)'
+)')
 
-# Print errors to stderr
+# Counts
+high=$(echo "$results" | jq -r '[.[] | select(.review_priority == "high")] | length')
+medium=$(echo "$results" | jq -r '[.[] | select(.review_priority == "medium")] | length')
+low=$(echo "$results" | jq -r '[.[] | select(.review_priority == "low")] | length')
+clean=$(echo "$results" | jq -r '[.[] | select(.review_priority == "none")] | length')
+err_count=$(echo "$errors" | jq -r 'length')
+
+if [[ "$OUTPUT_JSON" == true ]]; then
+  echo "$sorted"
+else
+  # Human-readable linter output
+  echo "$sorted" | jq -r '.[] |
+    "\(.file)",
+    (.issues[] |
+      "  \(.line_numbers // [0] | map(tostring) | join(","))  \(.severity)  \(.rule)  \(.message)"
+    ),
+    ""'
+
+  echo "high=$high medium=$medium low=$low clean=$clean errors=$err_count"
+fi
+
+# Errors to stderr
 if [[ "$err_count" -gt 0 ]]; then
   echo "$errors" | jq -r '.[] | "\(.file): \(.error)"' >&2
 fi
