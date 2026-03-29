@@ -172,6 +172,24 @@ pkm-lint: raw outputs in /tmp/pkm-lint-raw/
 
 ### codemap-refresh
 
+#### Run 1 (before skill hardening)
+
+5/7 succeeded, 2 failed (model wrote code instead of analyzing, or asked for input).
+Hallucinated domain terms: "Pokédex integrity checks", "premise-related data".
+Most `public_interface` arrays empty even when files export functions.
+
+#### Run 2 (after skill hardening)
+
+7/7 succeeded — few-shot example and task framing fixed the structural failures.
+Semantic quality did not improve: llama3:8b still hallucinated acronym meanings
+(PKM→Pokémon, QMD→Quantum Mechanics Data, Tk→Tkinter) despite "use verbatim" instruction.
+`public_interface` now populated but with invented names not in source.
+
+Conclusion: pipeline mechanics validated. Model quality is the bottleneck — a larger model,
+cloud API, or glossary injection would improve accuracy. Accepted for trial as-is.
+
+#### Raw output (run 1)
+
  INSERT  schwartz (1) ~/dotfiles ⑂axe*  rm -rf /tmp/codemap-raw && ./axe/scripts/codemap-refresh.sh 'scripts/*.sh'
 codemap-refresh: discovered 7 files, pool size 4
 codemap-refresh: 2 files failed:
