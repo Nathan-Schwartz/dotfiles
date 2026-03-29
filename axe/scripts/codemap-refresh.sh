@@ -143,7 +143,11 @@ if [[ -f "$CODEMAP_JSON" ]]; then
   existing=$(cat "$CODEMAP_JSON")
 fi
 
-new_entries=$(cat "$TMPDIR_BASE"/*.json 2>/dev/null | jq -s 'add // {}')
+if ls "$TMPDIR_BASE"/*.json &>/dev/null; then
+  new_entries=$(cat "$TMPDIR_BASE"/*.json | jq -s 'add // {}')
+else
+  new_entries="{}"
+fi
 merged=$(echo "$existing" "$new_entries" | jq -s '.[0] * .[1]')
 
 echo "$merged" | jq '.' > "$CODEMAP_JSON"
@@ -154,14 +158,20 @@ echo "$merged" | jq -r '
   "- \(.key)\n  - summary: \(.value.summary // "unknown")\n  - when to use: \(.value.when_to_use // "unknown")\n  - public interface: \(.value.public_interface // [] | join(", "))"
 ' > "$CODEMAP_MD"
 
-# Report errors
-error_count=$(ls "$TMPDIR_BASE"/*.err 2>/dev/null | wc -l | tr -d ' ')
-if [[ "$error_count" -gt 0 ]]; then
-  echo "codemap-refresh: $error_count files failed:" >&2
+# Report
+if ls "$TMPDIR_BASE"/*.err &>/dev/null; then
+  err_count=$(ls "$TMPDIR_BASE"/*.err | wc -l | tr -d ' ')
+  echo "codemap-refresh: $err_count files failed:" >&2
   cat "$TMPDIR_BASE"/*.err | jq -r '.file // "unknown"' >&2
+else
+  err_count=0
 fi
 
-stale_count=$(ls "$TMPDIR_BASE"/*.json 2>/dev/null | wc -l | tr -d ' ')
-echo "codemap-refresh: updated $stale_count entries, $error_count errors" >&2
+if ls "$TMPDIR_BASE"/*.json &>/dev/null; then
+  stale_count=$(ls "$TMPDIR_BASE"/*.json | wc -l | tr -d ' ')
+else
+  stale_count=0
+fi
+echo "codemap-refresh: updated $stale_count entries, $err_count errors" >&2
 echo "codemap-refresh: wrote $CODEMAP_JSON and $CODEMAP_MD" >&2
 echo "codemap-refresh: raw outputs in /tmp/codemap-raw/" >&2

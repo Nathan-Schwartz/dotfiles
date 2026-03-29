@@ -14,11 +14,13 @@ Return ONLY a JSON object — no markdown fences, no prose.
   "file": "path as given",
   "type": "ref|synth|temp|index",
   "issues": [
-    {"severity": "error|warning|info", "rule": "rule-id", "message": "..."}
+    {"severity": "error|warning|info", "rule": "rule-id", "message": "...", "line_numbers": [10, 15]}
   ],
   "review_priority": "high|medium|low|none"
 }
 ```
+
+`line_numbers` is required on every issue. Emit one issue per rule — if the same rule fires in multiple places, collect all offending line numbers into one array. Line numbers are 1-based from stdin. If the issue spans a section, include the start and end lines. If the issue applies to the whole file (e.g. `stale-review`, `empty-body`), use `[1]`.
 
 If no issues are found, return `"issues": []` and `"review_priority": "none"`.
 
