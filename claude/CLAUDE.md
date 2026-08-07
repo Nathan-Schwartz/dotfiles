@@ -16,6 +16,10 @@ Do not mention implementation phase, discussion item numbers, or ticket numbers 
 
 When performing vulnerability or security related work, all network requests must be manually reviewed and approved. External requests or POC/replications should be treated with an abundance of caution.
 
+Don't just make the tests pass, think critically about if the assertions are correct or if they enforce buggy behavior.
+
+Tests have a maintenance cost so ensure we are only testing the behaviors we are responsible for (don't wastefully test library internals).
+
 ## git
 
 Do not make assumptions about what should or should not be committed. Your only concern should be th ecurrent of the codebase on disk, unless stated otherwise.
