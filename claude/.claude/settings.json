@@ -30,7 +30,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "claude-opus-4-7",
+  "model": "fable",
   "hooks": {
     "PostToolUse": [
       {
@@ -87,5 +87,10 @@
   },
   "outputStyle": "explanatory",
   "effortLevel": "high",
-  "editorMode": "vim"
+  "tui": "fullscreen",
+  "skipWorkflowUsageWarning": false,
+  "editorMode": "vim",
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  }
 }
