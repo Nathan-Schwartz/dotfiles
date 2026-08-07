@@ -28,7 +28,7 @@
       "Bash(bash ~/dotfiles/scripts/tk-triage-context.sh *)",
       "Bash(qmd *)"
     ],
-    "defaultMode": "default"
+    "defaultMode": "auto"
   },
   "model": "fable",
   "hooks": {
