@@ -29,8 +29,6 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `scripts/qmd-sync.sh` — Discovers PKM directories and registers them as qmd collections
 - `scripts/generate-mocs.py` — Generates Maps of Content (`.index.md`) for PKM directories
 - `bash/.bash/ralph.sh` — Ralph autonomous executor (task-per-session loop backed by tk + claude CLI)
-- `tmux/.tmux/scripts/claude-status.sh` — Detects Claude Code state (working/waiting/idle) in a tmux pane
-- `tmux/.tmux/scripts/claude-dashboard.sh` — Interactive Claude session dashboard (status + window switcher)
 - `claude/.claude/statusline.sh` — Claude Code statusline (session info, context window, rate limits, cost)
 
 ### Override Pattern
@@ -148,16 +146,6 @@ Leader is `<Space>`. Plugins are loaded via Pathogen from `vim/.vim/bundle/`.
 
 Prefix is `Ctrl-Space`. Key bindings use vi-style navigation. Solarized dark theme matches vim.
 
-### Claude Integration
-
-The tmux status bar shows per-window Claude Code state via `claude-status.sh`:
-- `●` — Claude is working
-- `?` — Claude is waiting for input (approval prompt)
-- `○` — Claude is idle
-- (blank) — not a Claude pane
-
-`<prefix> W` opens the Claude session dashboard (`claude-dashboard.sh`) — a popup showing all windows with their Claude status, working directory, and git branch. Navigate with j/k, Enter to switch.
-
 ### Bash Helpers
 
 - `tma` — start or resume the main tmux session
@@ -167,7 +155,6 @@ The tmux status bar shows per-window Claude Code state via `claude-status.sh`:
 ### Key Bindings
 
 - `<prefix> Enter` — scratch terminal popup (80%, exits on shell exit)
-- `<prefix> W` — Claude session dashboard
 - `<prefix> w` — built-in window/session tree picker
 - `<prefix> Tab` — toggle to last active window
 - `<prefix> v` / `<prefix> s` — split vertical / horizontal

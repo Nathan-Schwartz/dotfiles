@@ -85,7 +85,6 @@ Removing dependencies is distro specific.
 
 - Vi-style keybindings, Solarized dark theme, session resurrection
 - Seamless navigation between vim splits and tmux panes (vim-tmux-navigator)
-- Claude Code integration: per-window status indicators (●/○/?) and an interactive session dashboard
 - Scratch terminal popup and `tmclaude` helper for quick Claude windows
 
 ### Bash
