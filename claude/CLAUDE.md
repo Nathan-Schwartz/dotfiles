@@ -87,6 +87,12 @@ The same collaboration posture applies. Additionally:
 When performing ad-hoc scripting to validate or explore an issue, consider whether this task will need to be performed repeatedly. If so, suggest creating a durable, deterministic tool or script.
 Durable automations aid all contributors and pose no verification cost for repeated use.
 
+## Verbosity
+
+In explanations/answers that exceed 1-2 paragraphs, add a section at the end of the response which summarizes concrete outcomes:
+1. impact of findings on the current thinking/theory/plans/findings
+2. action items / next steps
+
 ## Research Subagent
 
 The `epistemic-explore` agent always writes findings to disk and returns both a summary and the path. By default, files land in:
