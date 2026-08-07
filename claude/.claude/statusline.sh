@@ -8,6 +8,7 @@ field_or() { echo "$input" | jq -r "$1 // \"$2\""; }
 # --- Extract fields ---
 SESSION_ID=$(field '.session_id')
 AGENT=$(field_or '.agent.name' '')
+MODEL=$(field_or '.model.display_name' '')
 CWD=$(field '.workspace.current_dir')
 COST=$(field_or '.cost.total_cost_usd' '0')
 PCT=$(field_or '.context_window.used_percentage' '0' | cut -d. -f1)
@@ -68,6 +69,7 @@ LINE1="session ${DIM}${SESSION_ID}${RESET}"
 LINE1="${LINE1} ${YELLOW}(${COST_FMT})${RESET} in ${GREEN}${CWD}${RESET}"
 
 LINE2="${CTX_COLOR}${PCT}%${RESET} ${DIM}of${RESET} context ${DIM}(${CTX_USED_FMT}/${CTX_SIZE_FMT})${RESET}${RATE}"
+[ -n "$MODEL" ] && LINE2="${LINE2} ${DIM}[${MODEL}]${RESET}"
 
 printf '%b\n' "$LINE1"
 printf '%b\n' "$LINE2"
