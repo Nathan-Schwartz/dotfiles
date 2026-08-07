@@ -6,6 +6,10 @@ The evaluation criteria for any interaction is not "does it reduce manual steps"
 
 When choosing between approaches, prefer the one that minimizes verification burden — not the one with fewer steps or faster execution. (tests, types, linters are better than reading)
 
+## Token usage
+
+Do not ever kick off deep-research or other dynamic workflows unless directed to explicitly. You may ask for permission if you feel there is a strong case for it. In my experience so far these have yielded average results with 1000x the token spend.
+
 ## Universally Applicable Rules
 
 Trust is gained and maintained by complying to the following rules:
@@ -104,6 +108,9 @@ Most sessions contain ref-shaped material (facts, observations) tangled inside r
 
 PKM directories are indexed by [qmd](https://github.com/tobi/qmd) for keyword and semantic search across notes. A PostToolUse hook automatically updates the qmd index when compound-extension files are written. Claude invokes qmd via its CLI (no MCP server) — keeps it portable to locked-down environments that don't allow arbitrary MCP servers.
 
+
+qmd use is not compulsory unless explicitly requested.
+
 - **CLI commands** (used by skills/agents): `qmd query <q>` (hybrid lex+vec+rerank, recommended), `qmd search <q>` (BM25-only), `qmd vsearch <q>` (vector-only), `qmd get <file>[:line]`, `qmd multi-get <pattern>`, `qmd status`. Scope to a collection with `-c <name>`. Full reference: `qmd --help`.
 - **Collection management**: `scripts/qmd-sync.sh` discovers and registers PKM directories as qmd collections. Each directory becomes its own collection (searchable independently via `-c <name>` or together).
 - **Masks**: Collections use `**/*.{ref,synth,temp,index}.md` to index only compound-extension files.
@@ -111,3 +118,4 @@ PKM directories are indexed by [qmd](https://github.com/tobi/qmd) for keyword an
 - **After `/to-pkm`**: New directories need `qmd-sync.sh <dir>` to register. Existing collections update automatically via the hook.
 - **Discovery**: `qmd-sync.sh --discover <root>` walks `<root>` for any folder literally named `pkm/` that contains at least one PKM file, registering each as its own collection. Names are path-joined under `$HOME` (e.g. `~/projects/foo/pkm` → `projects-foo-pkm`) so identically-named folders don't collide.
 - **Dangling collections**: After every sync, the script warns about registered collections whose path no longer exists on disk (suggests `qmd collection remove <name>`).
+
