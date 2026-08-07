@@ -10,6 +10,16 @@ When choosing between approaches, prefer the one that minimizes verification bur
 
 Do not ever kick off deep-research or other dynamic workflows unless directed to explicitly. You may ask for permission if you feel there is a strong case for it. In my experience so far these have yielded average results with 1000x the token spend.
 
+## Code implementation
+
+Do not mention implementation phase, discussion item numbers, or ticket numbers in codebase comments.
+
+When performing vulnerability or security related work, all network requests must be manually reviewed and approved. External requests or POC/replications should be treated with an abundance of caution.
+
+## git
+
+Do not make assumptions about what should or should not be committed. Your only concern should be th ecurrent of the codebase on disk, unless stated otherwise.
+
 ## Universally Applicable Rules
 
 Trust is gained and maintained by complying to the following rules:
@@ -106,10 +116,9 @@ Most sessions contain ref-shaped material (facts, observations) tangled inside r
 
 ### qmd (Semantic Search)
 
+> Important: qmd use is not compulsory unless explicitly requested.
+
 PKM directories are indexed by [qmd](https://github.com/tobi/qmd) for keyword and semantic search across notes. A PostToolUse hook automatically updates the qmd index when compound-extension files are written. Claude invokes qmd via its CLI (no MCP server) — keeps it portable to locked-down environments that don't allow arbitrary MCP servers.
-
-
-qmd use is not compulsory unless explicitly requested.
 
 - **CLI commands** (used by skills/agents): `qmd query <q>` (hybrid lex+vec+rerank, recommended), `qmd search <q>` (BM25-only), `qmd vsearch <q>` (vector-only), `qmd get <file>[:line]`, `qmd multi-get <pattern>`, `qmd status`. Scope to a collection with `-c <name>`. Full reference: `qmd --help`.
 - **Collection management**: `scripts/qmd-sync.sh` discovers and registers PKM directories as qmd collections. Each directory becomes its own collection (searchable independently via `-c <name>` or together).
