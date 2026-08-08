@@ -46,8 +46,10 @@ everything. `lanes` (see above) is matchable, e.g. `{ "lanes": "failed-ci" }`.
 `{placeholder}` in `prompt` expands from any item field. Every placeholder
 must resolve to a non-empty value or the launch fails with an error on the
 card. Fields by type — pr: `key`, `type`, `repo`, `number`, `title`, `url`,
-`updatedAt`, `isDraft`, `ci`, `reviewDecision`, `mergeable`, `lanes`;
-jira: `key`, `type`, `title`, `status`, `priority`, `issuetype`, `url`, `lanes`.
+`updatedAt`, `isDraft`, `lanes` on every PR; `ci`, `reviewDecision`,
+`mergeable` only on authored-PR items (lanes `my-prs` / `changes-requested`
+/ `failed-ci` / `mergeable`), absent on `needs-review` items; jira: `key`,
+`type`, `title`, `status`, `priority`, `issuetype`, `url`, `lanes`.
 
 ## Launching sessions
 
