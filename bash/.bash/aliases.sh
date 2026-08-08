@@ -12,6 +12,9 @@ alias egit='$EDITOR ~/.gitconfig'
 alias etmux='$EDITOR ~/.tmux.conf'
 alias einstall='$EDITOR ~/dotfiles/scripts/install.sh'
 
+# Sprintboard
+alias sprintboard='node ~/dotfiles/sprintboard/server.js'
+
 # Tmux
 alias tma='tmux new-session -A -s mainsession'
 alias tmk='tmux kill-server'
