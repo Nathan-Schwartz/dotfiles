@@ -63,3 +63,14 @@ test('GET / serves the board HTML', async (t) => {
   assert.strictEqual(res.status, 200);
   assert.ok((res.headers.get('content-type') || '').includes('text/html'));
 });
+
+test('a path traversal attempt on static files 404s instead of escaping public/', async (t) => {
+  const app = createApp({ config: CFG, fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] } });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const res = await fetch(`http://127.0.0.1:${port}/%2e%2e/%2e%2e/etc/passwd`);
+  assert.strictEqual(res.status, 404);
+  assert.ok((res.headers.get('content-type') || '').includes('application/json'));
+  const body = await res.json();
+  assert.strictEqual(body.error, 'not found');
+});

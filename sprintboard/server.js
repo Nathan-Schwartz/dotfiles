@@ -38,7 +38,7 @@ function createApp({ config, fetchers }) {
   function sendStatic(res, urlPath) {
     const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
     const file = path.join(PUBLIC_DIR, path.normalize(rel));
-    if (!file.startsWith(PUBLIC_DIR) || !fs.existsSync(file)) return sendJSON(res, 404, { error: 'not found' });
+    if (!file.startsWith(PUBLIC_DIR + path.sep) || !fs.existsSync(file)) return sendJSON(res, 404, { error: 'not found' });
     res.writeHead(200, { 'content-type': MIME[path.extname(file)] || 'application/octet-stream' });
     res.end(fs.readFileSync(file));
   }
