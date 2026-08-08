@@ -21,7 +21,8 @@ No credentials are stored — auth lives entirely in the CLIs.
 ## Lanes
 
 - Needs my review — open PRs where my review is requested
-- Changes requested / Failed CI / Mergeable — derived from my open PRs
+- My open PRs — all open PRs I authored
+- Changes requested / Failed CI / Mergeable — derived views of my open PRs
 - Jira — open work items for the configured project + user (or custom `jql`)
 
 ## Launching sessions
