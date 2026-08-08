@@ -74,17 +74,30 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
   }
 
   async function handleLaunch(req, res) {
-    const { key } = await readBody(req);
+    const { key, action: actionName } = await readBody(req);
     const item = findItem(key);
     if (!item) return sendJSON(res, 404, { error: `no board item with key ${key}` });
+    const action = (config.actions || []).find((a) => a.name === actionName);
+    if (!action) return sendJSON(res, 404, { error: `unknown action ${actionName}` });
+    if (!matches(action.match, item)) {
+      return sendJSON(res, 409, { error: `action ${actionName} is not viable for ${key}` });
+    }
+    let prompt;
+    try {
+      prompt = fillTemplate(action.prompt, item);
+    } catch (e) {
+      return sendJSON(res, 400, { error: `${actionName}: ${e.message}` });
+    }
     const cwd = expandTilde(
-      (item.type === 'pr' && config.sources.github.repoPaths?.[item.repo]) || config.launch.defaultCwd || os.homedir(),
+      action.cwd
+        || (item.type === 'pr' && config.sources.github.repoPaths?.[item.repo])
+        || config.launch.defaultCwd
+        || os.homedir(),
     );
-    const prompt = tmuxLib.fillTemplate(config.launch.promptTemplate, item);
     const { target, attach } = await tmux.launch(run, {
       session: config.launch.session, name: tmuxLib.windowName(key), cwd, prompt,
     });
-    const record = { key, target, attach, launchedAt: new Date().toISOString() };
+    const record = { key, action: action.name, target, attach, launchedAt: new Date().toISOString() };
     sessions.push(record);
     return sendJSON(res, 201, record);
   }

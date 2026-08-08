@@ -127,7 +127,7 @@ test('POST /api/launch starts a tmux session for a board item', async (t) => {
   const launched = [];
   const app = createApp({
     config: { ...CFG, sources: { ...CFG.sources, github: { enabled: true, repoPaths: { 'a/b': '/tmp' } } },
-      launch: { session: 'mainsession', defaultCwd: '/', promptTemplate: 'do {key}' } },
+      launch: { session: 'mainsession', defaultCwd: '/' } },
     fetchers: {
       reviewsRequested: async () => [],
       myPRs: async () => [{ key: 'a/b#2', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' }],
@@ -140,23 +140,24 @@ test('POST /api/launch starts a tmux session for a board item', async (t) => {
 
   await fetch(`http://127.0.0.1:${port}/api/board`); // populate board cache
   const res = await fetch(`http://127.0.0.1:${port}/api/launch`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2', action: 'work-on' }),
   });
   assert.strictEqual(res.status, 201);
   const body = await res.json();
   assert.strictEqual(body.target, 'mainsession:5');
+  assert.strictEqual(body.action, 'work-on');
   assert.strictEqual(launched[0].cwd, '/tmp');        // repoPaths mapping
   assert.strictEqual(launched[0].prompt, 'do a/b#2'); // template filled
 
   const missing = await fetch(`http://127.0.0.1:${port}/api/launch`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'nope' }),
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'nope', action: 'work-on' }),
   });
   assert.strictEqual(missing.status, 404);
 });
 
 test('POST /api/launch with a malformed JSON body 500s without crashing the server', async (t) => {
   const app = createApp({
-    config: { ...CFG, launch: { session: 'mainsession', defaultCwd: '/', promptTemplate: 'do {key}' } },
+    config: { ...CFG, launch: { session: 'mainsession', defaultCwd: '/' } },
     fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
     tmux: { launch: async () => ({ target: 'mainsession:1', attach: 'x' }) },
   });
@@ -179,7 +180,7 @@ test('POST /api/launch with a malformed JSON body 500s without crashing the serv
 test('sessions list and tail', async (t) => {
   let launchCount = 0;
   const app = createApp({
-    config: { ...CFG, launch: { session: 'm', defaultCwd: '/', promptTemplate: 'x {key}' } },
+    config: { ...CFG, launch: { session: 'm', defaultCwd: '/' } },
     fetchers: {
       reviewsRequested: async () => [], jira: async () => [],
       myPRs: async () => [
@@ -204,10 +205,10 @@ test('sessions list and tail', async (t) => {
 
   await fetch(`http://127.0.0.1:${port}/api/board`);
   await fetch(`http://127.0.0.1:${port}/api/launch`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2', action: 'work-on' }),
   });
   await fetch(`http://127.0.0.1:${port}/api/launch`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#3' }),
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#3', action: 'work-on' }),
   });
 
   const listRes = await fetch(`http://127.0.0.1:${port}/api/sessions`);
@@ -216,6 +217,7 @@ test('sessions list and tail', async (t) => {
   assert.strictEqual(list.length, 2);
   assert.strictEqual(list[0].target, 'm:5');
   assert.strictEqual(list[0].alive, true);
+  assert.strictEqual(list[0].action, 'work-on');
   assert.strictEqual(list[1].target, 'm:9');
   assert.strictEqual(list[1].alive, false);
 
@@ -230,7 +232,7 @@ test('sessions list and tail', async (t) => {
 test('POST /api/launch 500s when tmux.launch rejects, without crashing the server', async (t) => {
   const app = createApp({
     config: { ...CFG, sources: { ...CFG.sources, github: { enabled: true, repoPaths: {} } },
-      launch: { session: 'mainsession', defaultCwd: '/', promptTemplate: 'do {key}' } },
+      launch: { session: 'mainsession', defaultCwd: '/' } },
     fetchers: {
       reviewsRequested: async () => [],
       myPRs: async () => [{ key: 'a/b#3', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' }],
@@ -243,7 +245,7 @@ test('POST /api/launch 500s when tmux.launch rejects, without crashing the serve
 
   await fetch(`http://127.0.0.1:${port}/api/board`); // populate board cache
   const res = await fetch(`http://127.0.0.1:${port}/api/launch`, {
-    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#3' }),
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#3', action: 'work-on' }),
   });
   assert.strictEqual(res.status, 500);
   const body = await res.json();
@@ -252,4 +254,67 @@ test('POST /api/launch 500s when tmux.launch rejects, without crashing the serve
   // proves the process (and this createApp instance) survived the rejection
   const board = await fetch(`http://127.0.0.1:${port}/api/board`);
   assert.strictEqual(board.status, 200);
+});
+
+test('POST /api/launch rejects unknown, non-viable, and non-interpolable actions', async (t) => {
+  const app = createApp({
+    config: {
+      ...CFG,
+      actions: [
+        { name: 'work-on', match: {}, prompt: 'do {key}' },
+        { name: 'pr-only', match: { type: 'pr' }, prompt: 'x {key}' },
+        { name: 'needs-number', match: {}, prompt: 'n {number}' },
+      ],
+      launch: { session: 'm', defaultCwd: '/' },
+    },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [],
+      jira: async () => [{ key: 'PROJ-1', type: 'jira', title: 'T', url: 'https://j' }],
+    },
+    tmux: { launch: async () => ({ target: '@1', attach: 'x' }) },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  await fetch(`http://127.0.0.1:${port}/api/board`);
+  const post = (body) => fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+  });
+
+  assert.strictEqual((await post({ key: 'PROJ-1', action: 'nope' })).status, 404);
+  assert.strictEqual((await post({ key: 'PROJ-1', action: 'pr-only' })).status, 409);
+
+  const bad = await post({ key: 'PROJ-1', action: 'needs-number' });
+  assert.strictEqual(bad.status, 400);
+  assert.ok((await bad.json()).error.includes('{number}'));
+
+  const ok = await post({ key: 'PROJ-1', action: 'work-on' });
+  assert.strictEqual(ok.status, 201);
+  assert.strictEqual((await ok.json()).action, 'work-on');
+});
+
+test('action-level cwd beats repoPaths and defaultCwd', async (t) => {
+  const launched = [];
+  const app = createApp({
+    config: {
+      ...CFG,
+      sources: { ...CFG.sources, github: { enabled: true, repoPaths: { 'a/b': '/repo-path' } } },
+      actions: [{ name: 'deploy', match: {}, prompt: 'd {key}', cwd: '/deploy-cwd' }],
+      launch: { session: 'm', defaultCwd: '/default' },
+    },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' }],
+      jira: async () => [],
+    },
+    tmux: { launch: async (run, opts) => { launched.push(opts); return { target: '@1', attach: 'x' }; } },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  await fetch(`http://127.0.0.1:${port}/api/board`);
+  await fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ key: 'a/b#2', action: 'deploy' }),
+  });
+  assert.strictEqual(launched[0].cwd, '/deploy-cwd');
 });

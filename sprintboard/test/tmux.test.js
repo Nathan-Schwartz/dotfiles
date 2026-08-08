@@ -1,14 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { launch, tail, fillTemplate, windowName } = require('../lib/tmux.js');
-
-test('fillTemplate substitutes placeholders', () => {
-  const out = fillTemplate('work on {key}: "{title}" ({url}) in {repo}', {
-    key: 'a/b#1', title: 'T', url: 'https://x', repo: 'a/b',
-  });
-  assert.strictEqual(out, 'work on a/b#1: "T" (https://x) in a/b');
-});
+const { launch, tail, windowName } = require('../lib/tmux.js');
 
 test('windowName sanitizes keys for tmux', () => {
   assert.strictEqual(windowName('acme/widgets#42'), 'widgets-42');
