@@ -38,4 +38,7 @@ assert "$(command_exists tree)" "true" 'tree not installed'
 assert "$(command_exists pipx)" "true" 'pipx not installed'
 assert "$(command_exists tk)" "true" 'tk not installed'
 
+echo "Running sprintboard tests..."
+node --test sprintboard/test/*.test.js
+
 echo "Everything looks good!"

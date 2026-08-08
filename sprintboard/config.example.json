@@ -1,0 +1,23 @@
+{
+  "port": 1337,
+  "cacheSeconds": 300,
+  "sources": {
+    "github": {
+      "enabled": true,
+      "repos": [],
+      "repoPaths": { "owner/repo": "~/code/repo" }
+    },
+    "jira": {
+      "enabled": true,
+      "site": "yourcompany.atlassian.net",
+      "project": "PROJ",
+      "user": "you@company.com",
+      "jql": ""
+    }
+  },
+  "launch": {
+    "session": "mainsession",
+    "defaultCwd": "~",
+    "promptTemplate": "You are picking up work item {key}: \"{title}\" ({url}). Investigate the current state and address what needs attention."
+  }
+}
