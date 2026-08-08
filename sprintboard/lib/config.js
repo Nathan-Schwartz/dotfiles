@@ -24,7 +24,7 @@ function configPath() {
 }
 
 function merge(base, over) {
-  const out = { ...base };
+  const out = structuredClone(base);
   for (const [k, v] of Object.entries(over || {})) {
     out[k] = v && typeof v === 'object' && !Array.isArray(v) && typeof base[k] === 'object'
       ? merge(base[k], v)

@@ -39,3 +39,19 @@ test('DEFAULTS includes extensible sources block', () => {
   assert.ok(DEFAULTS.sources.github);
   assert.ok(DEFAULTS.sources.jira);
 });
+
+test('mutating returned config does not mutate DEFAULTS', () => {
+  const cfg = loadConfig('/nonexistent/sprintboard.json');
+  // Mutate nested arrays and fields on the returned config
+  cfg.sources.github.repos.push('mutated-repo');
+  cfg.launch.session = 'mutated-session';
+
+  // DEFAULTS should be unchanged
+  assert.strictEqual(DEFAULTS.sources.github.repos.length, 0);
+  assert.strictEqual(DEFAULTS.launch.session, 'mainsession');
+
+  // A fresh load should also return unchanged defaults
+  const cfg2 = loadConfig('/nonexistent/sprintboard.json');
+  assert.strictEqual(cfg2.sources.github.repos.length, 0);
+  assert.strictEqual(cfg2.launch.session, 'mainsession');
+});
