@@ -1,12 +1,12 @@
 'use strict';
 
 const laneDefs = [
-  { id: 'needs-review', title: 'Needs my review', pick: (l) => l.reviewsRequested },
-  { id: 'changes-requested', title: 'Changes requested', pick: (l) => l.myPRs.filter((p) => p.reviewDecision === 'CHANGES_REQUESTED') },
-  { id: 'failed-ci', title: 'Failed CI', pick: (l) => l.myPRs.filter((p) => p.ci === 'failing') },
-  { id: 'mergeable', title: 'Mergeable', pick: (l) => l.myPRs.filter((p) => p.mergeable === 'MERGEABLE' && p.ci !== 'failing' && !p.isDraft) },
-  { id: 'my-prs', title: 'My open PRs', pick: (l) => l.myPRs },
-  { id: 'jira', title: 'Jira', pick: (l) => l.jira },
+  { id: 'needs-review', title: 'Needs my review' },
+  { id: 'changes-requested', title: 'Changes requested' },
+  { id: 'failed-ci', title: 'Failed CI' },
+  { id: 'mergeable', title: 'Mergeable' },
+  { id: 'my-prs', title: 'My open PRs' },
+  { id: 'jira', title: 'Jira' },
 ];
 
 function el(tag, attrs = {}, children = []) {
@@ -33,15 +33,15 @@ function badges(item) {
   return out.map(([text, cls]) => el('span', { class: `badge ${cls}`, text }));
 }
 
-function renderCard(item) {
-  const link = el('a', { href: item.url, target: '_blank', text: item.title });
-  const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
-  const btn = el('button', { class: 'launch', text: '▶ claude' });
+function actionButton(item, name) {
+  const btn = el('button', { class: 'launch', text: `▶ ${name}` });
   btn.addEventListener('click', async () => {
     btn.disabled = true;
     try {
       const res = await fetch('/api/launch', {
-        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: item.key }),
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ key: item.key, action: name }),
       });
       const body = await res.json();
       if (res.ok) {
@@ -55,7 +55,14 @@ function renderCard(item) {
       btn.disabled = false;
     }
   });
-  return el('article', { class: 'card', 'data-key': item.key }, [link, meta, el('div', { class: 'badges' }, badges(item)), btn]);
+  return btn;
+}
+
+function renderCard(item) {
+  const link = el('a', { href: item.url, target: '_blank', text: item.title });
+  const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
+  const actions = el('div', { class: 'actions' }, item.actions.map((name) => actionButton(item, name)));
+  return el('article', { class: 'card', 'data-key': item.key }, [link, meta, el('div', { class: 'badges' }, badges(item)), actions]);
 }
 
 function renderBoard(data) {
@@ -64,7 +71,7 @@ function renderBoard(data) {
   errBox.replaceChildren(...data.errors.map((e) => el('p', { class: 'error', text: `${e.source}: ${e.message}` })));
   const board = document.getElementById('board');
   board.replaceChildren(...laneDefs.map((def) => {
-    const items = def.pick(data.lanes);
+    const items = data.items.filter((i) => i.lanes.includes(def.id));
     return el('section', { class: 'lane', id: `lane-${def.id}` }, [
       el('h2', { text: `${def.title} (${items.length})` }),
       ...items.map(renderCard),
@@ -87,7 +94,7 @@ async function refreshSessions() {
   const box = document.getElementById('session-list');
   box.replaceChildren(...list.map((s) => {
     const row = el('div', { class: `session ${s.alive ? '' : 'dead'}` }, [
-      el('button', { class: 'tail-btn', text: `${s.key} @ ${s.target}${s.alive ? '' : ' (ended)'}` }),
+      el('button', { class: 'tail-btn', text: `${s.key} [${s.action}] @ ${s.target}${s.alive ? '' : ' (ended)'}` }),
       el('code', { text: s.attach }),
     ]);
     row.querySelector('button').addEventListener('click', () => { tailTarget = s.target; });

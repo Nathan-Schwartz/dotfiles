@@ -22,3 +22,4 @@ main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr
 .session.dead { opacity: 0.5; }
 .session code { display: block; color: var(--muted); font-size: 0.75rem; user-select: all; }
 #session-tail { background: var(--card); padding: 0.75rem; border-radius: 6px; overflow-x: auto; min-height: 6rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
