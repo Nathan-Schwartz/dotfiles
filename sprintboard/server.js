@@ -90,7 +90,7 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
       if (req.method === 'GET' && url.pathname === '/api/board') {
         return sendJSON(res, 200, await board(url.searchParams.has('refresh')));
       }
-      if (req.method === 'POST' && url.pathname === '/api/launch') return handleLaunch(req, res);
+      if (req.method === 'POST' && url.pathname === '/api/launch') return await handleLaunch(req, res);
       if (req.method === 'GET') return sendStatic(res, url.pathname);
       return sendJSON(res, 405, { error: 'method not allowed' });
     } catch (e) {

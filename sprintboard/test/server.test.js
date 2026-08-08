@@ -105,3 +105,52 @@ test('POST /api/launch starts a tmux session for a board item', async (t) => {
   });
   assert.strictEqual(missing.status, 404);
 });
+
+test('POST /api/launch with a malformed JSON body 500s without crashing the server', async (t) => {
+  const app = createApp({
+    config: { ...CFG, launch: { session: 'mainsession', defaultCwd: '/', promptTemplate: 'do {key}' } },
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+    tmux: { launch: async () => ({ target: 'mainsession:1', attach: 'x' }) },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  const res = await fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: 'not-json{',
+  });
+  assert.strictEqual(res.status, 500);
+  assert.ok((res.headers.get('content-type') || '').includes('application/json'));
+  const body = await res.json();
+  assert.ok(body.error);
+
+  // proves the process (and this createApp instance) survived the rejection
+  const board = await fetch(`http://127.0.0.1:${port}/api/board`);
+  assert.strictEqual(board.status, 200);
+});
+
+test('POST /api/launch 500s when tmux.launch rejects, without crashing the server', async (t) => {
+  const app = createApp({
+    config: { ...CFG, sources: { ...CFG.sources, github: { enabled: true, repoPaths: {} } },
+      launch: { session: 'mainsession', defaultCwd: '/', promptTemplate: 'do {key}' } },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#3', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' }],
+      jira: async () => [],
+    },
+    tmux: { launch: async () => { throw new Error('tmux exploded'); } },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  await fetch(`http://127.0.0.1:${port}/api/board`); // populate board cache
+  const res = await fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#3' }),
+  });
+  assert.strictEqual(res.status, 500);
+  const body = await res.json();
+  assert.ok(body.error.includes('tmux exploded'));
+
+  // proves the process (and this createApp instance) survived the rejection
+  const board = await fetch(`http://127.0.0.1:${port}/api/board`);
+  assert.strictEqual(board.status, 200);
+});

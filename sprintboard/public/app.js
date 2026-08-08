@@ -39,11 +39,21 @@ function renderCard(item) {
   const btn = el('button', { class: 'launch', text: '▶ claude' });
   btn.addEventListener('click', async () => {
     btn.disabled = true;
-    const res = await fetch('/api/launch', {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: item.key }),
-    });
-    const body = await res.json();
-    btn.textContent = res.ok ? `launched → ${body.target}` : `error: ${body.error}`;
+    try {
+      const res = await fetch('/api/launch', {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: item.key }),
+      });
+      const body = await res.json();
+      if (res.ok) {
+        btn.textContent = `launched → ${body.target}`;
+      } else {
+        btn.textContent = `error: ${body.error}`;
+        btn.disabled = false;
+      }
+    } catch (e) {
+      btn.textContent = `error: ${e.message}`;
+      btn.disabled = false;
+    }
   });
   return el('article', { class: 'card', 'data-key': item.key }, [link, meta, el('div', { class: 'badges' }, badges(item)), btn]);
 }
