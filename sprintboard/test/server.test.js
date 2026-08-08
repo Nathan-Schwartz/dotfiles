@@ -1,7 +1,21 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
+const http = require('node:http');
 const { createApp } = require('../server.js');
+
+// fetch() cannot set a spoofed Host header (undici drops it), so use http.request directly.
+function requestWithHost(port, hostHeader) {
+  return new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port, path: '/api/board', headers: { host: hostHeader } }, (res) => {
+      let data = '';
+      res.on('data', (c) => { data += c; });
+      res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data || '{}') }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
 
 const CFG = { port: 0, cacheSeconds: 300, sources: { github: { enabled: true }, jira: { enabled: true } }, launch: {} };
 
@@ -62,6 +76,15 @@ test('GET / serves the board HTML', async (t) => {
   const res = await fetch(`http://127.0.0.1:${port}/`);
   assert.strictEqual(res.status, 200);
   assert.ok((res.headers.get('content-type') || '').includes('text/html'));
+});
+
+test('a request with a spoofed Host header is rejected', async (t) => {
+  const app = createApp({ config: CFG, fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] } });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const { status, body } = await requestWithHost(port, 'evil.example');
+  assert.strictEqual(status, 403);
+  assert.strictEqual(body.error, 'forbidden host');
 });
 
 test('a path traversal attempt on static files 404s instead of escaping public/', async (t) => {

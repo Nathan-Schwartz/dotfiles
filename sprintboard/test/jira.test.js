@@ -47,6 +47,32 @@ test('fetchJiraItems shapes real acli output into JiraItems', async () => {
   assert.strictEqual(nested.url, 'https://co.atlassian.net/browse/PROJ-102');
 });
 
+test('fetchJiraItems unwraps a {results: [...]} container shape', async () => {
+  const fixture = JSON.stringify({
+    results: [
+      { key: 'PROJ-201', summary: 'Wrapped item', status: 'To Do', priority: 'Low', issuetype: 'Task' },
+    ],
+  });
+  const fakeRun = async () => fixture;
+  const items = await fetchJiraItems(fakeRun, { site: 'co.atlassian.net', project: 'PROJ', user: 'me@co.com', jql: '' });
+  assert.strictEqual(items.length, 1);
+  assert.strictEqual(items[0].key, 'PROJ-201');
+  assert.strictEqual(items[0].title, 'Wrapped item');
+});
+
+test('fetchJiraItems rejects an unrecognized container shape naming the keys', async () => {
+  const fixture = JSON.stringify({ values: [{ key: 'PROJ-301' }] });
+  const fakeRun = async () => fixture;
+  await assert.rejects(
+    fetchJiraItems(fakeRun, { site: 'co.atlassian.net', project: 'PROJ', user: 'me@co.com', jql: '' }),
+    (err) => {
+      assert.ok(err.message.includes('unrecognized acli output shape'));
+      assert.ok(err.message.includes('values'));
+      return true;
+    },
+  );
+});
+
 test('fetchJiraItems filters out entries with no key', async () => {
   const fixtureWithKeyless = JSON.stringify([
     { key: 'PROJ-101', summary: 'Valid item', status: 'To Do', priority: 'High', issuetype: 'Task' },

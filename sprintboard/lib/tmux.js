@@ -15,7 +15,9 @@ function windowName(key) {
 
 async function launch(run, { session, name, cwd, prompt }) {
   const shellCmd = `claude ${shq(prompt)}`;
-  const fmt = '#{session_name}:#{window_index}';
+  // Stable window id (e.g. '@5'), not window_index: renumber-windows on
+  // reassigns indices when lower windows close, making index-based targets dangle.
+  const fmt = '#{window_id}';
   const exists = await run('tmux', ['has-session', '-t', session]).then(() => true, () => false);
   let target;
   if (exists) {
@@ -24,7 +26,7 @@ async function launch(run, { session, name, cwd, prompt }) {
     target = (await run('tmux', ['new-session', '-d', '-P', '-F', fmt, '-s', session, '-n', name, '-c', cwd, shellCmd])).trim();
   }
   await run('tmux', ['set-option', '-t', target, '-w', 'automatic-rename', 'off']);
-  return { target, attach: `tmux attach -t ${shq(target)}` };
+  return { target, attach: `tmux attach -t ${shq(session)} \\; select-window -t ${target}` };
 }
 
 function tail(run, target, lines = 80) {

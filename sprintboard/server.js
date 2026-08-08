@@ -104,6 +104,9 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
   }
 
   return http.createServer(async (req, res) => {
+    const port = req.socket.localPort;
+    const allowedHosts = new Set([`localhost:${port}`, `127.0.0.1:${port}`]);
+    if (!allowedHosts.has(req.headers.host)) return sendJSON(res, 403, { error: 'forbidden host' });
     const url = new URL(req.url, 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/api/board') {
@@ -129,7 +132,7 @@ function main() {
     fetchers: {
       reviewsRequested: () => (config.sources.github.enabled ? gh.fetchReviewsRequested(run) : Promise.resolve([])),
       myPRs: () => (config.sources.github.enabled ? gh.fetchMyPRs(run, config.sources.github) : Promise.resolve([])),
-      jira: () => (config.sources.jira.enabled && config.sources.jira.project
+      jira: () => (config.sources.jira.enabled && (config.sources.jira.project || config.sources.jira.jql)
         ? jira.fetchJiraItems(run, config.sources.jira) : Promise.resolve([])),
     },
   });

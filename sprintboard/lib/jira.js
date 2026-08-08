@@ -33,7 +33,15 @@ async function fetchJiraItems(run, cfg) {
     '--json', '--limit', '50',
   ]);
   const parsed = JSON.parse(out);
-  const list = Array.isArray(parsed) ? parsed : parsed.results || parsed.workItems || parsed.issues || [];
+  let list;
+  if (Array.isArray(parsed)) {
+    list = parsed;
+  } else {
+    list = parsed.results || parsed.workItems || parsed.issues;
+    if (!Array.isArray(list)) {
+      throw new Error('unrecognized acli output shape: keys [' + Object.keys(parsed).join(', ') + ']');
+    }
+  }
   return list.map((raw) => toItem(raw, cfg.site)).filter((item) => item.key);
 }
 
