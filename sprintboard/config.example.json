@@ -14,9 +14,26 @@
       "jql": ""
     }
   },
+  "actions": [
+    {
+      "name": "review",
+      "match": { "lanes": "needs-review" },
+      "prompt": "Review PR {url} ({repo}#{number}): \"{title}\". Read the diff and leave findings."
+    },
+    {
+      "name": "fix-comments",
+      "match": { "type": "pr", "reviewDecision": "CHANGES_REQUESTED" },
+      "prompt": "/fix-pr-comments {url}"
+    },
+    {
+      "name": "brainstorm",
+      "match": { "type": "jira", "status": ["To Do", "In Progress"] },
+      "prompt": "/brainstorm work item {key}: \"{title}\" ({url})",
+      "cwd": "~"
+    }
+  ],
   "launch": {
     "session": "mainsession",
-    "defaultCwd": "~",
-    "promptTemplate": "You are picking up work item {key}: \"{title}\" ({url}). Investigate the current state and address what needs attention."
+    "defaultCwd": "~"
   }
 }

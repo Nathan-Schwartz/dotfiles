@@ -10,12 +10,18 @@ const DEFAULTS = {
     github: { enabled: true, repoPaths: {} },
     jira: { enabled: true, site: '', project: '', user: '', jql: '' },
   },
+  actions: [
+    {
+      name: 'work-on',
+      match: {},
+      prompt:
+        'You are picking up work item {key}: "{title}" ({url}). ' +
+        'Investigate the current state and address what needs attention.',
+    },
+  ],
   launch: {
     session: 'mainsession',
     defaultCwd: os.homedir(),
-    promptTemplate:
-      'You are picking up work item {key}: "{title}" ({url}). ' +
-      'Investigate the current state and address what needs attention.',
   },
 };
 

@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { loadConfig, DEFAULTS } = require('../lib/config.js');
+const { loadConfig, configPath, DEFAULTS, merge } = require('../lib/config.js');
 
 function tmpConfig(obj) {
   const p = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'sb-')), 'config.json');
@@ -54,4 +54,18 @@ test('mutating returned config does not mutate DEFAULTS', () => {
   const cfg2 = loadConfig('/nonexistent/sprintboard.json');
   assert.strictEqual(Object.keys(cfg2.sources.github.repoPaths).length, 0);
   assert.strictEqual(cfg2.launch.session, 'mainsession');
+});
+
+test('DEFAULTS ship a catch-all action and no promptTemplate', () => {
+  assert.strictEqual(DEFAULTS.actions.length, 1);
+  assert.strictEqual(DEFAULTS.actions[0].name, 'work-on');
+  assert.deepStrictEqual(DEFAULTS.actions[0].match, {});
+  assert.ok(DEFAULTS.actions[0].prompt.includes('{key}'));
+  assert.strictEqual(DEFAULTS.launch.promptTemplate, undefined);
+});
+
+test('a user actions array replaces the default actions entirely', () => {
+  const merged = merge(DEFAULTS, { actions: [{ name: 'mine', match: { type: 'pr' }, prompt: 'p {key}' }] });
+  assert.strictEqual(merged.actions.length, 1);
+  assert.strictEqual(merged.actions[0].name, 'mine');
 });
