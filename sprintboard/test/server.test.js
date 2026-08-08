@@ -17,7 +17,12 @@ function requestWithHost(port, hostHeader) {
   });
 }
 
-const CFG = { port: 0, cacheSeconds: 300, sources: { github: { enabled: true }, jira: { enabled: true } }, launch: {} };
+const CFG = {
+  port: 0, cacheSeconds: 300,
+  sources: { github: { enabled: true }, jira: { enabled: true } },
+  actions: [{ name: 'work-on', match: {}, prompt: 'do {key}' }],
+  launch: {},
+};
 
 function listen(app) {
   return new Promise((resolve) => app.listen(0, '127.0.0.1', () => resolve(app.address().port)));
@@ -39,9 +44,12 @@ test('GET /api/board aggregates lanes and caches', async (t) => {
   const res = await fetch(`http://127.0.0.1:${port}/api/board`);
   assert.strictEqual(res.status, 200);
   const body = await res.json();
-  assert.deepStrictEqual(body.lanes.reviewsRequested, [{ key: 'a/b#1' }]);
-  assert.deepStrictEqual(body.lanes.myPRs, [{ key: 'a/b#2', ci: 'failing' }]);
-  assert.deepStrictEqual(body.lanes.jira, [{ key: 'PROJ-1' }]);
+  assert.strictEqual(body.items.length, 3);
+  const byKey = Object.fromEntries(body.items.map((i) => [i.key, i]));
+  assert.deepStrictEqual(byKey['a/b#1'].lanes, ['needs-review']);
+  assert.deepStrictEqual(byKey['a/b#2'].lanes, ['my-prs', 'failed-ci']);
+  assert.deepStrictEqual(byKey['PROJ-1'].lanes, ['jira']);
+  assert.deepStrictEqual(byKey['a/b#1'].actions, ['work-on']);
   assert.deepStrictEqual(body.errors, []);
   assert.ok(body.fetchedAt);
 
@@ -49,6 +57,23 @@ test('GET /api/board aggregates lanes and caches', async (t) => {
   assert.strictEqual(jiraCalls, 1);
   await fetch(`http://127.0.0.1:${port}/api/board?refresh=1`); // bypasses cache
   assert.strictEqual(jiraCalls, 2);
+});
+
+test('board actions can match on derived lanes', async (t) => {
+  const app = createApp({
+    config: { ...CFG, actions: [{ name: 'fix-ci', match: { lanes: 'failed-ci' }, prompt: 'fix {key}' }] },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', ci: 'failing' }, { key: 'a/b#3', ci: 'passing' }],
+      jira: async () => [],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  const byKey = Object.fromEntries(body.items.map((i) => [i.key, i]));
+  assert.deepStrictEqual(byKey['a/b#2'].actions, ['fix-ci']);
+  assert.deepStrictEqual(byKey['a/b#3'].actions, []);
 });
 
 test('a failing source lands in errors, other lanes still render', async (t) => {
@@ -63,7 +88,7 @@ test('a failing source lands in errors, other lanes still render', async (t) => 
   const port = await listen(app);
   t.after(() => app.close());
   const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
-  assert.deepStrictEqual(body.lanes.jira, []);
+  assert.deepStrictEqual(body.items, []);
   assert.strictEqual(body.errors.length, 1);
   assert.strictEqual(body.errors[0].source, 'jira');
   assert.ok(body.errors[0].message.includes('acli exploded'));

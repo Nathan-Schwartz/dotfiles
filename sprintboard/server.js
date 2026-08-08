@@ -6,6 +6,8 @@ const path = require('node:path');
 const { loadConfig } = require('./lib/config.js');
 const tmuxLib = require('./lib/tmux.js');
 const { run } = require('./lib/exec.js');
+const { lanesFor } = require('./lib/lanes.js');
+const { matches, viableActions, fillTemplate } = require('./lib/actions.js');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -26,14 +28,21 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
       ['jira', 'jira', fetchers.jira],
     ];
     const results = await Promise.allSettled(sources.map(([, , fn]) => fn()));
-    const lanes = {};
+    const items = [];
     const errors = [];
     results.forEach((r, i) => {
-      const [lane, source] = sources[i];
-      if (r.status === 'fulfilled') lanes[lane] = r.value;
-      else { lanes[lane] = []; errors.push({ source, message: r.reason.message }); }
+      const [sourceLane, source] = sources[i];
+      if (r.status === 'fulfilled') {
+        for (const raw of r.value) {
+          const item = { ...raw, lanes: lanesFor(sourceLane, raw) };
+          item.actions = viableActions(config.actions, item);
+          items.push(item);
+        }
+      } else {
+        errors.push({ source, message: r.reason.message });
+      }
     });
-    const payload = { fetchedAt: new Date().toISOString(), lanes, errors };
+    const payload = { fetchedAt: new Date().toISOString(), items, errors };
     cache = { at: Date.now(), payload };
     return payload;
   }
@@ -53,11 +62,7 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
 
   function findItem(key) {
     if (!cache) return null;
-    for (const items of Object.values(cache.payload.lanes)) {
-      const hit = items.find((i) => i.key === key);
-      if (hit) return hit;
-    }
-    return null;
+    return cache.payload.items.find((i) => i.key === key) || null;
   }
 
   function readBody(req) {
