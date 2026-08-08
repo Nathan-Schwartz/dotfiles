@@ -30,6 +30,7 @@ New vim plugins must be added as git submodules under `vim/.vim/bundle/` and are
 - `scripts/generate-mocs.py` — Generates Maps of Content (`.index.md`) for PKM directories
 - `bash/.bash/ralph.sh` — Ralph autonomous executor (task-per-session loop backed by tk + claude CLI)
 - `claude/.claude/statusline.sh` — Claude Code statusline (session info, context window, rate limits, cost)
+- `sprintboard/server.js` — Personal attention board webapp (Jira + GitHub lanes, tmux Claude-session launcher) on localhost:1337
 
 ### Override Pattern
 
@@ -160,6 +161,14 @@ Prefix is `Ctrl-Space`. Key bindings use vi-style navigation. Solarized dark the
 - `<prefix> v` / `<prefix> s` — split vertical / horizontal
 - `Ctrl h/j/k/l` — navigate panes (shared with vim-tmux-navigator)
 - `Alt h/j/k/l` — resize panes
+
+## Sprintboard
+
+`sprintboard/` is a zero-dependency Node webapp (localhost:1337) that aggregates
+Jira (acli) and GitHub (gh) into attention lanes and launches context-primed
+claude tmux windows. Config lives in `~/.sprintboard.json` (not checked in —
+override pattern). Tests run via `node --test sprintboard/test/` (wired into
+`test.sh`). See `sprintboard/README.md`.
 
 ## Claude Code (`claude/` stow module)
 
