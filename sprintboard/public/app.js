@@ -1,0 +1,62 @@
+'use strict';
+
+const laneDefs = [
+  { id: 'needs-review', title: 'Needs my review', pick: (l) => l.reviewsRequested },
+  { id: 'changes-requested', title: 'Changes requested', pick: (l) => l.myPRs.filter((p) => p.reviewDecision === 'CHANGES_REQUESTED') },
+  { id: 'failed-ci', title: 'Failed CI', pick: (l) => l.myPRs.filter((p) => p.ci === 'failing') },
+  { id: 'mergeable', title: 'Mergeable', pick: (l) => l.myPRs.filter((p) => p.mergeable === 'MERGEABLE' && p.ci !== 'failing' && !p.isDraft) },
+  { id: 'my-prs', title: 'My open PRs', pick: (l) => l.myPRs },
+  { id: 'jira', title: 'Jira', pick: (l) => l.jira },
+];
+
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'text') node.textContent = v;
+    else node.setAttribute(k, v);
+  }
+  for (const c of children) node.appendChild(c);
+  return node;
+}
+
+function badges(item) {
+  const out = [];
+  if (item.type === 'pr') {
+    if (item.isDraft) out.push(['draft', 'muted']);
+    if (item.ci && item.ci !== 'none') out.push([`ci: ${item.ci}`, item.ci === 'failing' ? 'bad' : item.ci === 'passing' ? 'good' : 'muted']);
+    if (item.reviewDecision) out.push([item.reviewDecision.toLowerCase().replace(/_/g, ' '), item.reviewDecision === 'CHANGES_REQUESTED' ? 'bad' : 'muted']);
+    if (item.mergeable === 'CONFLICTING') out.push(['conflicts', 'bad']);
+  } else {
+    if (item.status) out.push([item.status, 'muted']);
+    if (item.priority) out.push([item.priority, 'muted']);
+  }
+  return out.map(([text, cls]) => el('span', { class: `badge ${cls}`, text }));
+}
+
+function renderCard(item) {
+  const link = el('a', { href: item.url, target: '_blank', text: item.title });
+  const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
+  return el('article', { class: 'card', 'data-key': item.key }, [link, meta, el('div', { class: 'badges' }, badges(item))]);
+}
+
+function renderBoard(data) {
+  document.getElementById('fetched-at').textContent = `fetched ${new Date(data.fetchedAt).toLocaleTimeString()}`;
+  const errBox = document.getElementById('errors');
+  errBox.replaceChildren(...data.errors.map((e) => el('p', { class: 'error', text: `${e.source}: ${e.message}` })));
+  const board = document.getElementById('board');
+  board.replaceChildren(...laneDefs.map((def) => {
+    const items = def.pick(data.lanes);
+    return el('section', { class: 'lane', id: `lane-${def.id}` }, [
+      el('h2', { text: `${def.title} (${items.length})` }),
+      ...items.map(renderCard),
+    ]);
+  }));
+}
+
+async function load(refresh) {
+  const res = await fetch(`/api/board${refresh ? '?refresh=1' : ''}`);
+  renderBoard(await res.json());
+}
+
+document.getElementById('refresh').addEventListener('click', () => load(true));
+load(false);
