@@ -20,18 +20,42 @@ No credentials are stored — auth lives entirely in the CLIs.
 
 ## Lanes
 
-- Needs my review — open PRs where my review is requested
-- My open PRs — open PRs I authored (filtered to `repoPaths` repos when any are
-  configured; empty `repoPaths` shows all)
-- Changes requested / Failed CI / Mergeable — derived views of my open PRs
-- Jira — open work items for the configured project + user (or custom `jql`)
+- Needs my review (`needs-review`) — open PRs where my review is requested
+- My open PRs (`my-prs`) — open PRs I authored (filtered to `repoPaths` repos
+  when any are configured; empty `repoPaths` shows all)
+- Changes requested (`changes-requested`) / Failed CI (`failed-ci`) / Mergeable
+  (`mergeable`) — derived views of my open PRs
+- Jira (`jira`) — open work items for the configured project + user (or
+  custom `jql`)
+
+## Actions
+
+Each card offers buttons for the actions viable for that item's state. You
+always pick — nothing launches automatically. Define actions in
+`~/.sprintboard.json` (defining any replaces the built-in catch-all):
+
+    { "name": "fix-comments",
+      "match": { "type": "pr", "reviewDecision": "CHANGES_REQUESTED" },
+      "prompt": "/fix-pr-comments {url}",
+      "cwd": "~/code/infra" }
+
+Match semantics: every key must be satisfied; scalar = equality, array =
+one-of; a field the item lacks never matches; `match: {}` matches
+everything. `lanes` (see above) is matchable, e.g. `{ "lanes": "failed-ci" }`.
+
+`{placeholder}` in `prompt` expands from any item field. Every placeholder
+must resolve to a non-empty value or the launch fails with an error on the
+card. Fields by type — pr: `key`, `type`, `repo`, `number`, `title`, `url`,
+`updatedAt`, `isDraft`, `ci`, `reviewDecision`, `mergeable`, `lanes`;
+jira: `key`, `type`, `title`, `status`, `priority`, `issuetype`, `url`, `lanes`.
 
 ## Launching sessions
 
-Each card's ▶ button opens a detached tmux window (session `mainsession`, same
-convention as `tmclaude`) running `claude` primed via `launch.promptTemplate`.
-PR items use `sources.github.repoPaths` to pick the working directory. The
-sessions panel tails the pane and shows the `tmux attach` command.
+An action button opens a detached tmux window (session `mainsession`, same
+convention as `tmclaude`) running `claude` primed with the action's prompt.
+Working directory: action `cwd` if set, else `sources.github.repoPaths` for
+PR items, else `launch.defaultCwd`. The sessions panel tails the pane and
+shows the `tmux attach` command.
 
 ## Tests
 
