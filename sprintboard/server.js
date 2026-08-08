@@ -1,14 +1,22 @@
 'use strict';
 const http = require('node:http');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { loadConfig } = require('./lib/config.js');
+const tmuxLib = require('./lib/tmux.js');
+const { run } = require('./lib/exec.js');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
 
-function createApp({ config, fetchers }) {
+function expandTilde(p) {
+  return p && p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p;
+}
+
+function createApp({ config, fetchers, tmux = tmuxLib }) {
   let cache = null; // { at: epoch-ms, payload }
+  const sessions = [];
 
   async function board(refresh) {
     if (!refresh && cache && Date.now() - cache.at < config.cacheSeconds * 1000) return cache.payload;
@@ -43,12 +51,46 @@ function createApp({ config, fetchers }) {
     res.end(fs.readFileSync(file));
   }
 
+  function findItem(key) {
+    if (!cache) return null;
+    for (const items of Object.values(cache.payload.lanes)) {
+      const hit = items.find((i) => i.key === key);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  function readBody(req) {
+    return new Promise((resolve, reject) => {
+      let data = '';
+      req.on('data', (c) => { data += c; });
+      req.on('end', () => { try { resolve(JSON.parse(data || '{}')); } catch (e) { reject(e); } });
+    });
+  }
+
+  async function handleLaunch(req, res) {
+    const { key } = await readBody(req);
+    const item = findItem(key);
+    if (!item) return sendJSON(res, 404, { error: `no board item with key ${key}` });
+    const cwd = expandTilde(
+      (item.type === 'pr' && config.sources.github.repoPaths?.[item.repo]) || config.launch.defaultCwd || os.homedir(),
+    );
+    const prompt = tmuxLib.fillTemplate(config.launch.promptTemplate, item);
+    const { target, attach } = await tmux.launch(run, {
+      session: config.launch.session, name: tmuxLib.windowName(key), cwd, prompt,
+    });
+    const record = { key, target, attach, launchedAt: new Date().toISOString() };
+    sessions.push(record);
+    return sendJSON(res, 201, record);
+  }
+
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/api/board') {
         return sendJSON(res, 200, await board(url.searchParams.has('refresh')));
       }
+      if (req.method === 'POST' && url.pathname === '/api/launch') return handleLaunch(req, res);
       if (req.method === 'GET') return sendStatic(res, url.pathname);
       return sendJSON(res, 405, { error: 'method not allowed' });
     } catch (e) {
@@ -59,7 +101,6 @@ function createApp({ config, fetchers }) {
 
 function main() {
   const config = loadConfig();
-  const { run } = require('./lib/exec.js');
   const gh = require('./lib/github.js');
   const jira = require('./lib/jira.js');
   const app = createApp({

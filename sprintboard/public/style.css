@@ -15,3 +15,4 @@ main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr
 .badge.good { color: var(--good); border-color: var(--good); }
 .badge.muted { color: var(--muted); }
 .error { color: var(--bad); padding: 0 1rem; }
+.launch { margin-top: 0.35rem; font-size: 0.75rem; cursor: pointer; }

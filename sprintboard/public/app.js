@@ -36,7 +36,16 @@ function badges(item) {
 function renderCard(item) {
   const link = el('a', { href: item.url, target: '_blank', text: item.title });
   const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
-  return el('article', { class: 'card', 'data-key': item.key }, [link, meta, el('div', { class: 'badges' }, badges(item))]);
+  const btn = el('button', { class: 'launch', text: '▶ claude' });
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const res = await fetch('/api/launch', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: item.key }),
+    });
+    const body = await res.json();
+    btn.textContent = res.ok ? `launched → ${body.target}` : `error: ${body.error}`;
+  });
+  return el('article', { class: 'card', 'data-key': item.key }, [link, meta, el('div', { class: 'badges' }, badges(item)), btn]);
 }
 
 function renderBoard(data) {

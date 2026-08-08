@@ -74,3 +74,34 @@ test('a path traversal attempt on static files 404s instead of escaping public/'
   const body = await res.json();
   assert.strictEqual(body.error, 'not found');
 });
+
+test('POST /api/launch starts a tmux session for a board item', async (t) => {
+  const launched = [];
+  const app = createApp({
+    config: { ...CFG, sources: { ...CFG.sources, github: { enabled: true, repoPaths: { 'a/b': '/tmp' } } },
+      launch: { session: 'mainsession', defaultCwd: '/', promptTemplate: 'do {key}' } },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' }],
+      jira: async () => [],
+    },
+    tmux: { launch: async (run, opts) => { launched.push(opts); return { target: 'mainsession:5', attach: "tmux attach -t 'mainsession:5'" }; } },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  await fetch(`http://127.0.0.1:${port}/api/board`); // populate board cache
+  const res = await fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
+  });
+  assert.strictEqual(res.status, 201);
+  const body = await res.json();
+  assert.strictEqual(body.target, 'mainsession:5');
+  assert.strictEqual(launched[0].cwd, '/tmp');        // repoPaths mapping
+  assert.strictEqual(launched[0].prompt, 'do a/b#2'); // template filled
+
+  const missing = await fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'nope' }),
+  });
+  assert.strictEqual(missing.status, 404);
+});
