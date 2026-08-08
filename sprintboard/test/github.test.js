@@ -42,6 +42,10 @@ test('classifyCI verdicts', () => {
   assert.strictEqual(classifyCI([{ state: 'FAILURE' }]), 'failing');
 });
 
+test('classifyCI treats unknown-shaped entries conservatively as pending', () => {
+  assert.strictEqual(classifyCI([{}]), 'pending');
+});
+
 test('fetchMyPRs enriches each PR via gh pr view', async () => {
   const searchOut = JSON.stringify([{
     number: 7, title: 'My PR', url: 'https://github.com/acme/widgets/pull/7',
@@ -68,4 +72,33 @@ test('fetchMyPRs filters by repos allowlist when non-empty', async () => {
   const fakeRun = async (cmd, args) => (args[0] === 'search' ? searchOut : viewOut);
   const items = await fetchMyPRs(fakeRun, { repos: ['acme/keep'] });
   assert.deepStrictEqual(items.map((i) => i.repo), ['acme/keep']);
+});
+
+test('fetchMyPRs degrades gracefully on per-item enrichment failure', async () => {
+  const searchOut = JSON.stringify([
+    { number: 1, title: 'good', url: 'u1', repository: { nameWithOwner: 'acme/repo' }, updatedAt: 't1', isDraft: false },
+    { number: 2, title: 'bad', url: 'u2', repository: { nameWithOwner: 'acme/repo' }, updatedAt: 't2', isDraft: false },
+  ]);
+  const viewOutSuccess = JSON.stringify({
+    mergeable: 'MERGEABLE', reviewDecision: 'APPROVED',
+    statusCheckRollup: [{ conclusion: 'SUCCESS' }],
+  });
+  let callCount = 0;
+  const fakeRun = async (cmd, args) => {
+    if (args[0] === 'search') return searchOut;
+    // First pr view succeeds, second fails
+    callCount++;
+    if (callCount === 1) return viewOutSuccess;
+    throw new Error('gh pr view failed');
+  };
+  const items = await fetchMyPRs(fakeRun, { repos: [] });
+  assert.strictEqual(items.length, 2);
+  // Successful enrichment
+  assert.strictEqual(items[0].ci, 'passing');
+  assert.strictEqual(items[0].reviewDecision, 'APPROVED');
+  assert.strictEqual(items[0].mergeable, 'MERGEABLE');
+  // Failed enrichment with degraded defaults
+  assert.strictEqual(items[1].ci, 'none');
+  assert.strictEqual(items[1].reviewDecision, '');
+  assert.strictEqual(items[1].mergeable, 'UNKNOWN');
 });

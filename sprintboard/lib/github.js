@@ -39,15 +39,24 @@ async function fetchMyPRs(run, { repos = [] } = {}) {
   let items = JSON.parse(out).map(toItem);
   if (repos.length > 0) items = items.filter((i) => repos.includes(i.repo));
   return Promise.all(items.map(async (item) => {
-    const detail = JSON.parse(await run('gh', [
-      'pr', 'view', item.url, '--json', 'mergeable,reviewDecision,statusCheckRollup',
-    ]));
-    return {
-      ...item,
-      ci: classifyCI(detail.statusCheckRollup),
-      reviewDecision: detail.reviewDecision || '',
-      mergeable: detail.mergeable || 'UNKNOWN',
-    };
+    try {
+      const detail = JSON.parse(await run('gh', [
+        'pr', 'view', item.url, '--json', 'mergeable,reviewDecision,statusCheckRollup',
+      ]));
+      return {
+        ...item,
+        ci: classifyCI(detail.statusCheckRollup),
+        reviewDecision: detail.reviewDecision || '',
+        mergeable: detail.mergeable || 'UNKNOWN',
+      };
+    } catch (err) {
+      return {
+        ...item,
+        ci: 'none',
+        reviewDecision: '',
+        mergeable: 'UNKNOWN',
+      };
+    }
   }));
 }
 
