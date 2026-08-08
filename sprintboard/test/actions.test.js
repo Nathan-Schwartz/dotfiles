@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { matches, viableActions } = require('../lib/actions.js');
+const { matches, viableActions, fillTemplate } = require('../lib/actions.js');
 
 test('matches: empty match matches any item', () => {
   assert.strictEqual(matches({}, { key: 'PROJ-1' }), true);
@@ -43,4 +43,26 @@ test('viableActions returns matching action names in config order', () => {
   assert.deepStrictEqual(viableActions(actions, { type: 'jira' }), ['work-on', 'jira-only']);
   assert.deepStrictEqual(viableActions([], { type: 'jira' }), []);
   assert.deepStrictEqual(viableActions(undefined, { type: 'jira' }), []);
+});
+
+test('fillTemplate substitutes any item field', () => {
+  const out = fillTemplate('review {repo}#{number}: "{title}" ({url})', {
+    repo: 'a/b', number: 7, title: 'T', url: 'https://x',
+  });
+  assert.strictEqual(out, 'review a/b#7: "T" (https://x)');
+});
+
+test('fillTemplate stringifies non-string values including false', () => {
+  assert.strictEqual(fillTemplate('draft={isDraft} n={number}', { isDraft: false, number: 0 }), 'draft=false n=0');
+});
+
+test('fillTemplate throws naming every missing or empty placeholder', () => {
+  assert.throws(
+    () => fillTemplate('n {number} p {priority}', { key: 'PROJ-1', priority: '' }),
+    (e) => e.message.includes('{number}') && e.message.includes('{priority}'),
+  );
+});
+
+test('fillTemplate leaves brace-less text untouched', () => {
+  assert.strictEqual(fillTemplate('no placeholders here', {}), 'no placeholders here');
 });

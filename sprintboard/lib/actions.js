@@ -17,4 +17,22 @@ function viableActions(actions, item) {
   return (actions || []).filter((a) => matches(a.match, item)).map((a) => a.name);
 }
 
-module.exports = { matches, viableActions };
+// Strict interpolation: every placeholder must resolve to a non-empty value.
+// Launching a claude session with a mangled prompt costs more than failing loudly.
+function fillTemplate(tpl, item) {
+  const missing = [];
+  const out = tpl.replace(/\{([A-Za-z0-9_]+)\}/g, (_, field) => {
+    const v = item[field];
+    if (v === undefined || v === null || String(v) === '') {
+      missing.push(field);
+      return '';
+    }
+    return String(v);
+  });
+  if (missing.length > 0) {
+    throw new Error(`unresolved placeholders: ${missing.map((f) => `{${f}}`).join(', ')}`);
+  }
+  return out;
+}
+
+module.exports = { matches, viableActions, fillTemplate };
