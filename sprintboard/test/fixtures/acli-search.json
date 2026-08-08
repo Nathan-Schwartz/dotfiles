@@ -1,0 +1,18 @@
+[
+  {
+    "key": "PROJ-101",
+    "summary": "Flat-shaped item",
+    "status": "In Progress",
+    "priority": "High",
+    "issuetype": "Task"
+  },
+  {
+    "key": "PROJ-102",
+    "fields": {
+      "summary": "Nested REST-shaped item",
+      "status": { "name": "To Do" },
+      "priority": { "name": "Medium" },
+      "issuetype": { "name": "Bug" }
+    }
+  }
+]
