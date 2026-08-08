@@ -16,3 +16,9 @@ main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr
 .badge.muted { color: var(--muted); }
 .error { color: var(--bad); padding: 0 1rem; }
 .launch { margin-top: 0.35rem; font-size: 0.75rem; cursor: pointer; }
+#sessions { padding: 0 1rem 2rem; }
+#sessions h2 { font-size: 0.9rem; border-bottom: 1px solid var(--muted); padding-bottom: 0.25rem; }
+.session { margin-bottom: 0.35rem; }
+.session.dead { opacity: 0.5; }
+.session code { display: block; color: var(--muted); font-size: 0.75rem; user-select: all; }
+#session-tail { background: var(--card); padding: 0.75rem; border-radius: 6px; overflow-x: auto; min-height: 6rem; }

@@ -79,3 +79,26 @@ async function load(refresh) {
 
 document.getElementById('refresh').addEventListener('click', () => load(true));
 load(false);
+
+let tailTarget = null;
+
+async function refreshSessions() {
+  const list = await (await fetch('/api/sessions')).json();
+  const box = document.getElementById('session-list');
+  box.replaceChildren(...list.map((s) => {
+    const row = el('div', { class: `session ${s.alive ? '' : 'dead'}` }, [
+      el('button', { class: 'tail-btn', text: `${s.key} @ ${s.target}${s.alive ? '' : ' (ended)'}` }),
+      el('code', { text: s.attach }),
+    ]);
+    row.querySelector('button').addEventListener('click', () => { tailTarget = s.target; });
+    return row;
+  }));
+  if (tailTarget) {
+    const res = await fetch(`/api/sessions/tail?target=${encodeURIComponent(tailTarget)}`);
+    const body = await res.json();
+    document.getElementById('session-tail').textContent = res.ok ? body.lines : body.error;
+  }
+}
+
+setInterval(refreshSessions, 2000);
+refreshSessions();

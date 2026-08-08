@@ -84,6 +84,25 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
     return sendJSON(res, 201, record);
   }
 
+  async function handleSessions(res) {
+    const withAlive = await Promise.all(sessions.map(async (s) => ({
+      ...s,
+      alive: await tmux.tail(run, s.target, 1).then(() => true, () => false),
+    })));
+    return sendJSON(res, 200, withAlive);
+  }
+
+  async function handleTail(url, res) {
+    const target = url.searchParams.get('target');
+    const record = sessions.find((s) => s.target === target);
+    try {
+      const lines = await tmux.tail(run, target, 80);
+      return sendJSON(res, 200, { target, attach: record ? record.attach : '', lines });
+    } catch (e) {
+      return sendJSON(res, 410, { error: `window ${target} is gone: ${e.message}` });
+    }
+  }
+
   return http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     try {
@@ -91,6 +110,8 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
         return sendJSON(res, 200, await board(url.searchParams.has('refresh')));
       }
       if (req.method === 'POST' && url.pathname === '/api/launch') return await handleLaunch(req, res);
+      if (req.method === 'GET' && url.pathname === '/api/sessions') return await handleSessions(res);
+      if (req.method === 'GET' && url.pathname === '/api/sessions/tail') return await handleTail(url, res);
       if (req.method === 'GET') return sendStatic(res, url.pathname);
       return sendJSON(res, 405, { error: 'method not allowed' });
     } catch (e) {
