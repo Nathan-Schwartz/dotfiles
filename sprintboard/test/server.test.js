@@ -129,14 +129,22 @@ test('POST /api/launch with a malformed JSON body 500s without crashing the serv
 });
 
 test('sessions list and tail', async (t) => {
+  let launchCount = 0;
   const app = createApp({
     config: { ...CFG, launch: { session: 'm', defaultCwd: '/', promptTemplate: 'x {key}' } },
     fetchers: {
       reviewsRequested: async () => [], jira: async () => [],
-      myPRs: async () => [{ key: 'a/b#2', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' }],
+      myPRs: async () => [
+        { key: 'a/b#2', type: 'pr', repo: 'a/b', title: 'T', url: 'https://x' },
+        { key: 'a/b#3', type: 'pr', repo: 'a/b', title: 'T2', url: 'https://y' },
+      ],
     },
     tmux: {
-      launch: async () => ({ target: 'm:5', attach: "tmux attach -t 'm:5'" }),
+      launch: async () => {
+        launchCount += 1;
+        const target = launchCount === 1 ? 'm:5' : 'm:9';
+        return { target, attach: `tmux attach -t '${target}'` };
+      },
       tail: async (run, target) => {
         if (target === 'm:5') return 'claude output here\n';
         throw new Error("can't find window");
@@ -150,10 +158,18 @@ test('sessions list and tail', async (t) => {
   await fetch(`http://127.0.0.1:${port}/api/launch`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
   });
+  await fetch(`http://127.0.0.1:${port}/api/launch`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#3' }),
+  });
 
-  const list = await (await fetch(`http://127.0.0.1:${port}/api/sessions`)).json();
-  assert.strictEqual(list.length, 1);
+  const listRes = await fetch(`http://127.0.0.1:${port}/api/sessions`);
+  assert.strictEqual(listRes.status, 200);
+  const list = await listRes.json();
+  assert.strictEqual(list.length, 2);
   assert.strictEqual(list[0].target, 'm:5');
+  assert.strictEqual(list[0].alive, true);
+  assert.strictEqual(list[1].target, 'm:9');
+  assert.strictEqual(list[1].alive, false);
 
   const tailRes = await fetch(`http://127.0.0.1:${port}/api/sessions/tail?target=${encodeURIComponent('m:5')}`);
   assert.strictEqual(tailRes.status, 200);
