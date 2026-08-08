@@ -33,7 +33,7 @@
     }
   ],
   "launch": {
-    "session": "mainsession",
+    "session": "sprintboard",
     "defaultCwd": "~"
   }
 }

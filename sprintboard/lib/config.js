@@ -20,7 +20,7 @@ const DEFAULTS = {
     },
   ],
   launch: {
-    session: 'mainsession',
+    session: 'sprintboard',
     defaultCwd: os.homedir(),
   },
 };

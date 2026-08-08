@@ -53,8 +53,9 @@ card. Fields by type — pr: `key`, `type`, `repo`, `number`, `title`, `url`,
 
 ## Launching sessions
 
-An action button opens a detached tmux window (session `mainsession`, same
-convention as `tmclaude`) running `claude` primed with the action's prompt.
+An action button opens a detached tmux window (session `sprintboard`, kept
+separate from `tmclaude`'s `mainsession`) running `claude` primed with the
+action's prompt.
 Working directory: action `cwd` if set, else `sources.github.repoPaths` for
 PR items, else `launch.defaultCwd`. The sessions panel tails the pane and
 shows the `tmux attach` command.

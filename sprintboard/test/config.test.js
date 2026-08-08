@@ -16,7 +16,7 @@ test('missing file returns defaults', () => {
   const cfg = loadConfig('/nonexistent/sprintboard.json');
   assert.strictEqual(cfg.port, 1337);
   assert.strictEqual(cfg.cacheSeconds, 300);
-  assert.strictEqual(cfg.launch.session, 'mainsession');
+  assert.strictEqual(cfg.launch.session, 'sprintboard');
 });
 
 test('user values deep-merge over defaults', () => {
@@ -48,12 +48,12 @@ test('mutating returned config does not mutate DEFAULTS', () => {
 
   // DEFAULTS should be unchanged
   assert.strictEqual(Object.keys(DEFAULTS.sources.github.repoPaths).length, 0);
-  assert.strictEqual(DEFAULTS.launch.session, 'mainsession');
+  assert.strictEqual(DEFAULTS.launch.session, 'sprintboard');
 
   // A fresh load should also return unchanged defaults
   const cfg2 = loadConfig('/nonexistent/sprintboard.json');
   assert.strictEqual(Object.keys(cfg2.sources.github.repoPaths).length, 0);
-  assert.strictEqual(cfg2.launch.session, 'mainsession');
+  assert.strictEqual(cfg2.launch.session, 'sprintboard');
 });
 
 test('DEFAULTS ship a catch-all action and no promptTemplate', () => {
