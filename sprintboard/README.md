@@ -21,7 +21,8 @@ No credentials are stored — auth lives entirely in the CLIs.
 ## Lanes
 
 - Needs my review — open PRs where my review is requested
-- My open PRs — all open PRs I authored
+- My open PRs — open PRs I authored (filtered to `repoPaths` repos when any are
+  configured; empty `repoPaths` shows all)
 - Changes requested / Failed CI / Mergeable — derived views of my open PRs
 - Jira — open work items for the configured project + user (or custom `jql`)
 
@@ -34,4 +35,4 @@ sessions panel tails the pane and shows the `tmux attach` command.
 
 ## Tests
 
-    node --test ~/dotfiles/sprintboard/test/
+    node --test ~/dotfiles/sprintboard/test/*.test.js

@@ -7,7 +7,7 @@ const DEFAULTS = {
   port: 1337,
   cacheSeconds: 300,
   sources: {
-    github: { enabled: true, repos: [], repoPaths: {} },
+    github: { enabled: true, repoPaths: {} },
     jira: { enabled: true, site: '', project: '', user: '', jql: '' },
   },
   launch: {

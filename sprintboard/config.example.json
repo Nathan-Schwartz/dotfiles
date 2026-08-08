@@ -4,7 +4,6 @@
   "sources": {
     "github": {
       "enabled": true,
-      "repos": [],
       "repoPaths": { "owner/repo": "~/code/repo" }
     },
     "jira": {

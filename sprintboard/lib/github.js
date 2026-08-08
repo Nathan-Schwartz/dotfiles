@@ -31,11 +31,12 @@ function classifyCI(rollup) {
   return 'passing';
 }
 
-async function fetchMyPRs(run, { repos = [] } = {}) {
+async function fetchMyPRs(run, { repoPaths = {} } = {}) {
   const out = await run('gh', [
     'search', 'prs', '--author=@me', '--state=open',
     '--limit', '50', '--json', SEARCH_FIELDS,
   ]);
+  const repos = Object.keys(repoPaths);
   let items = JSON.parse(out).map(toItem);
   if (repos.length > 0) items = items.filter((i) => repos.includes(i.repo));
   return Promise.all(items.map(async (item) => {
