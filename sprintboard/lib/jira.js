@@ -34,7 +34,7 @@ async function fetchJiraItems(run, cfg) {
   ]);
   const parsed = JSON.parse(out);
   const list = Array.isArray(parsed) ? parsed : parsed.results || parsed.workItems || parsed.issues || [];
-  return list.map((raw) => toItem(raw, cfg.site));
+  return list.map((raw) => toItem(raw, cfg.site)).filter((item) => item.key);
 }
 
 module.exports = { buildJQL, fetchJiraItems };

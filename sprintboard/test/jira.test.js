@@ -24,12 +24,40 @@ test('fetchJiraItems shapes real acli output into JiraItems', async () => {
   const items = await fetchJiraItems(fakeRun, { site: 'co.atlassian.net', project: 'PROJ', user: 'me@co.com', jql: '' });
   assert.strictEqual(calls[0][0], 'acli');
   assert.ok(calls[0][1].includes('--json'));
-  assert.ok(items.length > 0);
-  for (const it of items) {
-    assert.strictEqual(it.type, 'jira');
-    assert.match(it.key, /^[A-Z][A-Z0-9]*-\d+$/);
-    assert.strictEqual(typeof it.title, 'string');
-    assert.strictEqual(typeof it.status, 'string');
-    assert.ok(it.url.startsWith('https://co.atlassian.net/browse/'));
-  }
+  assert.strictEqual(items.length, 2);
+
+  // Verify flat-shaped item (PROJ-101)
+  const flat = items.find(it => it.key === 'PROJ-101');
+  assert.ok(flat);
+  assert.strictEqual(flat.type, 'jira');
+  assert.strictEqual(flat.title, 'Flat-shaped item');
+  assert.strictEqual(flat.status, 'In Progress');
+  assert.strictEqual(flat.priority, 'High');
+  assert.strictEqual(flat.issuetype, 'Task');
+  assert.strictEqual(flat.url, 'https://co.atlassian.net/browse/PROJ-101');
+
+  // Verify nested REST-shaped item (PROJ-102)
+  const nested = items.find(it => it.key === 'PROJ-102');
+  assert.ok(nested);
+  assert.strictEqual(nested.type, 'jira');
+  assert.strictEqual(nested.title, 'Nested REST-shaped item');
+  assert.strictEqual(nested.status, 'To Do');
+  assert.strictEqual(nested.priority, 'Medium');
+  assert.strictEqual(nested.issuetype, 'Bug');
+  assert.strictEqual(nested.url, 'https://co.atlassian.net/browse/PROJ-102');
+});
+
+test('fetchJiraItems filters out entries with no key', async () => {
+  const fixtureWithKeyless = JSON.stringify([
+    { key: 'PROJ-101', summary: 'Valid item', status: 'To Do', priority: 'High', issuetype: 'Task' },
+    { summary: 'Keyless item', status: 'In Progress', priority: 'Medium', issuetype: 'Bug' },
+    { key: 'PROJ-102', summary: 'Another valid item', status: 'Done', priority: 'Low', issuetype: 'Story' },
+  ]);
+  const fakeRun = async () => fixtureWithKeyless;
+  const items = await fetchJiraItems(fakeRun, { site: 'example.atlassian.net', project: 'TEST', user: 'x', jql: '' });
+
+  assert.strictEqual(items.length, 2, 'keyless entry should be filtered out');
+  assert.ok(items.every(it => it.key && it.key !== 'undefined'));
+  const keys = items.map(it => it.key);
+  assert.deepStrictEqual(keys, ['PROJ-101', 'PROJ-102']);
 });
