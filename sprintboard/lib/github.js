@@ -23,4 +23,32 @@ async function fetchReviewsRequested(run) {
   return JSON.parse(out).map(toItem);
 }
 
-module.exports = { fetchReviewsRequested, toItem, SEARCH_FIELDS };
+function classifyCI(rollup) {
+  if (!rollup || rollup.length === 0) return 'none';
+  const states = rollup.map((c) => String(c.conclusion || c.state || c.status || '').toUpperCase());
+  if (states.some((s) => s === 'FAILURE' || s === 'ERROR' || s === 'TIMED_OUT')) return 'failing';
+  if (states.some((s) => s === '' || s === 'PENDING' || s === 'IN_PROGRESS' || s === 'QUEUED' || s === 'EXPECTED')) return 'pending';
+  return 'passing';
+}
+
+async function fetchMyPRs(run, { repos = [] } = {}) {
+  const out = await run('gh', [
+    'search', 'prs', '--author=@me', '--state=open',
+    '--limit', '50', '--json', SEARCH_FIELDS,
+  ]);
+  let items = JSON.parse(out).map(toItem);
+  if (repos.length > 0) items = items.filter((i) => repos.includes(i.repo));
+  return Promise.all(items.map(async (item) => {
+    const detail = JSON.parse(await run('gh', [
+      'pr', 'view', item.url, '--json', 'mergeable,reviewDecision,statusCheckRollup',
+    ]));
+    return {
+      ...item,
+      ci: classifyCI(detail.statusCheckRollup),
+      reviewDecision: detail.reviewDecision || '',
+      mergeable: detail.mergeable || 'UNKNOWN',
+    };
+  }));
+}
+
+module.exports = { fetchReviewsRequested, fetchMyPRs, classifyCI, toItem, SEARCH_FIELDS };

@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { fetchReviewsRequested } = require('../lib/github.js');
+const { fetchReviewsRequested, fetchMyPRs, classifyCI } = require('../lib/github.js');
 
 const SEARCH_RESULT = JSON.stringify([
   {
@@ -30,4 +30,42 @@ test('fetchReviewsRequested shapes gh search output into PRItems', async () => {
 test('fetchReviewsRequested tolerates empty result', async () => {
   const items = await fetchReviewsRequested(async () => '[]');
   assert.deepStrictEqual(items, []);
+});
+
+test('classifyCI verdicts', () => {
+  assert.strictEqual(classifyCI(null), 'none');
+  assert.strictEqual(classifyCI([]), 'none');
+  assert.strictEqual(classifyCI([{ conclusion: 'SUCCESS' }, { conclusion: 'SKIPPED' }]), 'passing');
+  assert.strictEqual(classifyCI([{ conclusion: 'SUCCESS' }, { conclusion: 'FAILURE' }]), 'failing');
+  assert.strictEqual(classifyCI([{ conclusion: '', status: 'IN_PROGRESS' }]), 'pending');
+  // statusContext entries use `state` instead of `conclusion`
+  assert.strictEqual(classifyCI([{ state: 'FAILURE' }]), 'failing');
+});
+
+test('fetchMyPRs enriches each PR via gh pr view', async () => {
+  const searchOut = JSON.stringify([{
+    number: 7, title: 'My PR', url: 'https://github.com/acme/widgets/pull/7',
+    repository: { nameWithOwner: 'acme/widgets' },
+    updatedAt: '2026-08-02T00:00:00Z', isDraft: false,
+  }]);
+  const viewOut = JSON.stringify({
+    mergeable: 'MERGEABLE', reviewDecision: 'CHANGES_REQUESTED',
+    statusCheckRollup: [{ conclusion: 'FAILURE' }],
+  });
+  const fakeRun = async (cmd, args) => (args[0] === 'search' ? searchOut : viewOut);
+  const items = await fetchMyPRs(fakeRun, { repos: [] });
+  assert.strictEqual(items[0].ci, 'failing');
+  assert.strictEqual(items[0].reviewDecision, 'CHANGES_REQUESTED');
+  assert.strictEqual(items[0].mergeable, 'MERGEABLE');
+});
+
+test('fetchMyPRs filters by repos allowlist when non-empty', async () => {
+  const searchOut = JSON.stringify([
+    { number: 1, title: 'a', url: 'u1', repository: { nameWithOwner: 'acme/keep' }, updatedAt: 't', isDraft: false },
+    { number: 2, title: 'b', url: 'u2', repository: { nameWithOwner: 'acme/drop' }, updatedAt: 't', isDraft: false },
+  ]);
+  const viewOut = JSON.stringify({ mergeable: 'UNKNOWN', reviewDecision: '', statusCheckRollup: [] });
+  const fakeRun = async (cmd, args) => (args[0] === 'search' ? searchOut : viewOut);
+  const items = await fetchMyPRs(fakeRun, { repos: ['acme/keep'] });
+  assert.deepStrictEqual(items.map((i) => i.repo), ['acme/keep']);
 });
