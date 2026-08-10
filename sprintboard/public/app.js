@@ -6,6 +6,7 @@ const laneDefs = [
   { id: 'failed-ci', title: 'Failed CI' },
   { id: 'mergeable', title: 'Mergeable' },
   { id: 'my-prs', title: 'My open PRs' },
+  { id: 'team-prs', title: 'Team PRs' },
   { id: 'jira', title: 'Jira' },
 ];
 
@@ -26,6 +27,8 @@ function badges(item) {
     if (item.ci && item.ci !== 'none') out.push([`ci: ${item.ci}`, item.ci === 'failing' ? 'bad' : item.ci === 'passing' ? 'good' : 'muted']);
     if (item.reviewDecision) out.push([item.reviewDecision.toLowerCase().replace(/_/g, ' '), item.reviewDecision === 'CHANGES_REQUESTED' ? 'bad' : 'muted']);
     if (item.mergeable === 'CONFLICTING') out.push(['conflicts', 'bad']);
+    if (item.ticketKey) out.push([`${item.ticketKey}${item.ticketStatus ? `: ${item.ticketStatus}` : ''}`, 'muted']);
+    if (item.author) out.push([item.author, 'muted']);
   } else {
     if (item.status) out.push([item.status, 'muted']);
     if (item.priority) out.push([item.priority, 'muted']);

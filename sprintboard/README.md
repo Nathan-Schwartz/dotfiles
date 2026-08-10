@@ -25,6 +25,14 @@ No credentials are stored — auth lives entirely in the CLIs.
   when any are configured; empty `repoPaths` shows all)
 - Changes requested (`changes-requested`) / Failed CI (`failed-ci`) / Mergeable
   (`mergeable`) — derived views of my open PRs
+- Team PRs (`team-prs`) — every other open PR in the `repoPaths` repos
+  (anything not already on the board), fetched in one batched `gh pr list`
+  call per repo (up to 100 PRs each; a board error notes any repo that hits
+  the cap). Each PR maps to a Jira ticket when the branch name or title
+  contains the key of an open ticket in the configured `project` (team-wide
+  lookup, independent of `jql`). PRs without a matching key render
+  unmapped, and if the ticket lookup fails (e.g. `acli` unauthenticated)
+  the lane still renders with a board error noting mapping is unavailable.
 - Jira (`jira`) — open work items for the configured project + user (or
   custom `jql`)
 
@@ -47,9 +55,12 @@ everything. `lanes` (see above) is matchable, e.g. `{ "lanes": "failed-ci" }`.
 must resolve to a non-empty value or the launch fails with an error on the
 card. Fields by type — pr: `key`, `type`, `repo`, `number`, `title`, `url`,
 `updatedAt`, `isDraft`, `lanes` on every PR; `ci`, `reviewDecision`,
-`mergeable` only on authored-PR items (lanes `my-prs` / `changes-requested`
-/ `failed-ci` / `mergeable`), absent on `needs-review` items; jira: `key`,
-`type`, `title`, `status`, `priority`, `issuetype`, `url`, `lanes`.
+`mergeable` on authored-PR items (lanes `my-prs` / `changes-requested`
+/ `failed-ci` / `mergeable`) and on `team-prs` items, absent on
+`needs-review` items; `team-prs` items also carry `author`, `headRefName`,
+and `latestReviews`, plus `ticketKey` and `ticketStatus` only when mapped
+to a ticket; jira: `key`, `type`, `title`, `status`, `priority`,
+`issuetype`, `url`, `lanes`.
 
 ## Launching sessions
 
