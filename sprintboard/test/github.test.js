@@ -142,8 +142,21 @@ test('fetchRepoPRs makes one gh pr list call per repoPaths repo', async () => {
 test('fetchRepoPRs with empty repoPaths makes no calls and returns nothing', async () => {
   const calls = [];
   const out = await fetchRepoPRs(async (...a) => { calls.push(a); return '[]'; }, { repoPaths: {} });
-  assert.deepStrictEqual(out, { items: [], truncated: [] });
+  assert.deepStrictEqual(out, { items: [], truncated: [], failed: [] });
   assert.strictEqual(calls.length, 0);
+});
+
+test('fetchRepoPRs degrades per repo: one failing repo does not lose the others', async () => {
+  const fakeRun = async (cmd, args) => {
+    const repo = args[args.indexOf('-R') + 1];
+    if (repo === 'a/bad') throw new Error('gh exploded');
+    return LIST_RESULT;
+  };
+  const { items, truncated, failed } = await fetchRepoPRs(fakeRun, { repoPaths: { 'acme/widgets': '/w', 'a/bad': '/b' } });
+  assert.strictEqual(items.length, 1);
+  assert.strictEqual(items[0].repo, 'acme/widgets');
+  assert.deepStrictEqual(truncated, []);
+  assert.deepStrictEqual(failed, [{ repo: 'a/bad', message: 'gh exploded' }]);
 });
 
 test('fetchRepoPRs flattens multiple repos and defaults missing enrichment fields', async () => {

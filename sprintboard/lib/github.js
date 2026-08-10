@@ -70,12 +70,20 @@ const REPO_PR_LIMIT = 100;
 async function fetchRepoPRs(run, { repoPaths = {} } = {}) {
   const repos = Object.keys(repoPaths);
   const truncated = [];
+  const failed = [];
   const lists = await Promise.all(repos.map(async (repo) => {
-    const out = await run('gh', [
-      'pr', 'list', '-R', repo, '--state', 'open',
-      '--limit', String(REPO_PR_LIMIT), '--json', LIST_FIELDS,
-    ]);
-    const prs = JSON.parse(out);
+    let prs;
+    try {
+      const out = await run('gh', [
+        'pr', 'list', '-R', repo, '--state', 'open',
+        '--limit', String(REPO_PR_LIMIT), '--json', LIST_FIELDS,
+      ]);
+      prs = JSON.parse(out);
+    } catch (e) {
+      // One bad repo (auth, deletion, rate limit) must not lose the rest.
+      failed.push({ repo, message: e.message });
+      return [];
+    }
     if (prs.length >= REPO_PR_LIMIT) truncated.push(repo);
     return prs.map((pr) => ({
       ...toItem({ ...pr, repository: { nameWithOwner: repo } }),
@@ -87,7 +95,7 @@ async function fetchRepoPRs(run, { repoPaths = {} } = {}) {
       latestReviews: pr.latestReviews || [],
     }));
   }));
-  return { items: lists.flat(), truncated };
+  return { items: lists.flat(), truncated, failed };
 }
 
 module.exports = { fetchReviewsRequested, fetchMyPRs, fetchRepoPRs, classifyCI, toItem, SEARCH_FIELDS };
