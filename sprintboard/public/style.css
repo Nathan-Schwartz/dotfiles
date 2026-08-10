@@ -35,3 +35,12 @@ details.more summary::-webkit-details-marker { display: none; }
 .hide-btn:hover { color: var(--bad); }
 dialog#hide-confirm { background: var(--card); color: var(--fg); border: 1px solid var(--muted); border-radius: 6px; padding: 1rem; max-width: 24rem; }
 dialog#hide-confirm::backdrop { background: rgba(7, 54, 66, 0.4); }
+.hidden-group { margin-bottom: 0.5rem; }
+.hidden-group summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; list-style: none; }
+.hidden-group summary::-webkit-details-marker { display: none; }
+.hidden-group summary::before { content: '▸ '; }
+.hidden-group[open] summary::before { content: '▾ '; }
+.hidden-row { display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline; margin: 0.25rem 0; }
+.hidden-row a { color: var(--muted); font-size: 0.8rem; text-decoration: none; }
+.hidden-row a:hover { text-decoration: underline; }
+.unhide-btn { font-size: 0.7rem; cursor: pointer; }

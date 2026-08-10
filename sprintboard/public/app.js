@@ -129,6 +129,23 @@ function renderCard(item, allNames, prRows = []) {
   ]);
 }
 
+function renderHiddenGroup(hidden) {
+  return el('details', { class: 'hidden-group' }, [
+    el('summary', { text: `${hidden.length} hidden` }),
+    ...hidden.map((item) => {
+      const btn = el('button', { class: 'unhide-btn', text: 'unhide' });
+      btn.addEventListener('click', () => {
+        saveHidden(loadHidden().filter((u) => u !== item.url));
+        if (lastData) renderBoard(lastData);
+      });
+      return el('div', { class: 'hidden-row' }, [
+        el('a', { href: item.url, target: '_blank', text: `${item.repo}#${item.number} ${item.title}` }),
+        btn,
+      ]);
+    }),
+  ]);
+}
+
 // needs-my-review first, failing CI next, then most recently updated.
 function cardOrder(a, b) {
   const n = Number(!!b.needsMyReview) - Number(!!a.needsMyReview);
@@ -163,6 +180,7 @@ function renderBoard(data) {
     return el('section', { class: 'lane', id: `lane-${def.id}` }, [
       el('h2', { text: `${def.title} (${visible.length})` }),
       ...visible.map((i) => renderCard(i, allNames, (nested.get(i.key) || []).map((pr) => renderPRRow(pr, allNames)))),
+      ...(hidden.length > 0 ? [renderHiddenGroup(hidden)] : []),
     ]);
   }));
 }
