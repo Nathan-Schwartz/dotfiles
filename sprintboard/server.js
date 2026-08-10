@@ -177,6 +177,9 @@ function main() {
             // Mapping is best-effort: a Jira outage degrades badges, not the lane.
             warnings.push(`ticket mapping unavailable: ${e.message}`);
           }
+          if (tickets.length >= jira.TEAM_TICKET_LIMIT) {
+            warnings.push('ticket mapping may be incomplete: ticket query cap reached');
+          }
         }
         return { items: team.joinTickets(prs, tickets), warnings };
       },

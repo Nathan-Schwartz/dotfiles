@@ -1,5 +1,7 @@
 'use strict';
 
+const TEAM_TICKET_LIMIT = 100;
+
 function buildJQL({ project, user, jql }) {
   if (jql) return jql;
   return `project = ${project} AND assignee = "${user}" AND statusCategory != Done ORDER BY updated DESC`;
@@ -55,7 +57,7 @@ function buildTeamJQL({ project }) {
 
 // Mapping index for the team-prs join; deliberately independent of cfg.jql.
 async function fetchTeamTickets(run, cfg) {
-  return search(run, cfg, buildTeamJQL(cfg), 100);
+  return search(run, cfg, buildTeamJQL(cfg), TEAM_TICKET_LIMIT);
 }
 
-module.exports = { buildJQL, buildTeamJQL, fetchJiraItems, fetchTeamTickets };
+module.exports = { buildJQL, buildTeamJQL, fetchJiraItems, fetchTeamTickets, TEAM_TICKET_LIMIT };

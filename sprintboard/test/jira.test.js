@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { buildJQL, fetchJiraItems, buildTeamJQL, fetchTeamTickets } = require('../lib/jira.js');
+const { buildJQL, fetchJiraItems, buildTeamJQL, fetchTeamTickets, TEAM_TICKET_LIMIT } = require('../lib/jira.js');
 
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'acli-search.json'), 'utf8');
 
@@ -114,4 +114,12 @@ test('fetchTeamTickets ignores any user jql override (that only shapes the jira 
   await fetchTeamTickets(fakeRun, { site: 's', project: 'PROJ', user: 'u', jql: 'sprint in openSprints()' });
   const args = calls[0][1];
   assert.ok(args[args.indexOf('--jql') + 1].includes('project = PROJ'));
+});
+
+test('fetchTeamTickets limit matches the exported TEAM_TICKET_LIMIT', async () => {
+  const calls = [];
+  const fakeRun = async (cmd, args) => { calls.push([cmd, args]); return FIXTURE; };
+  await fetchTeamTickets(fakeRun, { site: 's', project: 'PROJ', user: 'u', jql: '' });
+  const args = calls[0][1];
+  assert.strictEqual(args[args.indexOf('--limit') + 1], String(TEAM_TICKET_LIMIT));
 });
