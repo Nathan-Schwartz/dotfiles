@@ -205,27 +205,9 @@ function main() {
       myPRs: () => (config.sources.github.enabled ? gh.fetchMyPRs(run, config.sources.github) : Promise.resolve([])),
       jira: () => (config.sources.jira.enabled && (config.sources.jira.project || config.sources.jira.jql)
         ? jira.fetchJiraItems(run, config.sources.jira) : Promise.resolve([])),
-      teamPRs: async () => {
-        if (!config.sources.github.enabled) return [];
-        const { items: prs, truncated, failed } = await gh.fetchRepoPRs(run, config.sources.github);
-        const warnings = [
-          ...failed.map(({ repo, message }) => `${repo}: fetch failed: ${message}`),
-          ...truncated.map((repo) => `${repo}: only the first 100 open PRs were fetched`),
-        ];
-        let tickets = [];
-        if (prs.length > 0 && config.sources.jira.enabled && config.sources.jira.project) {
-          try {
-            tickets = await jira.fetchTeamTickets(run, config.sources.jira);
-          } catch (e) {
-            // Mapping is best-effort: a Jira outage degrades badges, not the lane.
-            warnings.push(`ticket mapping unavailable: ${e.message}`);
-          }
-          if (tickets.length >= jira.TEAM_TICKET_LIMIT) {
-            warnings.push('ticket mapping may be incomplete: ticket query cap reached');
-          }
-        }
-        return { items: team.joinTickets(prs, tickets), warnings };
-      },
+      teamPRs: () => (config.sources.github.enabled
+        ? team.fetchTeamLane(run, config.sources)
+        : Promise.resolve([])),
     },
   });
   app.listen(config.port, '127.0.0.1', () => {

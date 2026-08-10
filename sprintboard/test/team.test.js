@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { extractTicketKey, joinTickets, extractCandidateKeys } = require('../lib/team.js');
+const { extractTicketKey, joinTickets, extractCandidateKeys, fetchTeamLane } = require('../lib/team.js');
 
 const KNOWN = new Set(['ENG-1234', 'PROJ-7']);
 
@@ -73,4 +73,76 @@ test('extractCandidateKeys lowercased config project key still matches', () => {
 test('extractCandidateKeys tolerates missing text fields and empty input', () => {
   assert.deepStrictEqual(extractCandidateKeys([], 'PROJ'), []);
   assert.deepStrictEqual(extractCandidateKeys([{ title: null, headRefName: undefined }], 'PROJ'), []);
+});
+
+function laneDeps({ prs = [], byKeys, bulk } = {}) {
+  const calls = { byKeys: [], bulk: 0 };
+  return {
+    calls,
+    deps: {
+      gh: { fetchRepoPRs: async () => ({ items: prs, truncated: [], failed: [] }) },
+      jira: {
+        TEAM_TICKET_LIMIT: 100,
+        fetchTicketsByKeys: async (run, cfg, keys) => { calls.byKeys.push(keys); if (byKeys instanceof Error) throw byKeys; return byKeys || []; },
+        fetchTeamTickets: async () => { calls.bulk++; if (bulk instanceof Error) throw bulk; return bulk || []; },
+      },
+    },
+  };
+}
+
+const SOURCES = { github: { enabled: true, repoPaths: {} }, jira: { enabled: true, site: 's', project: 'PROJ' } };
+
+test('fetchTeamLane joins via exact-key query, never the bulk query', async () => {
+  const prs = [{ key: 'a/b#1', headRefName: 'proj-12-x', title: 'T', url: 'u1' }];
+  const { calls, deps } = laneDeps({ prs, byKeys: [{ key: 'PROJ-12', status: 'QA' }] });
+  const { items, warnings } = await fetchTeamLane(async () => '', SOURCES, deps);
+  assert.deepStrictEqual(calls.byKeys, [['PROJ-12']]);
+  assert.strictEqual(calls.bulk, 0);
+  assert.strictEqual(items[0].ticketKey, 'PROJ-12');
+  assert.strictEqual(items[0].ticketStatus, 'QA');
+  assert.deepStrictEqual(warnings, []);
+});
+
+test('fetchTeamLane skips jira entirely when no PR references a project key', async () => {
+  const prs = [{ key: 'a/b#1', headRefName: 'chore/bump', title: 'Bump deps', url: 'u1' }];
+  const { calls, deps } = laneDeps({ prs });
+  const { warnings } = await fetchTeamLane(async () => '', SOURCES, deps);
+  assert.deepStrictEqual(calls.byKeys, []);
+  assert.strictEqual(calls.bulk, 0);
+  assert.deepStrictEqual(warnings, []);
+});
+
+test('fetchTeamLane falls back to the bulk query when the key query fails', async () => {
+  const prs = [{ key: 'a/b#1', headRefName: 'proj-12-x', title: 'T', url: 'u1' }];
+  const { calls, deps } = laneDeps({ prs, byKeys: new Error('key FAKE-1 does not exist'), bulk: [{ key: 'PROJ-12', status: 'QA' }] });
+  const { items, warnings } = await fetchTeamLane(async () => '', SOURCES, deps);
+  assert.strictEqual(calls.bulk, 1);
+  assert.strictEqual(items[0].ticketKey, 'PROJ-12');
+  assert.ok(warnings.some((w) => w.includes('falling back')));
+});
+
+test('fetchTeamLane fallback keeps the cap warning and survives a full jira outage', async () => {
+  const prs = [{ key: 'a/b#1', headRefName: 'proj-12-x', title: 'T', url: 'u1' }];
+  const capped = Array.from({ length: 100 }, (_, i) => ({ key: `PROJ-${i}`, status: 'x' }));
+  const withCap = laneDeps({ prs, byKeys: new Error('boom'), bulk: capped });
+  const r1 = await fetchTeamLane(async () => '', SOURCES, withCap.deps);
+  assert.ok(r1.warnings.some((w) => w.includes('ticket query cap reached')));
+
+  const allDown = laneDeps({ prs, byKeys: new Error('boom'), bulk: new Error('acli down') });
+  const r2 = await fetchTeamLane(async () => '', SOURCES, allDown.deps);
+  assert.strictEqual(r2.items.length, 1);
+  assert.strictEqual(r2.items[0].ticketKey, undefined);
+  assert.ok(r2.warnings.some((w) => w.includes('ticket mapping unavailable')));
+});
+
+test('fetchTeamLane surfaces repo fetch warnings unchanged', async () => {
+  const deps = {
+    gh: { fetchRepoPRs: async () => ({ items: [], truncated: ['a/big'], failed: [{ repo: 'a/bad', message: 'nope' }] }) },
+    jira: { TEAM_TICKET_LIMIT: 100, fetchTicketsByKeys: async () => [], fetchTeamTickets: async () => [] },
+  };
+  const { warnings } = await fetchTeamLane(async () => '', SOURCES, deps);
+  assert.deepStrictEqual(warnings, [
+    'a/bad: fetch failed: nope',
+    'a/big: only the first 100 open PRs were fetched',
+  ]);
 });
