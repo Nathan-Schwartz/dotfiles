@@ -318,3 +318,59 @@ test('action-level cwd beats repoPaths and defaultCwd', async (t) => {
   });
   assert.strictEqual(launched[0].cwd, '/deploy-cwd');
 });
+
+test('teamPRs items land in team-prs and dedupe against earlier sources', async (t) => {
+  const app = createApp({
+    config: CFG,
+    fetchers: {
+      reviewsRequested: async () => [{ key: 'a/b#1' }],
+      myPRs: async () => [{ key: 'a/b#2', ci: 'failing' }],
+      jira: async () => [],
+      teamPRs: async () => [
+        { key: 'a/b#2', ci: 'failing' },                             // dup of my PR
+        { key: 'a/b#9', ticketKey: 'PROJ-1', ticketStatus: 'QA' },   // teammate PR
+      ],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  const byKey = Object.fromEntries(body.items.map((i) => [i.key, i]));
+  assert.strictEqual(body.items.length, 3); // a/b#2 appears once
+  assert.deepStrictEqual(byKey['a/b#2'].lanes, ['my-prs', 'failed-ci']); // earlier source wins
+  assert.deepStrictEqual(byKey['a/b#9'].lanes, ['team-prs']);
+  assert.strictEqual(byKey['a/b#9'].ticketKey, 'PROJ-1');
+});
+
+test('board works when the teamPRs fetcher is absent', async (t) => {
+  const app = createApp({
+    config: CFG,
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const res = await fetch(`http://127.0.0.1:${port}/api/board`);
+  assert.strictEqual(res.status, 200);
+  assert.deepStrictEqual((await res.json()).errors, []);
+});
+
+test('fetcher warnings surface in errors without failing the lane', async (t) => {
+  const app = createApp({
+    config: CFG,
+    fetchers: {
+      reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [],
+      teamPRs: async () => ({
+        items: [{ key: 'a/b#9' }],
+        warnings: ['a/big: only the first 100 open PRs were fetched'],
+      }),
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.deepStrictEqual(body.errors, [
+    { source: 'github', message: 'a/big: only the first 100 open PRs were fetched' },
+  ]);
+  assert.strictEqual(body.items.length, 1);
+  assert.deepStrictEqual(body.items[0].lanes, ['team-prs']);
+});

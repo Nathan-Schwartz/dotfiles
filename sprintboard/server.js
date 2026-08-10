@@ -26,14 +26,23 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
       ['reviewsRequested', 'github', fetchers.reviewsRequested],
       ['myPRs', 'github', fetchers.myPRs],
       ['jira', 'jira', fetchers.jira],
+      ['teamPRs', 'github', fetchers.teamPRs], // last: loses key-dedup ties
     ];
-    const results = await Promise.allSettled(sources.map(([, , fn]) => fn()));
+    const results = await Promise.allSettled(
+      sources.map(([, , fn]) => (fn ? fn() : Promise.resolve([]))),
+    );
     const items = [];
     const errors = [];
+    const seen = new Set();
     results.forEach((r, i) => {
       const [sourceLane, source] = sources[i];
       if (r.status === 'fulfilled') {
-        for (const raw of r.value) {
+        // Fetchers return Item[] or { items, warnings } (partial success).
+        const { items: list = [], warnings = [] } = Array.isArray(r.value) ? { items: r.value } : r.value;
+        for (const w of warnings) errors.push({ source, message: w });
+        for (const raw of list) {
+          if (seen.has(raw.key)) continue;
+          seen.add(raw.key);
           const item = { ...raw, lanes: lanesFor(sourceLane, raw) };
           item.actions = viableActions(config.actions, item);
           items.push(item);
@@ -145,6 +154,7 @@ function main() {
   const config = loadConfig();
   const gh = require('./lib/github.js');
   const jira = require('./lib/jira.js');
+  const team = require('./lib/team.js');
   const app = createApp({
     config,
     fetchers: {
@@ -152,6 +162,24 @@ function main() {
       myPRs: () => (config.sources.github.enabled ? gh.fetchMyPRs(run, config.sources.github) : Promise.resolve([])),
       jira: () => (config.sources.jira.enabled && (config.sources.jira.project || config.sources.jira.jql)
         ? jira.fetchJiraItems(run, config.sources.jira) : Promise.resolve([])),
+      teamPRs: async () => {
+        if (!config.sources.github.enabled) return [];
+        const { items: prs, truncated, failed } = await gh.fetchRepoPRs(run, config.sources.github);
+        const warnings = [
+          ...failed.map(({ repo, message }) => `${repo}: fetch failed: ${message}`),
+          ...truncated.map((repo) => `${repo}: only the first 100 open PRs were fetched`),
+        ];
+        let tickets = [];
+        if (prs.length > 0 && config.sources.jira.enabled && config.sources.jira.project) {
+          try {
+            tickets = await jira.fetchTeamTickets(run, config.sources.jira);
+          } catch (e) {
+            // Mapping is best-effort: a Jira outage degrades badges, not the lane.
+            warnings.push(`ticket mapping unavailable: ${e.message}`);
+          }
+        }
+        return { items: team.joinTickets(prs, tickets), warnings };
+      },
     },
   });
   app.listen(config.port, '127.0.0.1', () => {
