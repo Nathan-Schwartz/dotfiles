@@ -599,3 +599,30 @@ test('a clean fetch prunes vanished urls from both lists; an errored fetch does 
   await fetch(`http://127.0.0.1:${port}/api/board?refresh=1`);
   assert.deepStrictEqual(store.state.hidden, ['https://gone/1', 'https://x/2']);
 });
+
+test('a failing state save degrades to in-memory state instead of taking the board down', async (t) => {
+  const app = createApp({
+    config: CFG,
+    store: {
+      state: { hidden: [], unhidden: [], board: null, migratedAt: '' },
+      save() { throw new Error('disk full'); },
+      path: '',
+    },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'T', url: 'https://x/2', isDraft: false, updatedAt: 'x' }],
+      jira: async () => [],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  const board = await fetch(`http://127.0.0.1:${port}/api/board`);
+  assert.strictEqual(board.status, 200);
+
+  const hideRes = await fetch(`http://127.0.0.1:${port}/api/hide`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
+  });
+  assert.strictEqual(hideRes.status, 200);
+  assert.deepStrictEqual((await hideRes.json()).hidden, ['https://x/2']);
+});

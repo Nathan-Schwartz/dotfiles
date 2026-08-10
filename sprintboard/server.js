@@ -23,6 +23,17 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
   // Inert default: an app built without a store keeps hide state in memory and
   // never touches disk.
   store ||= { state: structuredClone(stateLib.EMPTY), save() {}, path: '' };
+
+  function persist() {
+    try {
+      store.save();
+    } catch (e) {
+      // State persistence must never take the board down — degrade to
+      // in-memory state, matching the client's old localStorage guard.
+      console.warn(`sprintboard: state save failed: ${e.message}`);
+    }
+  }
+
   let cache = null; // { at: epoch-ms, payload }
   let identity = null; // { login, warning } — resolved once per process
   const sessions = [];
@@ -96,7 +107,7 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
       // merged PRs fall off both lists, but never off a partial (errored) feed.
       store.state.hidden = Hidden.pruneHidden(store.state.hidden, items, false);
       store.state.unhidden = Hidden.pruneHidden(store.state.unhidden, items, false);
-      store.save();
+      persist();
     }
     const payload = {
       fetchedAt: new Date().toISOString(),
@@ -167,7 +178,7 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     const next = apply(item, { hidden: store.state.hidden, unhidden: store.state.unhidden });
     store.state.hidden = next.hidden;
     store.state.unhidden = next.unhidden;
-    store.save();
+    persist();
     return sendJSON(res, 200, { hidden: next.hidden, unhidden: next.unhidden });
   }
 
