@@ -2,7 +2,15 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const http = require('node:http');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const { createApp } = require('../server.js');
+const { createStore } = require('../lib/state.js');
+
+function tmpStore() {
+  return createStore(path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'sb-srv-')), 'state.json'));
+}
 
 // fetch() cannot set a spoofed Host header (undici drops it), so use http.request directly.
 function requestWithHost(port, hostHeader) {
@@ -493,4 +501,101 @@ test('a config without a hide key (or with an empty one) hides nothing', async (
     const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
     assert.ok(!('hiddenByConfig' in body.items[0]));
   }
+});
+
+test('POST /api/hide and /api/unhide persist lists and echo them; board payload carries them', async (t) => {
+  const store = tmpStore();
+  const app = createApp({
+    config: CFG,
+    store,
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'T', url: 'https://x/2', isDraft: false, updatedAt: 'x' }],
+      jira: async () => [],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  const board1 = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.deepStrictEqual(board1.hidden, []);
+  assert.deepStrictEqual(board1.unhidden, []);
+
+  const hideRes = await fetch(`http://127.0.0.1:${port}/api/hide`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
+  });
+  assert.strictEqual(hideRes.status, 200);
+  assert.deepStrictEqual(await hideRes.json(), { hidden: ['https://x/2'], unhidden: [] });
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(store.path, 'utf8')).hidden, ['https://x/2']);
+
+  const board2 = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.deepStrictEqual(board2.hidden, ['https://x/2']);
+
+  const unhideRes = await fetch(`http://127.0.0.1:${port}/api/unhide`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#2' }),
+  });
+  assert.deepStrictEqual(await unhideRes.json(), { hidden: [], unhidden: [] });
+});
+
+test('POST /api/hide 404s for a key not on the board', async (t) => {
+  const app = createApp({
+    config: CFG, store: tmpStore(),
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  await fetch(`http://127.0.0.1:${port}/api/board`);
+  const res = await fetch(`http://127.0.0.1:${port}/api/hide`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'nope' }),
+  });
+  assert.strictEqual(res.status, 404);
+});
+
+test('hiding a config-hidden item routes to the unhidden-override removal, not the manual list', async (t) => {
+  const store = tmpStore();
+  store.state.unhidden = ['https://x/7'];
+  const app = createApp({
+    config: { ...CFG, hide: [{ author: 'dependabot' }] },
+    store,
+    fetchers: {
+      reviewsRequested: async () => [], jira: async () => [], myPRs: async () => [],
+      teamPRs: async () => [{ key: 'a/b#7', type: 'pr', title: 'bump', url: 'https://x/7', author: 'dependabot', isDraft: false, updatedAt: 'x' }],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  await fetch(`http://127.0.0.1:${port}/api/board`);
+  const res = await (await fetch(`http://127.0.0.1:${port}/api/hide`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: 'a/b#7' }),
+  })).json();
+  // applyHide: config-matched items need neither list — override cleared, manual list untouched.
+  assert.deepStrictEqual(res, { hidden: [], unhidden: [] });
+});
+
+test('a clean fetch prunes vanished urls from both lists; an errored fetch does not', async (t) => {
+  const store = tmpStore();
+  store.state.hidden = ['https://gone/1', 'https://x/2'];
+  store.state.unhidden = ['https://gone/2'];
+  store.save();
+  let fail = false;
+  const app = createApp({
+    config: { ...CFG, cacheSeconds: 0 },
+    store,
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'T', url: 'https://x/2', isDraft: false, updatedAt: 'x' }],
+      jira: async () => { if (fail) throw new Error('down'); return []; },
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  await fetch(`http://127.0.0.1:${port}/api/board`);
+  assert.deepStrictEqual(store.state.hidden, ['https://x/2']);
+  assert.deepStrictEqual(store.state.unhidden, []);
+
+  store.state.hidden = ['https://gone/1', 'https://x/2'];
+  fail = true;
+  await fetch(`http://127.0.0.1:${port}/api/board?refresh=1`);
+  assert.deepStrictEqual(store.state.hidden, ['https://gone/1', 'https://x/2']);
 });

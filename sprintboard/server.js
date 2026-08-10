@@ -9,6 +9,8 @@ const { run } = require('./lib/exec.js');
 const { lanesFor } = require('./lib/lanes.js');
 const { deriveFields } = require('./lib/derive.js');
 const { matches, viableActions, fillTemplate } = require('./lib/actions.js');
+const Hidden = require('./public/hidden.js');
+const stateLib = require('./lib/state.js');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -17,7 +19,10 @@ function expandTilde(p) {
   return p && p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p;
 }
 
-function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => '' }) {
+function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => '', store }) {
+  // Inert default: an app built without a store keeps hide state in memory and
+  // never touches disk.
+  store ||= { state: structuredClone(stateLib.EMPTY), save() {}, path: '' };
   let cache = null; // { at: epoch-ms, payload }
   let identity = null; // { login, warning } — resolved once per process
   const sessions = [];
@@ -86,6 +91,13 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
       // rules must see derived fields (mine, stage, author), hence run last.
       if (matches(config.hide || [], item)) item.hiddenByConfig = true;
     }
+    if (errors.length === 0) {
+      // Server-side prune replaces the client's render-time prune: closed or
+      // merged PRs fall off both lists, but never off a partial (errored) feed.
+      store.state.hidden = Hidden.pruneHidden(store.state.hidden, items, false);
+      store.state.unhidden = Hidden.pruneHidden(store.state.unhidden, items, false);
+      store.save();
+    }
     const payload = {
       fetchedAt: new Date().toISOString(),
       items,
@@ -148,6 +160,17 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     return sendJSON(res, 201, record);
   }
 
+  async function handleHideToggle(req, res, apply) {
+    const { key } = await readBody(req);
+    const item = findItem(key);
+    if (!item) return sendJSON(res, 404, { error: `no board item with key ${key}` });
+    const next = apply(item, { hidden: store.state.hidden, unhidden: store.state.unhidden });
+    store.state.hidden = next.hidden;
+    store.state.unhidden = next.unhidden;
+    store.save();
+    return sendJSON(res, 200, { hidden: next.hidden, unhidden: next.unhidden });
+  }
+
   async function handleSessions(res) {
     const withAlive = await Promise.all(sessions.map(async (s) => ({
       ...s,
@@ -174,8 +197,13 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     const url = new URL(req.url, 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/api/board') {
-        return sendJSON(res, 200, await board(url.searchParams.has('refresh')));
+        // Attached at the route layer, not baked into the cached payload: the
+        // lists change on every hide click, the cache does not.
+        const payload = await board(url.searchParams.has('refresh'));
+        return sendJSON(res, 200, { ...payload, hidden: store.state.hidden, unhidden: store.state.unhidden });
       }
+      if (req.method === 'POST' && url.pathname === '/api/hide') return await handleHideToggle(req, res, Hidden.applyHide);
+      if (req.method === 'POST' && url.pathname === '/api/unhide') return await handleHideToggle(req, res, Hidden.applyUnhide);
       if (req.method === 'POST' && url.pathname === '/api/launch') return await handleLaunch(req, res);
       if (req.method === 'GET' && url.pathname === '/api/sessions') return await handleSessions(res);
       if (req.method === 'GET' && url.pathname === '/api/sessions/tail') return await handleTail(url, res);
@@ -200,6 +228,7 @@ function main() {
   const app = createApp({
     config,
     getLogin,
+    store: stateLib.createStore(),
     fetchers: {
       reviewsRequested: () => (config.sources.github.enabled ? gh.fetchReviewsRequested(run) : Promise.resolve([])),
       myPRs: () => (config.sources.github.enabled ? gh.fetchMyPRs(run, config.sources.github) : Promise.resolve([])),
