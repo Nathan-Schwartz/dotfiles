@@ -256,7 +256,7 @@ test('POST /api/launch 500s when tmux.launch rejects, without crashing the serve
   assert.strictEqual(board.status, 200);
 });
 
-test('POST /api/launch rejects unknown, non-viable, and non-interpolable actions', async (t) => {
+test('POST /api/launch allows non-matching actions (escape hatch) but rejects unknown and non-interpolable', async (t) => {
   const app = createApp({
     config: {
       ...CFG,
@@ -282,7 +282,8 @@ test('POST /api/launch rejects unknown, non-viable, and non-interpolable actions
   });
 
   assert.strictEqual((await post({ key: 'PROJ-1', action: 'nope' })).status, 404);
-  assert.strictEqual((await post({ key: 'PROJ-1', action: 'pr-only' })).status, 409);
+  const hatch = await post({ key: 'PROJ-1', action: 'pr-only' });
+  assert.strictEqual(hatch.status, 201); // escape hatch: non-matching actions launch
 
   const bad = await post({ key: 'PROJ-1', action: 'needs-number' });
   assert.strictEqual(bad.status, 400);
@@ -373,4 +374,69 @@ test('fetcher warnings surface in errors without failing the lane', async (t) =>
   ]);
   assert.strictEqual(body.items.length, 1);
   assert.deepStrictEqual(body.items[0].lanes, ['team-prs']);
+});
+
+test('duplicate keys merge-fill: first source wins conflicts, absent fields fill in', async (t) => {
+  const app = createApp({
+    config: CFG,
+    fetchers: {
+      reviewsRequested: async () => [{ key: 'a/b#1', type: 'pr', title: 'T', url: 'u', isDraft: false, updatedAt: 'x' }],
+      myPRs: async () => [], jira: async () => [],
+      teamPRs: async () => [{
+        key: 'a/b#1', type: 'pr', title: 'OTHER', url: 'u', isDraft: false, updatedAt: 'x',
+        ci: 'failing', mergeable: 'MERGEABLE', author: 'teammate', latestReviews: [],
+      }],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.strictEqual(body.items.length, 1);
+  const it = body.items[0];
+  assert.strictEqual(it.title, 'T');           // first source wins conflicts
+  assert.strictEqual(it.ci, 'failing');        // filled from the richer duplicate
+  assert.strictEqual(it.source, 'reviewsRequested');
+  assert.deepStrictEqual(it.lanes, ['needs-review']);
+  assert.strictEqual(it.stage, 'in-review');   // mergeable but ci failing
+  assert.strictEqual(it.ciFailing, true);
+  assert.strictEqual(it.needsMyReview, true);
+});
+
+test('items carry stage and derived fields; payload lists actionNames', async (t) => {
+  const app = createApp({
+    config: { ...CFG, actions: [{ name: 'work-on', match: {}, prompt: 'do {key}' }, { name: 'fix-ci', match: { ciFailing: true }, prompt: 'f {key}' }] },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'M', url: 'u', isDraft: false, mergeable: 'MERGEABLE', ci: 'passing', updatedAt: 'x' }],
+      jira: async () => [{ key: 'PROJ-1', type: 'jira', title: 'J', url: 'u', status: 'In Progress', assignee: '' }],
+      teamPRs: async () => [],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.deepStrictEqual(body.actionNames, ['work-on', 'fix-ci']);
+  const byKey = Object.fromEntries(body.items.map((i) => [i.key, i]));
+  assert.strictEqual(byKey['a/b#2'].stage, 'qa');
+  assert.strictEqual(byKey['a/b#2'].mine, true);
+  assert.deepStrictEqual(byKey['a/b#2'].actions, ['work-on']);
+  assert.strictEqual(byKey['PROJ-1'].stage, 'in-progress');
+  assert.strictEqual(byKey['PROJ-1'].unclaimed, true);
+  assert.ok(!('mine' in byKey['PROJ-1']));
+});
+
+test('getLogin failure surfaces one warning and leaves identity empty', async (t) => {
+  const app = createApp({
+    config: CFG,
+    getLogin: async () => { throw new Error('no gh auth'); },
+    fetchers: {
+      reviewsRequested: async () => [], jira: async () => [],
+      myPRs: async () => [], teamPRs: async () => [{ key: 'a/b#9', type: 'pr', title: 'x', url: 'u', author: 'someone', isDraft: false, updatedAt: 'x' }],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.ok(body.errors.some((e) => e.source === 'github' && e.message.includes('gh identity unavailable')));
+  assert.strictEqual(body.items[0].mine, false);
 });

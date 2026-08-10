@@ -7,7 +7,8 @@ const { loadConfig } = require('./lib/config.js');
 const tmuxLib = require('./lib/tmux.js');
 const { run } = require('./lib/exec.js');
 const { lanesFor } = require('./lib/lanes.js');
-const { matches, viableActions, fillTemplate } = require('./lib/actions.js');
+const { deriveFields } = require('./lib/derive.js');
+const { viableActions, fillTemplate } = require('./lib/actions.js');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -16,24 +17,33 @@ function expandTilde(p) {
   return p && p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p;
 }
 
-function createApp({ config, fetchers, tmux = tmuxLib }) {
+function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => '' }) {
   let cache = null; // { at: epoch-ms, payload }
+  let identity = null; // { login, warning } — resolved once per process
   const sessions = [];
 
   async function board(refresh) {
     if (!refresh && cache && Date.now() - cache.at < config.cacheSeconds * 1000) return cache.payload;
+    if (identity === null) {
+      try {
+        identity = { login: String(await getLogin()).trim(), warning: '' };
+      } catch (e) {
+        identity = { login: '', warning: `gh identity unavailable: ${e.message}` };
+      }
+    }
     const sources = [
       ['reviewsRequested', 'github', fetchers.reviewsRequested],
       ['myPRs', 'github', fetchers.myPRs],
       ['jira', 'jira', fetchers.jira],
-      ['teamPRs', 'github', fetchers.teamPRs], // last: loses key-dedup ties
+      ['teamPRs', 'github', fetchers.teamPRs], // last: loses merge-fill conflicts
     ];
     const results = await Promise.allSettled(
       sources.map(([, , fn]) => (fn ? fn() : Promise.resolve([]))),
     );
     const items = [];
     const errors = [];
-    const seen = new Set();
+    if (identity.warning) errors.push({ source: 'github', message: identity.warning });
+    const byKey = new Map();
     results.forEach((r, i) => {
       const [sourceLane, source] = sources[i];
       if (r.status === 'fulfilled') {
@@ -41,17 +51,40 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
         const { items: list = [], warnings = [] } = Array.isArray(r.value) ? { items: r.value } : r.value;
         for (const w of warnings) errors.push({ source, message: w });
         for (const raw of list) {
-          if (seen.has(raw.key)) continue;
-          seen.add(raw.key);
-          const item = { ...raw, lanes: lanesFor(sourceLane, raw) };
-          item.actions = viableActions(config.actions, item);
+          const existing = byKey.get(raw.key);
+          if (existing) {
+            // Merge-fill: the first source wins conflicts; later, field-richer
+            // duplicates fill the gaps (review-requested PRs gain ci/mergeable
+            // from the batched fetch, so they can stage on real data).
+            for (const [k, v] of Object.entries(raw)) {
+              if (existing[k] === undefined) existing[k] = v;
+            }
+            continue;
+          }
+          const item = { ...raw, source: sourceLane };
+          byKey.set(item.key, item);
           items.push(item);
         }
       } else {
         errors.push({ source, message: r.reason.message });
       }
     });
-    const payload = { fetchedAt: new Date().toISOString(), items, errors };
+    for (const item of items) {
+      item.lanes = lanesFor(item.source, item);
+      Object.assign(item, deriveFields(item, {
+        source: item.source,
+        login: identity.login,
+        jiraUser: config.sources.jira?.user || '',
+        stageMap: config.stageMap,
+      }));
+      item.actions = viableActions(config.actions, item);
+    }
+    const payload = {
+      fetchedAt: new Date().toISOString(),
+      items,
+      errors,
+      actionNames: (config.actions || []).map((a) => a.name),
+    };
     cache = { at: Date.now(), payload };
     return payload;
   }
@@ -88,9 +121,6 @@ function createApp({ config, fetchers, tmux = tmuxLib }) {
     if (!item) return sendJSON(res, 404, { error: `no board item with key ${key}` });
     const action = (config.actions || []).find((a) => a.name === actionName);
     if (!action) return sendJSON(res, 404, { error: `unknown action ${actionName}` });
-    if (!matches(action.match, item)) {
-      return sendJSON(res, 409, { error: `action ${actionName} is not viable for ${key}` });
-    }
     let prompt;
     try {
       prompt = fillTemplate(action.prompt, item);
@@ -155,8 +185,14 @@ function main() {
   const gh = require('./lib/github.js');
   const jira = require('./lib/jira.js');
   const team = require('./lib/team.js');
+  let loginPromise = null;
+  const getLogin = () => {
+    loginPromise ||= run('gh', ['api', 'user', '-q', '.login']).then((out) => out.trim());
+    return loginPromise;
+  };
   const app = createApp({
     config,
+    getLogin,
     fetchers: {
       reviewsRequested: () => (config.sources.github.enabled ? gh.fetchReviewsRequested(run) : Promise.resolve([])),
       myPRs: () => (config.sources.github.enabled ? gh.fetchMyPRs(run, config.sources.github) : Promise.resolve([])),

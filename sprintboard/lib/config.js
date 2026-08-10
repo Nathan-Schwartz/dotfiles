@@ -6,6 +6,7 @@ const path = require('node:path');
 const DEFAULTS = {
   port: 1337,
   cacheSeconds: 300,
+  stageMap: {},
   sources: {
     github: { enabled: true, repoPaths: {} },
     jira: { enabled: true, site: '', project: '', user: '', jql: '' },
