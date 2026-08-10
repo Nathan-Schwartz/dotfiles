@@ -119,3 +119,16 @@ test('deriveFields ciFailing tracks ci', () => {
   assert.strictEqual(deriveFields({ type: 'pr', ci: 'passing' }, { source: 'myPRs' }).ciFailing, false);
   assert.strictEqual(deriveFields({ type: 'pr' }, { source: 'myPRs' }).ciFailing, false);
 });
+
+test('deriveFields ticketRef: ticket key when mapped, none otherwise', () => {
+  assert.strictEqual(
+    deriveFields(
+      { type: 'pr', ticketKey: 'PROJ-7', ticketStatus: 'QA' },
+      { source: 'teamPRs' },
+    ).ticketRef,
+    'PROJ-7',
+  );
+  assert.strictEqual(deriveFields({ type: 'pr' }, { source: 'myPRs' }).ticketRef, 'none');
+  // jira items don't get the field — "missing field never matches" semantics
+  assert.ok(!('ticketRef' in deriveFields({ type: 'jira', status: 'To Do' }, {})));
+});

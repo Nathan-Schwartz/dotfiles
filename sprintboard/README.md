@@ -59,9 +59,10 @@ must resolve to a non-empty value or the launch fails with an error on the
 card. Shared fields: `lanes`, `stage` (todo / in-progress / in-review /
 qa), `source`. PR fields: `key`, `type`, `repo`, `number`, `title`, `url`,
 `updatedAt`, `isDraft`, `mine`, `approvedByMe`, `ciFailing`,
-`needsMyReview`; `ci`, `reviewDecision`, `mergeable`, `author`,
-`headRefName`, `latestReviews` when the data source provides them, and
-`ticketKey`/`ticketStatus` only when mapped to a ticket. Jira fields:
+`needsMyReview`, `ticketRef` (the mapped ticket's key, or `none`); `ci`,
+`reviewDecision`, `mergeable`, `author`, `headRefName`, `latestReviews`
+when the data source provides them, and `ticketKey`/`ticketStatus` only
+when mapped to a ticket. Jira fields:
 `key`, `type`, `title`, `status`, `priority`, `issuetype`, `assignee`,
 `unclaimed`, `claimedByMe`, `url`.
 

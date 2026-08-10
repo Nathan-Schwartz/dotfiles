@@ -55,6 +55,7 @@ function deriveFields(item, { source, login = '', jiraUser = '', stageMap } = {}
     } else {
       out.stage = prStage(item);
     }
+    out.ticketRef = item.ticketKey || 'none';
     out.mine = source === 'myPRs'
       || (login !== '' && !!item.author && item.author === login);
     out.approvedByMe = login !== '' && (item.latestReviews || []).some(
