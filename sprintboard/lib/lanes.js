@@ -5,6 +5,7 @@
 function lanesFor(source, item) {
   if (source === 'reviewsRequested') return ['needs-review'];
   if (source === 'jira') return ['jira'];
+  if (source === 'teamPRs') return ['team-prs'];
   if (source !== 'myPRs') return [];
   const lanes = ['my-prs'];
   if (item.reviewDecision === 'CHANGES_REQUESTED') lanes.push('changes-requested');

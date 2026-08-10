@@ -28,3 +28,7 @@ test('mergeable requires MERGEABLE, non-failing CI, and not draft', () => {
 test('unknown source yields no lanes', () => {
   assert.deepStrictEqual(lanesFor('nope', {}), []);
 });
+
+test('teamPRs items land in team-prs', () => {
+  assert.deepStrictEqual(lanesFor('teamPRs', { key: 'a/b#9' }), ['team-prs']);
+});
