@@ -31,7 +31,7 @@ function badges(item) {
     if (item.status) out.push([item.status, 'muted']);
     if (item.priority) out.push([item.priority, 'muted']);
   }
-  if (item.stageUnknown) out.push([`status: ${item.status || item.ticketStatus || '?'}`, 'muted']);
+  if (item.stageUnknown) out.push(['unknown status', 'muted']);
   return out.map(([text, cls]) => el('span', { class: `badge ${cls}`, text }));
 }
 
@@ -65,7 +65,7 @@ function actionsRow(item, allNames) {
   const kids = item.actions.map((n) => actionButton(item, n));
   if (rest.length > 0) {
     kids.push(el('details', { class: 'more' }, [
-      el('summary', { text: '⋯' }),
+      el('summary', { text: '⋯', title: 'all actions' }),
       el('div', { class: 'actions' }, rest.map((n) => actionButton(item, n))),
     ]));
   }

@@ -440,3 +440,15 @@ test('getLogin failure surfaces one warning and leaves identity empty', async (t
   assert.ok(body.errors.some((e) => e.source === 'github' && e.message.includes('gh identity unavailable')));
   assert.strictEqual(body.items[0].mine, false);
 });
+
+test('identity is not fetched when github is disabled', async (t) => {
+  const app = createApp({
+    config: { ...CFG, sources: { github: { enabled: false }, jira: { enabled: true } } },
+    getLogin: async () => { throw new Error('no gh'); },
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [], teamPRs: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.deepStrictEqual(body.errors, []);
+});

@@ -25,10 +25,14 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
   async function board(refresh) {
     if (!refresh && cache && Date.now() - cache.at < config.cacheSeconds * 1000) return cache.payload;
     if (identity === null) {
-      try {
-        identity = { login: String(await getLogin()).trim(), warning: '' };
-      } catch (e) {
-        identity = { login: '', warning: `gh identity unavailable: ${e.message}` };
+      if (config.sources.github && config.sources.github.enabled === false) {
+        identity = { login: '', warning: '' };
+      } else {
+        try {
+          identity = { login: String(await getLogin()).trim(), warning: '' };
+        } catch (e) {
+          identity = { login: '', warning: `gh identity unavailable: ${e.message}` };
+        }
       }
     }
     const sources = [
