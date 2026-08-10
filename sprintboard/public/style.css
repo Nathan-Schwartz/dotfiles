@@ -23,3 +23,11 @@ main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr
 .session code { display: block; color: var(--muted); font-size: 0.75rem; user-select: all; }
 #session-tail { background: var(--card); padding: 0.75rem; border-radius: 6px; overflow-x: auto; min-height: 6rem; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.badge.attn { background: var(--bad); color: var(--bg); border-color: var(--bad); }
+.card.attention, .pr-row.attention { border-left: 3px solid var(--bad); padding-left: 0.5rem; }
+.pr-row { border-top: 1px solid var(--muted); margin-top: 0.4rem; padding-top: 0.35rem; }
+.pr-row a { font-weight: 500; font-size: 0.85rem; color: var(--fg); text-decoration: none; }
+.pr-row a:hover { text-decoration: underline; }
+details.more { display: inline-block; }
+details.more summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; list-style: none; padding: 0 0.3rem; }
+details.more summary::-webkit-details-marker { display: none; }
