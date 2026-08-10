@@ -61,4 +61,22 @@ async function fetchTeamTickets(run, cfg) {
   return search(run, cfg, buildTeamJQL(cfg), TEAM_TICKET_LIMIT);
 }
 
-module.exports = { buildJQL, buildTeamJQL, fetchJiraItems, fetchTeamTickets, TEAM_TICKET_LIMIT };
+// Conservative chunk size: acli/JQL clause-length limits are undocumented,
+// and a bounded chunk keeps each query well under any plausible cap.
+const KEYS_PER_QUERY = 50;
+
+function buildKeysJQL(keys) {
+  return `key in (${keys.join(', ')})`;
+}
+
+// Reverse join: fetch exactly the tickets the board's PRs reference.
+async function fetchTicketsByKeys(run, cfg, keys) {
+  const out = [];
+  for (let i = 0; i < keys.length; i += KEYS_PER_QUERY) {
+    const chunk = keys.slice(i, i + KEYS_PER_QUERY);
+    out.push(...(await search(run, cfg, buildKeysJQL(chunk), chunk.length)));
+  }
+  return out;
+}
+
+module.exports = { buildJQL, buildTeamJQL, fetchJiraItems, fetchTeamTickets, TEAM_TICKET_LIMIT, buildKeysJQL, fetchTicketsByKeys, KEYS_PER_QUERY };

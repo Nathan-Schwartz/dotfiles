@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { buildJQL, fetchJiraItems, buildTeamJQL, fetchTeamTickets, TEAM_TICKET_LIMIT } = require('../lib/jira.js');
+const { buildJQL, fetchJiraItems, buildTeamJQL, fetchTeamTickets, TEAM_TICKET_LIMIT, buildKeysJQL, fetchTicketsByKeys, KEYS_PER_QUERY } = require('../lib/jira.js');
 
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'acli-search.json'), 'utf8');
 
@@ -144,4 +144,45 @@ test('search requests the assignee field from acli', async () => {
   for (const args of calls) {
     assert.ok(args[args.indexOf('--fields') + 1].includes('assignee'));
   }
+});
+
+test('buildKeysJQL builds a key in (...) clause', () => {
+  assert.strictEqual(buildKeysJQL(['PROJ-1', 'PROJ-22']), 'key in (PROJ-1, PROJ-22)');
+});
+
+test('fetchTicketsByKeys returns [] without querying when there are no keys', async () => {
+  let calls = 0;
+  const items = await fetchTicketsByKeys(async () => { calls++; return '[]'; }, { site: 's' }, []);
+  assert.strictEqual(calls, 0);
+  assert.deepStrictEqual(items, []);
+});
+
+test('fetchTicketsByKeys queries the exact keys with limit = key count', async () => {
+  const calls = [];
+  const fixture = JSON.stringify([{ key: 'PROJ-1', summary: 'a', status: 'To Do', priority: 'Low', issuetype: 'Task' }]);
+  const fakeRun = async (cmd, args) => { calls.push([cmd, args]); return fixture; };
+  const items = await fetchTicketsByKeys(fakeRun, { site: 'co.atlassian.net' }, ['PROJ-1', 'PROJ-2']);
+  assert.strictEqual(calls.length, 1);
+  assert.strictEqual(calls[0][0], 'acli');
+  const args = calls[0][1];
+  assert.strictEqual(args[args.indexOf('--jql') + 1], 'key in (PROJ-1, PROJ-2)');
+  assert.strictEqual(args[args.indexOf('--limit') + 1], '2');
+  assert.strictEqual(items.length, 1);
+  assert.strictEqual(items[0].url, 'https://co.atlassian.net/browse/PROJ-1');
+});
+
+test('fetchTicketsByKeys chunks queries at KEYS_PER_QUERY and concatenates results', async () => {
+  const keys = Array.from({ length: KEYS_PER_QUERY + 10 }, (_, i) => `PROJ-${i + 1}`);
+  const calls = [];
+  const fakeRun = async (cmd, args) => {
+    calls.push(args);
+    const jql = args[args.indexOf('--jql') + 1];
+    const first = jql.slice('key in ('.length).split(',')[0].trim();
+    return JSON.stringify([{ key: first, summary: 'x', status: 'To Do', priority: 'Low', issuetype: 'Task' }]);
+  };
+  const items = await fetchTicketsByKeys(fakeRun, { site: 's' }, keys);
+  assert.strictEqual(calls.length, 2);
+  assert.strictEqual(calls[0][calls[0].indexOf('--limit') + 1], String(KEYS_PER_QUERY));
+  assert.strictEqual(calls[1][calls[1].indexOf('--limit') + 1], '10');
+  assert.deepStrictEqual(items.map((i) => i.key), ['PROJ-1', `PROJ-${KEYS_PER_QUERY + 1}`]);
 });
