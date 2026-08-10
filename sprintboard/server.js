@@ -182,6 +182,24 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     return sendJSON(res, 200, { hidden: next.hidden, unhidden: next.unhidden });
   }
 
+  // One-time import of the client's legacy localStorage lists. The migratedAt
+  // stamp — not list emptiness alone — is what distinguishes "never migrated"
+  // from "deliberately cleared", so a stale browser can never resurrect
+  // entries the user has since unhidden.
+  async function handleMigrate(req, res) {
+    const body = await readBody(req);
+    const clean = (v) => (Array.isArray(v) ? v.filter((u) => typeof u === 'string') : []);
+    const s = store.state;
+    const fresh = !s.migratedAt && s.hidden.length === 0 && s.unhidden.length === 0;
+    if (fresh) {
+      s.hidden = clean(body.hidden);
+      s.unhidden = clean(body.unhidden);
+      s.migratedAt = new Date().toISOString();
+      persist();
+    }
+    return sendJSON(res, 200, { migrated: fresh, hidden: s.hidden, unhidden: s.unhidden });
+  }
+
   async function handleSessions(res) {
     const withAlive = await Promise.all(sessions.map(async (s) => ({
       ...s,
@@ -215,6 +233,7 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
       }
       if (req.method === 'POST' && url.pathname === '/api/hide') return await handleHideToggle(req, res, Hidden.applyHide);
       if (req.method === 'POST' && url.pathname === '/api/unhide') return await handleHideToggle(req, res, Hidden.applyUnhide);
+      if (req.method === 'POST' && url.pathname === '/api/migrate-hidden') return await handleMigrate(req, res);
       if (req.method === 'POST' && url.pathname === '/api/launch') return await handleLaunch(req, res);
       if (req.method === 'GET' && url.pathname === '/api/sessions') return await handleSessions(res);
       if (req.method === 'GET' && url.pathname === '/api/sessions/tail') return await handleTail(url, res);

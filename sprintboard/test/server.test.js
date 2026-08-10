@@ -626,3 +626,60 @@ test('a failing state save degrades to in-memory state instead of taking the boa
   assert.strictEqual(hideRes.status, 200);
   assert.deepStrictEqual((await hideRes.json()).hidden, ['https://x/2']);
 });
+
+test('migrate-hidden applies once, stamps migratedAt, then permanently no-ops', async (t) => {
+  const store = tmpStore();
+  const app = createApp({
+    config: CFG, store,
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const post = (body) => fetch(`http://127.0.0.1:${port}/api/migrate-hidden`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
+  });
+
+  const first = await (await post({ hidden: ['https://x/1'], unhidden: ['https://x/2'] })).json();
+  assert.strictEqual(first.migrated, true);
+  assert.deepStrictEqual(first.hidden, ['https://x/1']);
+  assert.ok(store.state.migratedAt);
+
+  // Intentionally cleared lists must NOT re-migrate: migratedAt gates forever.
+  store.state.hidden = [];
+  store.state.unhidden = [];
+  const second = await (await post({ hidden: ['https://stale/9'] })).json();
+  assert.strictEqual(second.migrated, false);
+  assert.deepStrictEqual(store.state.hidden, []);
+});
+
+test('migrate-hidden no-ops when server lists are already populated', async (t) => {
+  const store = tmpStore();
+  store.state.hidden = ['https://x/1'];
+  const app = createApp({
+    config: CFG, store,
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const res = await (await fetch(`http://127.0.0.1:${port}/api/migrate-hidden`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ hidden: ['https://other/3'] }),
+  })).json();
+  assert.strictEqual(res.migrated, false);
+  assert.deepStrictEqual(res.hidden, ['https://x/1']);
+});
+
+test('migrate-hidden drops non-string entries', async (t) => {
+  const store = tmpStore();
+  const app = createApp({
+    config: CFG, store,
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const res = await (await fetch(`http://127.0.0.1:${port}/api/migrate-hidden`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ hidden: ['https://x/1', 42, null], unhidden: 'not-an-array' }),
+  })).json();
+  assert.deepStrictEqual(res.hidden, ['https://x/1']);
+  assert.deepStrictEqual(res.unhidden, []);
+});
