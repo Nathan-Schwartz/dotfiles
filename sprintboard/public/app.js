@@ -31,7 +31,11 @@ function loadHidden() {
 }
 
 function saveHidden(urls) {
-  localStorage.setItem(HIDDEN_KEY, JSON.stringify(urls));
+  try {
+    localStorage.setItem(HIDDEN_KEY, JSON.stringify(urls));
+  } catch {
+    // localStorage unavailable or full — degrade to session-only persistence.
+  }
 }
 
 const hideDialog = document.getElementById('hide-confirm');
