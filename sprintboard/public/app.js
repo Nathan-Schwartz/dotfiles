@@ -17,43 +17,30 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
-const HIDDEN_KEY = 'sprintboard-hidden-prs';
-const UNHIDDEN_KEY = 'sprintboard-unhidden-prs';
 let lastData = null;
 let pendingHideItem = null;
 
-function loadList(key) {
+async function postHideToggle(endpoint, item) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(key) || '[]');
-    return Array.isArray(parsed) ? parsed : [];
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key: item.key }),
+    });
+    if (res.ok && lastData) {
+      const body = await res.json();
+      renderBoard({ ...lastData, hidden: body.hidden, unhidden: body.unhidden });
+    }
   } catch {
-    return [];
+    // Server unreachable — the click is lost; the next successful action syncs.
   }
-}
-
-function saveList(key, urls) {
-  try {
-    localStorage.setItem(key, JSON.stringify(urls));
-  } catch {
-    // localStorage unavailable or full — degrade to session-only persistence.
-  }
-}
-
-function loadLists() {
-  return { hidden: loadList(HIDDEN_KEY), unhidden: loadList(UNHIDDEN_KEY) };
-}
-
-function saveLists({ hidden, unhidden }) {
-  saveList(HIDDEN_KEY, hidden);
-  saveList(UNHIDDEN_KEY, unhidden);
 }
 
 const hideDialog = document.getElementById('hide-confirm');
-document.getElementById('hide-confirm-yes').addEventListener('click', () => {
-  if (pendingHideItem) saveLists(Hidden.applyHide(pendingHideItem, loadLists()));
+document.getElementById('hide-confirm-yes').addEventListener('click', async () => {
+  if (pendingHideItem) await postHideToggle('/api/hide', pendingHideItem);
   pendingHideItem = null;
   hideDialog.close();
-  if (lastData) renderBoard(lastData);
 });
 document.getElementById('hide-confirm-no').addEventListener('click', () => {
   pendingHideItem = null;
@@ -150,10 +137,7 @@ function renderHiddenGroup(hidden) {
     el('summary', { text: `${hidden.length} hidden` }),
     ...hidden.map((item) => {
       const btn = el('button', { class: 'unhide-btn', text: 'unhide' });
-      btn.addEventListener('click', () => {
-        saveLists(Hidden.applyUnhide(item, loadLists()));
-        if (lastData) renderBoard(lastData);
-      });
+      btn.addEventListener('click', () => postHideToggle('/api/unhide', item));
       return el('div', { class: 'hidden-row' }, [
         el('a', { href: item.url, target: '_blank', text: `${item.repo ? `${item.repo}#${item.number}` : item.key} ${item.title}` }),
         btn,
@@ -176,10 +160,8 @@ function renderBoard(data) {
   document.getElementById('fetched-at').textContent = `fetched ${new Date(data.fetchedAt).toLocaleTimeString()}`;
   const errBox = document.getElementById('errors');
   errBox.replaceChildren(...data.errors.map((e) => el('p', { class: 'error', text: `${e.source}: ${e.message}` })));
-  const hasErrors = data.errors.length > 0;
-  const hiddenUrls = Hidden.pruneHidden(loadList(HIDDEN_KEY), data.items, hasErrors);
-  const unhiddenUrls = Hidden.pruneHidden(loadList(UNHIDDEN_KEY), data.items, hasErrors);
-  saveLists({ hidden: hiddenUrls, unhidden: unhiddenUrls });
+  const hiddenUrls = data.hidden || [];
+  const unhiddenUrls = data.unhidden || [];
   const allNames = data.actionNames || [];
   const tickets = new Map(data.items.filter((i) => i.type === 'jira').map((t) => [t.key, t]));
   const nested = new Map(); // ticketKey -> PR items rendered inside that ticket's card
@@ -209,7 +191,33 @@ async function load(refresh) {
 }
 
 document.getElementById('refresh').addEventListener('click', () => load(true));
-load(false);
+
+async function migrateLocalStorage() {
+  const read = (k) => {
+    try {
+      const v = JSON.parse(localStorage.getItem(k) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch {
+      return [];
+    }
+  };
+  const hidden = read('sprintboard-hidden-prs');
+  const unhidden = read('sprintboard-unhidden-prs');
+  if (hidden.length === 0 && unhidden.length === 0) return;
+  try {
+    await fetch('/api/migrate-hidden', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ hidden, unhidden }),
+    });
+    localStorage.removeItem('sprintboard-hidden-prs');
+    localStorage.removeItem('sprintboard-unhidden-prs');
+  } catch {
+    // Server unreachable — keep localStorage so a later load can migrate.
+  }
+}
+
+migrateLocalStorage().then(() => load(false));
 
 let tailTarget = null;
 
