@@ -11,19 +11,22 @@ const SEARCH_RESULT = JSON.stringify([
     repository: { name: 'widgets', nameWithOwner: 'acme/widgets' },
     updatedAt: '2026-08-01T12:00:00Z',
     isDraft: false,
+    author: { login: 'dependabot[bot]' },
   },
 ]);
 
-test('fetchReviewsRequested shapes gh search output into PRItems', async () => {
+test('fetchReviewsRequested shapes gh search output into PRItems with normalized author', async () => {
   const calls = [];
   const fakeRun = async (cmd, args) => { calls.push([cmd, args]); return SEARCH_RESULT; };
   const items = await fetchReviewsRequested(fakeRun);
   assert.strictEqual(calls[0][0], 'gh');
   assert.ok(calls[0][1].includes('--review-requested=@me'));
+  const jsonArg = calls[0][1][calls[0][1].indexOf('--json') + 1];
+  assert.ok(jsonArg.includes('author'), 'search must request the author field');
   assert.deepStrictEqual(items, [{
     key: 'acme/widgets#42', type: 'pr', repo: 'acme/widgets', number: 42,
     title: 'Fix the flux capacitor', url: 'https://github.com/acme/widgets/pull/42',
-    updatedAt: '2026-08-01T12:00:00Z', isDraft: false,
+    updatedAt: '2026-08-01T12:00:00Z', isDraft: false, author: 'dependabot',
   }]);
 });
 
@@ -170,6 +173,18 @@ test('fetchRepoPRs flattens multiple repos and defaults missing enrichment field
   assert.strictEqual(items[0].reviewDecision, '');
   assert.strictEqual(items[0].mergeable, 'UNKNOWN');
   assert.deepStrictEqual(items[0].latestReviews, []);
+});
+
+// gh pr list (GraphQL) and gh search prs (REST) spell the same bot
+// differently: app/dependabot vs dependabot[bot]. Both normalize to the
+// bare slug so one config rule matches either fetch path.
+test('fetchRepoPRs normalizes app/-prefixed bot logins', async () => {
+  const out = JSON.stringify([{
+    number: 2, title: 'bump deps', url: 'u', updatedAt: 'x', isDraft: false,
+    author: { login: 'app/dependabot' },
+  }]);
+  const { items } = await fetchRepoPRs(async () => out, { repoPaths: { 'a/one': '/1' } });
+  assert.strictEqual(items[0].author, 'dependabot');
 });
 
 test('fetchRepoPRs flags repos whose result hit the fetch limit', async () => {

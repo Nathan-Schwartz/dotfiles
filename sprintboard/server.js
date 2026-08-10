@@ -8,7 +8,7 @@ const tmuxLib = require('./lib/tmux.js');
 const { run } = require('./lib/exec.js');
 const { lanesFor } = require('./lib/lanes.js');
 const { deriveFields } = require('./lib/derive.js');
-const { viableActions, fillTemplate } = require('./lib/actions.js');
+const { matches, viableActions, fillTemplate } = require('./lib/actions.js');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -82,6 +82,9 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
         stageMap: config.stageMap,
       }));
       item.actions = viableActions(config.actions, item);
+      // `|| []` matters: matches(undefined) is match-everything, and hide
+      // rules must see derived fields (mine, stage, author), hence run last.
+      if (matches(config.hide || [], item)) item.hiddenByConfig = true;
     }
     const payload = {
       fetchedAt: new Date().toISOString(),

@@ -7,6 +7,7 @@ const DEFAULTS = {
   port: 1337,
   cacheSeconds: 300,
   stageMap: {},
+  hide: [],
   sources: {
     github: { enabled: true, repoPaths: {} },
     jira: { enabled: true, site: '', project: '', user: '', jql: '' },

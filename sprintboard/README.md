@@ -66,6 +66,29 @@ when mapped to a ticket. Jira fields:
 `key`, `type`, `title`, `status`, `priority`, `issuetype`, `assignee`,
 `unclaimed`, `claimedByMe`, `url`.
 
+## Hiding items
+
+Cards can be hidden two ways; both land in a collapsed per-lane
+`N hidden` group where they stay expandable and unhide-able.
+
+- **Manually**: the `✕` on a PR card (persisted per browser in
+  localStorage, pruned when the PR closes).
+- **By config**: a top-level `hide` key — an array of match objects with
+  the same semantics as action `match`, evaluated after derived fields
+  exist, so anything listed above is usable:
+
+      "hide": [
+        { "mine": false, "isDraft": true },
+        { "author": ["dependabot", "renovate"] }
+      ]
+
+  An empty or absent `hide` hides nothing. Unhiding a config-hidden card
+  stores a per-browser override that outlives refreshes; its `✕` removes
+  the override so the rule applies again.
+
+Bot author logins are normalized across gh's two spellings
+(`dependabot[bot]` and `app/dependabot` both match `"dependabot"`).
+
 ## Launching sessions
 
 An action button opens a detached tmux window (session `sprintboard`, kept

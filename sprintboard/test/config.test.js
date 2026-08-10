@@ -69,3 +69,7 @@ test('a user actions array replaces the default actions entirely', () => {
   assert.strictEqual(merged.actions.length, 1);
   assert.strictEqual(merged.actions[0].name, 'mine');
 });
+
+test('DEFAULTS hide is an empty list (matches nothing)', () => {
+  assert.deepStrictEqual(DEFAULTS.hide, []);
+});

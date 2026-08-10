@@ -1,5 +1,12 @@
 'use strict';
-const SEARCH_FIELDS = 'number,title,url,repository,updatedAt,isDraft';
+const SEARCH_FIELDS = 'number,title,url,repository,updatedAt,isDraft,author';
+
+// gh search prs (REST) reports bots as "name[bot]" while gh pr list
+// (GraphQL) reports "app/name". Real usernames can't contain "/" or "[",
+// so stripping both markers yields one canonical spelling per author.
+function normalizeLogin(login) {
+  return String(login || '').replace(/^app\//, '').replace(/\[bot\]$/, '');
+}
 
 function toItem(pr) {
   const repo = pr.repository?.nameWithOwner || pr.repository?.name || '';
@@ -12,6 +19,7 @@ function toItem(pr) {
     url: pr.url,
     updatedAt: pr.updatedAt,
     isDraft: !!pr.isDraft,
+    author: normalizeLogin(pr.author?.login),
   };
 }
 
@@ -87,7 +95,6 @@ async function fetchRepoPRs(run, { repoPaths = {} } = {}) {
     if (prs.length >= REPO_PR_LIMIT) truncated.push(repo);
     return prs.map((pr) => ({
       ...toItem({ ...pr, repository: { nameWithOwner: repo } }),
-      author: pr.author?.login || '',
       headRefName: pr.headRefName || '',
       ci: classifyCI(pr.statusCheckRollup),
       reviewDecision: pr.reviewDecision || '',

@@ -452,3 +452,45 @@ test('identity is not fetched when github is disabled', async (t) => {
   const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
   assert.deepStrictEqual(body.errors, []);
 });
+
+test('config.hide marks matching items hiddenByConfig, leaving lanes and actions intact', async (t) => {
+  const app = createApp({
+    config: { ...CFG, hide: [{ author: 'dependabot' }, { mine: false, isDraft: true }] },
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'mine', url: 'u2', isDraft: true, updatedAt: 'x' }],
+      jira: async () => [],
+      teamPRs: async () => [
+        { key: 'a/b#7', type: 'pr', title: 'bump', url: 'u7', author: 'dependabot', isDraft: false, updatedAt: 'x' },
+        { key: 'a/b#8', type: 'pr', title: 'wip', url: 'u8', author: 'teammate', isDraft: true, updatedAt: 'x' },
+        { key: 'a/b#9', type: 'pr', title: 'ready', url: 'u9', author: 'teammate', isDraft: false, updatedAt: 'x' },
+      ],
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  const byKey = Object.fromEntries(body.items.map((i) => [i.key, i]));
+  assert.strictEqual(byKey['a/b#7'].hiddenByConfig, true);  // bot author
+  assert.strictEqual(byKey['a/b#8'].hiddenByConfig, true);  // someone else's draft
+  assert.ok(!('hiddenByConfig' in byKey['a/b#9']));         // teammate's real PR
+  assert.ok(!('hiddenByConfig' in byKey['a/b#2']));         // my own draft
+  assert.deepStrictEqual(byKey['a/b#7'].lanes, ['team-prs']); // hidden, not gone
+  assert.deepStrictEqual(byKey['a/b#7'].actions, ['work-on']);
+});
+
+test('a config without a hide key (or with an empty one) hides nothing', async (t) => {
+  for (const cfg of [CFG, { ...CFG, hide: [] }]) {
+    const app = createApp({
+      config: cfg,
+      fetchers: {
+        reviewsRequested: async () => [], jira: async () => [],
+        myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'T', url: 'u', isDraft: false, updatedAt: 'x' }],
+      },
+    });
+    const port = await listen(app);
+    t.after(() => app.close());
+    const body = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+    assert.ok(!('hiddenByConfig' in body.items[0]));
+  }
+});

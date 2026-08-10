@@ -18,44 +18,54 @@ function el(tag, attrs = {}, children = []) {
 }
 
 const HIDDEN_KEY = 'sprintboard-hidden-prs';
+const UNHIDDEN_KEY = 'sprintboard-unhidden-prs';
 let lastData = null;
-let pendingHideUrl = null;
+let pendingHideItem = null;
 
-function loadHidden() {
+function loadList(key) {
   try {
-    const parsed = JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]');
+    const parsed = JSON.parse(localStorage.getItem(key) || '[]');
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 }
 
-function saveHidden(urls) {
+function saveList(key, urls) {
   try {
-    localStorage.setItem(HIDDEN_KEY, JSON.stringify(urls));
+    localStorage.setItem(key, JSON.stringify(urls));
   } catch {
     // localStorage unavailable or full — degrade to session-only persistence.
   }
 }
 
+function loadLists() {
+  return { hidden: loadList(HIDDEN_KEY), unhidden: loadList(UNHIDDEN_KEY) };
+}
+
+function saveLists({ hidden, unhidden }) {
+  saveList(HIDDEN_KEY, hidden);
+  saveList(UNHIDDEN_KEY, unhidden);
+}
+
 const hideDialog = document.getElementById('hide-confirm');
 document.getElementById('hide-confirm-yes').addEventListener('click', () => {
-  if (pendingHideUrl) saveHidden([...loadHidden(), pendingHideUrl]);
-  pendingHideUrl = null;
+  if (pendingHideItem) saveLists(Hidden.applyHide(pendingHideItem, loadLists()));
+  pendingHideItem = null;
   hideDialog.close();
   if (lastData) renderBoard(lastData);
 });
 document.getElementById('hide-confirm-no').addEventListener('click', () => {
-  pendingHideUrl = null;
+  pendingHideItem = null;
   hideDialog.close();
 });
 
 function hideButton(item) {
-  const btn = el('button', { class: 'hide-btn', text: '✕', title: 'hide PR' });
+  const btn = el('button', { class: 'hide-btn', text: '✕', title: 'hide' });
   btn.addEventListener('click', () => {
-    pendingHideUrl = item.url;
+    pendingHideItem = item;
     document.getElementById('hide-confirm-title').textContent =
-      `${item.repo}#${item.number} ${item.title}`;
+      `${item.repo ? `${item.repo}#${item.number}` : item.key} ${item.title}`;
     hideDialog.showModal();
   });
   return btn;
@@ -127,7 +137,9 @@ function renderCard(item, allNames, prRows = []) {
   const link = el('a', { href: item.url, target: '_blank', text: item.title });
   const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
   const cls = `card${item.type === 'pr' ? ' pr' : ''}${item.needsMyReview ? ' attention' : ''}`;
-  const head = item.type === 'pr' ? [hideButton(item), link] : [link];
+  // Config-hidden non-PR cards also get the ✕ so an unhidden override can
+  // be undone in place (applyHide routes it back to the override list).
+  const head = item.type === 'pr' || item.hiddenByConfig ? [hideButton(item), link] : [link];
   return el('article', { class: cls, 'data-key': item.key }, [
     ...head, meta, el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames), ...prRows,
   ]);
@@ -139,11 +151,11 @@ function renderHiddenGroup(hidden) {
     ...hidden.map((item) => {
       const btn = el('button', { class: 'unhide-btn', text: 'unhide' });
       btn.addEventListener('click', () => {
-        saveHidden(loadHidden().filter((u) => u !== item.url));
+        saveLists(Hidden.applyUnhide(item, loadLists()));
         if (lastData) renderBoard(lastData);
       });
       return el('div', { class: 'hidden-row' }, [
-        el('a', { href: item.url, target: '_blank', text: `${item.repo}#${item.number} ${item.title}` }),
+        el('a', { href: item.url, target: '_blank', text: `${item.repo ? `${item.repo}#${item.number}` : item.key} ${item.title}` }),
         btn,
       ]);
     }),
@@ -164,8 +176,10 @@ function renderBoard(data) {
   document.getElementById('fetched-at').textContent = `fetched ${new Date(data.fetchedAt).toLocaleTimeString()}`;
   const errBox = document.getElementById('errors');
   errBox.replaceChildren(...data.errors.map((e) => el('p', { class: 'error', text: `${e.source}: ${e.message}` })));
-  const hiddenUrls = Hidden.pruneHidden(loadHidden(), data.items, data.errors.length > 0);
-  saveHidden(hiddenUrls);
+  const hasErrors = data.errors.length > 0;
+  const hiddenUrls = Hidden.pruneHidden(loadList(HIDDEN_KEY), data.items, hasErrors);
+  const unhiddenUrls = Hidden.pruneHidden(loadList(UNHIDDEN_KEY), data.items, hasErrors);
+  saveLists({ hidden: hiddenUrls, unhidden: unhiddenUrls });
   const allNames = data.actionNames || [];
   const tickets = new Map(data.items.filter((i) => i.type === 'jira').map((t) => [t.key, t]));
   const nested = new Map(); // ticketKey -> PR items rendered inside that ticket's card
@@ -180,7 +194,7 @@ function renderBoard(data) {
   const board = document.getElementById('board');
   board.replaceChildren(...stageDefs.map((def) => {
     const laneItems = topLevel.filter((i) => i.stage === def.id).sort(cardOrder);
-    const { visible, hidden } = Hidden.partitionLane(laneItems, hiddenUrls);
+    const { visible, hidden } = Hidden.partitionLane(laneItems, hiddenUrls, unhiddenUrls);
     return el('section', { class: 'lane', id: `lane-${def.id}` }, [
       el('h2', { text: `${def.title} (${visible.length})` }),
       ...visible.map((i) => renderCard(i, allNames, (nested.get(i.key) || []).map((pr) => renderPRRow(pr, allNames)))),
