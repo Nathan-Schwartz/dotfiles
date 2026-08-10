@@ -2,6 +2,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { matches, viableActions, fillTemplate } = require('../lib/actions.js');
+const { deriveFields } = require('../lib/derive.js');
+const exampleConfig = require('../config.example.json');
 
 test('matches: empty match matches any item', () => {
   assert.strictEqual(matches({}, { key: 'PROJ-1' }), true);
@@ -86,4 +88,25 @@ test('viableActions accepts array matches', () => {
   const actions = [{ name: 'code-review', match: [{ stage: 'in-progress' }, { stage: 'in-review' }], prompt: 'p' }];
   assert.deepStrictEqual(viableActions(actions, { stage: 'in-review' }), ['code-review']);
   assert.deepStrictEqual(viableActions(actions, { stage: 'qa' }), []);
+});
+
+test('every action matched for representative items interpolates without throwing', () => {
+  const item = (base, opts) => Object.assign(base, deriveFields(base, opts));
+  const jiraOpts = { jiraUser: 'me' };
+  const items = [
+    item({ type: 'jira', key: 'PROJ-1', title: 'Fix bug', status: 'To Do', url: 'https://jira.example.com/PROJ-1', assignee: 'me' }, jiraOpts),
+    item({ type: 'jira', key: 'PROJ-2', title: 'Improve X', status: 'In Progress', url: 'https://jira.example.com/PROJ-2', assignee: 'other' }, jiraOpts),
+    item({ type: 'jira', key: 'PROJ-3', title: 'QA ticket', status: 'QA', url: 'https://jira.example.com/PROJ-3', assignee: 'me' }, jiraOpts),
+    item({ type: 'jira', key: 'PROJ-4', title: 'Untriaged', status: 'To Do', url: 'https://jira.example.com/PROJ-4' }, jiraOpts),
+    item({ type: 'pr', key: 'me/repo#1', title: 'WIP feature', url: 'https://github.com/me/repo/pull/1', repo: 'me/repo', number: 1, isDraft: true }, { source: 'myPRs', login: 'me' }),
+    item({ type: 'pr', key: 'org/repo#7', title: 'Team feature', url: 'https://github.com/org/repo/pull/7', repo: 'org/repo', number: 7, ticketKey: 'PROJ-7', ticketStatus: 'QA', author: 'teammate', latestReviews: [] }, { source: 'teamPRs', login: 'me' }),
+    item({ type: 'pr', key: 'org/repo#8', title: 'Broken CI', url: 'https://github.com/org/repo/pull/8', repo: 'org/repo', number: 8, author: 'teammate', ci: 'failing' }, { source: 'teamPRs', login: 'me' }),
+  ];
+
+  for (const it of items) {
+    for (const name of viableActions(exampleConfig.actions, it)) {
+      const action = exampleConfig.actions.find((a) => a.name === name);
+      assert.doesNotThrow(() => fillTemplate(action.prompt, it), `${name} failed to interpolate for ${it.key}`);
+    }
+  }
 });

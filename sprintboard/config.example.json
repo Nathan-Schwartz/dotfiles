@@ -31,7 +31,7 @@
     {
       "name": "validate",
       "match": [
-        { "stage": "qa" },
+        { "type": "pr", "stage": "qa" },
         { "mine": true, "stage": ["in-progress", "in-review"] }
       ],
       "prompt": "/brainstorm in grounded mode: validate PR {url} ({key}: \"{title}\", linked ticket: {ticketRef}) against its acceptance criteria; I will perform all external actions myself."

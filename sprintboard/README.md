@@ -44,7 +44,7 @@ always pick — nothing launches automatically. Define actions in
 
     { "name": "fix-comments",
       "match": { "type": "pr", "reviewDecision": "CHANGES_REQUESTED" },
-      "prompt": "/fix-pr-comments {url}",
+      "prompt": "/fix-pr-comments {key}",
       "cwd": "~/code/infra" }
 
 Match semantics: every key must be satisfied; scalar = equality, array =
