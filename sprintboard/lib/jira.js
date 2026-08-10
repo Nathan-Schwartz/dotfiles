@@ -23,6 +23,7 @@ function toItem(raw, site) {
     status: str(f.status),
     priority: str(f.priority),
     issuetype: str(f.issuetype || f.issueType),
+    assignee: str(f.assignee),
     url: `https://${site}/browse/${key}`,
   };
 }
@@ -31,7 +32,7 @@ async function search(run, cfg, jql, limit) {
   const out = await run('acli', [
     'jira', 'workitem', 'search',
     '--jql', jql,
-    '--fields', 'key,summary,status,priority,issuetype',
+    '--fields', 'key,summary,status,priority,issuetype,assignee',
     '--json', '--limit', String(limit),
   ]);
   const parsed = JSON.parse(out);

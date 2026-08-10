@@ -123,3 +123,25 @@ test('fetchTeamTickets limit matches the exported TEAM_TICKET_LIMIT', async () =
   const args = calls[0][1];
   assert.strictEqual(args[args.indexOf('--limit') + 1], String(TEAM_TICKET_LIMIT));
 });
+
+test('items carry assignee, coerced from object shapes, empty when unassigned', async () => {
+  const fixture = JSON.stringify([
+    { key: 'PROJ-401', summary: 'a', status: 'To Do', priority: 'Low', issuetype: 'Task', assignee: { displayName: 'Sam Doe' } },
+    { key: 'PROJ-402', summary: 'b', status: 'To Do', priority: 'Low', issuetype: 'Task', assignee: 'sam@co.com' },
+    { key: 'PROJ-403', summary: 'c', status: 'To Do', priority: 'Low', issuetype: 'Task' },
+  ]);
+  const items = await fetchJiraItems(async () => fixture, { site: 's', project: 'PROJ', user: 'u', jql: '' });
+  assert.strictEqual(items[0].assignee, 'Sam Doe');
+  assert.strictEqual(items[1].assignee, 'sam@co.com');
+  assert.strictEqual(items[2].assignee, '');
+});
+
+test('search requests the assignee field from acli', async () => {
+  const calls = [];
+  const fakeRun = async (cmd, args) => { calls.push(args); return '[]'; };
+  await fetchJiraItems(fakeRun, { site: 's', project: 'PROJ', user: 'u', jql: '' });
+  await fetchTeamTickets(fakeRun, { site: 's', project: 'PROJ', user: 'u', jql: '' });
+  for (const args of calls) {
+    assert.ok(args[args.indexOf('--fields') + 1].includes('assignee'));
+  }
+});
