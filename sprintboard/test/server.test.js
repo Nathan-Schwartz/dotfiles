@@ -683,3 +683,82 @@ test('migrate-hidden drops non-string entries', async (t) => {
   assert.deepStrictEqual(res.hidden, ['https://x/1']);
   assert.deepStrictEqual(res.unhidden, []);
 });
+
+test('a clean fetch persists the payload; an errored fetch never overwrites it', async (t) => {
+  const store = tmpStore();
+  let fail = false;
+  const app = createApp({
+    config: { ...CFG, cacheSeconds: 0 },
+    store,
+    fetchers: {
+      reviewsRequested: async () => [],
+      myPRs: async () => [{ key: 'a/b#2', type: 'pr', title: 'T', url: 'https://x/2', isDraft: false, updatedAt: 'x' }],
+      jira: async () => { if (fail) throw new Error('down'); return []; },
+    },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  await fetch(`http://127.0.0.1:${port}/api/board`);
+  assert.strictEqual(store.state.board.payload.items.length, 1);
+  const goodAt = store.state.board.at;
+
+  fail = true;
+  await fetch(`http://127.0.0.1:${port}/api/board?refresh=1`);
+  assert.strictEqual(store.state.board.at, goodAt);
+});
+
+test('a new app rehydrates from the store: stale=1 serves it without any fetch', async (t) => {
+  const store = tmpStore();
+  store.state.board = {
+    at: Date.now() - 10 * 60 * 1000, // older than cacheSeconds: stale
+    payload: { fetchedAt: '2026-08-10T00:00:00Z', items: [{ key: 'a/b#2', url: 'https://x/2' }], errors: [], actionNames: [] },
+  };
+  store.state.hidden = ['https://x/2'];
+  store.save();
+  let fetches = 0;
+  const app = createApp({
+    config: CFG,
+    store: createStore(store.path), // fresh load simulates a restart
+    fetchers: { reviewsRequested: async () => { fetches++; return []; }, myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+
+  const res = await fetch(`http://127.0.0.1:${port}/api/board?stale=1`);
+  assert.strictEqual(res.status, 200);
+  const body = await res.json();
+  assert.strictEqual(fetches, 0);
+  assert.strictEqual(body.stale, true);
+  assert.strictEqual(body.items[0].key, 'a/b#2');
+  assert.deepStrictEqual(body.hidden, ['https://x/2']);
+});
+
+test('stale=1 404s when no board has ever been cached', async (t) => {
+  const app = createApp({
+    config: CFG, store: tmpStore(),
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  assert.strictEqual((await fetch(`http://127.0.0.1:${port}/api/board?stale=1`)).status, 404);
+});
+
+test('a rehydrated cache within TTL serves GET /api/board without refetching', async (t) => {
+  const store = tmpStore();
+  store.state.board = {
+    at: Date.now(), // fresh enough for the default 300s TTL
+    payload: { fetchedAt: new Date().toISOString(), items: [], errors: [], actionNames: [] },
+  };
+  store.save();
+  let fetches = 0;
+  const app = createApp({
+    config: CFG,
+    store: createStore(store.path),
+    fetchers: { reviewsRequested: async () => { fetches++; return []; }, myPRs: async () => [], jira: async () => [] },
+  });
+  const port = await listen(app);
+  t.after(() => app.close());
+  assert.strictEqual((await fetch(`http://127.0.0.1:${port}/api/board`)).status, 200);
+  assert.strictEqual(fetches, 0);
+});

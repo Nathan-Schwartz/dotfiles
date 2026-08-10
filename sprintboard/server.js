@@ -34,7 +34,10 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     }
   }
 
-  let cache = null; // { at: epoch-ms, payload }
+  // Rehydrated from disk so a restart paints instantly instead of blocking
+  // on gh/acli. TTL semantics are unchanged: an old snapshot only serves
+  // through ?stale=1, a fresh one also serves normal /api/board hits.
+  let cache = store.state.board ? { at: store.state.board.at, payload: store.state.board.payload } : null;
   let identity = null; // { login, warning } — resolved once per process
   const sessions = [];
 
@@ -107,7 +110,6 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
       // merged PRs fall off both lists, but never off a partial (errored) feed.
       store.state.hidden = Hidden.pruneHidden(store.state.hidden, items, false);
       store.state.unhidden = Hidden.pruneHidden(store.state.unhidden, items, false);
-      persist();
     }
     const payload = {
       fetchedAt: new Date().toISOString(),
@@ -116,6 +118,10 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
       actionNames: (config.actions || []).map((a) => a.name),
     };
     cache = { at: Date.now(), payload };
+    // Only clean payloads persist: an error-degraded fetch must not clobber
+    // the last good snapshot used for startup rehydration.
+    if (errors.length === 0) store.state.board = { at: cache.at, payload };
+    persist();
     return payload;
   }
 
@@ -226,6 +232,17 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     const url = new URL(req.url, 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/api/board') {
+        // Instant-paint route: serves whatever is cached at any age and never
+        // triggers a fetch, so a cold start renders before gh/acli respond.
+        if (url.searchParams.has('stale')) {
+          if (!cache) return sendJSON(res, 404, { error: 'no cached board' });
+          return sendJSON(res, 200, {
+            ...cache.payload,
+            stale: Date.now() - cache.at >= config.cacheSeconds * 1000,
+            hidden: store.state.hidden,
+            unhidden: store.state.unhidden,
+          });
+        }
         // Attached at the route layer, not baked into the cached payload: the
         // lists change on every hide click, the cache does not.
         const payload = await board(url.searchParams.has('refresh'));

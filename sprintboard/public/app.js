@@ -157,7 +157,8 @@ function cardOrder(a, b) {
 
 function renderBoard(data) {
   lastData = data;
-  document.getElementById('fetched-at').textContent = `fetched ${new Date(data.fetchedAt).toLocaleTimeString()}`;
+  document.getElementById('fetched-at').textContent =
+    `fetched ${new Date(data.fetchedAt).toLocaleTimeString()}${data.stale ? ' (stale)' : ''}`;
   const errBox = document.getElementById('errors');
   errBox.replaceChildren(...data.errors.map((e) => el('p', { class: 'error', text: `${e.source}: ${e.message}` })));
   const hiddenUrls = data.hidden || [];
@@ -217,7 +218,16 @@ async function migrateLocalStorage() {
   }
 }
 
-migrateLocalStorage().then(() => load(false));
+async function loadStale() {
+  try {
+    const res = await fetch('/api/board?stale=1');
+    if (res.ok) renderBoard(await res.json());
+  } catch {
+    // No cached board — the fresh load below paints first.
+  }
+}
+
+migrateLocalStorage().then(loadStale).then(() => load(false));
 
 let tailTarget = null;
 
