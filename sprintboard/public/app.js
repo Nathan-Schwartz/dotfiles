@@ -126,7 +126,7 @@ function renderPRRow(item, allNames) {
 function renderCard(item, allNames, prRows = []) {
   const link = el('a', { href: item.url, target: '_blank', text: item.title });
   const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
-  const cls = `card${item.needsMyReview ? ' attention' : ''}`;
+  const cls = `card${item.type === 'pr' ? ' pr' : ''}${item.needsMyReview ? ' attention' : ''}`;
   const head = item.type === 'pr' ? [hideButton(item), link] : [link];
   return el('article', { class: cls, 'data-key': item.key }, [
     ...head, meta, el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames), ...prRows,
