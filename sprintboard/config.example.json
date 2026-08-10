@@ -16,20 +16,44 @@
   },
   "actions": [
     {
-      "name": "review",
-      "match": { "lanes": "needs-review" },
-      "prompt": "Review PR {url} ({repo}#{number}): \"{title}\". Read the diff and leave findings."
+      "name": "code-review",
+      "match": [
+        { "mine": true, "stage": "in-progress" },
+        { "mine": false, "stage": "in-review", "approvedByMe": false }
+      ],
+      "prompt": "Review PR {url} ({key}: \"{title}\", linked ticket: {ticketRef}). Fetch the diff and description via gh; if a ticket is linked, check its acceptance criteria. Deliver your findings to me in this session — do not post anything to GitHub; I will submit the review myself."
     },
     {
-      "name": "fix-comments",
-      "match": { "type": "pr", "reviewDecision": "CHANGES_REQUESTED" },
-      "prompt": "/fix-pr-comments {url}"
+      "name": "address-feedback",
+      "match": [{ "mine": true, "stage": ["in-progress", "in-review"] }],
+      "prompt": "/fix-pr-comments {key}"
     },
     {
-      "name": "brainstorm",
-      "match": { "type": "jira", "status": ["To Do", "In Progress"] },
-      "prompt": "/brainstorm work item {key}: \"{title}\" ({url})",
+      "name": "validate",
+      "match": [
+        { "stage": "qa" },
+        { "mine": true, "stage": ["in-progress", "in-review"] }
+      ],
+      "prompt": "/brainstorm in grounded mode: validate PR {url} ({key}: \"{title}\", linked ticket: {ticketRef}) against its acceptance criteria; I will perform all external actions myself."
+    },
+    {
+      "name": "fix-ci",
+      "match": [{ "ciFailing": true }],
+      "prompt": "PR {url} ({key}: \"{title}\") has failing CI. Check out the branch with gh pr checkout, run gh pr checks, pull the failing run logs, diagnose, and fix. Commit locally only — do not push or comment anywhere; hand the result to me."
+    },
+    {
+      "name": "start-work",
+      "match": [
+        { "type": "jira", "stage": ["todo", "in-progress"], "unclaimed": true },
+        { "type": "jira", "stage": ["todo", "in-progress"], "claimedByMe": true }
+      ],
+      "prompt": "/brainstorm in grounded mode: start work on ticket {key}: \"{title}\" ({url}) — read the ticket and its acceptance criteria first. Do not claim or transition the ticket; I will.",
       "cwd": "~"
+    },
+    {
+      "name": "work-on",
+      "match": {},
+      "prompt": "You are picking up work item {key}: \"{title}\" ({url}). Investigate the current state and address what needs attention."
     }
   ],
   "launch": {
