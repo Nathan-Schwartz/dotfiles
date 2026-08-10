@@ -3,7 +3,9 @@
 // Match semantics: every key must be satisfied. Scalar = strict equality,
 // array = one-of; an item-side array matches on intersection. A field
 // missing from the item never matches; an empty match matches everything.
+// A match ARRAY is OR across its objects (empty array matches nothing).
 function matches(match, item) {
+  if (Array.isArray(match)) return match.some((m) => matches(m, item));
   return Object.entries(match || {}).every(([field, want]) => {
     const have = item[field];
     if (have === undefined) return false;

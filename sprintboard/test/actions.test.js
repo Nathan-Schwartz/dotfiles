@@ -66,3 +66,24 @@ test('fillTemplate throws naming every missing or empty placeholder', () => {
 test('fillTemplate leaves brace-less text untouched', () => {
   assert.strictEqual(fillTemplate('no placeholders here', {}), 'no placeholders here');
 });
+
+test('matches: an array of match objects is OR across objects', () => {
+  const match = [
+    { mine: true, stage: 'in-progress' },
+    { mine: false, stage: 'in-review', approvedByMe: false },
+  ];
+  assert.strictEqual(matches(match, { mine: true, stage: 'in-progress' }), true);
+  assert.strictEqual(matches(match, { mine: false, stage: 'in-review', approvedByMe: false }), true);
+  assert.strictEqual(matches(match, { mine: false, stage: 'in-review', approvedByMe: true }), false);
+  assert.strictEqual(matches(match, { mine: true, stage: 'in-review' }), false);
+});
+
+test('matches: an empty match array matches nothing', () => {
+  assert.strictEqual(matches([], { key: 'PROJ-1' }), false);
+});
+
+test('viableActions accepts array matches', () => {
+  const actions = [{ name: 'code-review', match: [{ stage: 'in-progress' }, { stage: 'in-review' }], prompt: 'p' }];
+  assert.deepStrictEqual(viableActions(actions, { stage: 'in-review' }), ['code-review']);
+  assert.deepStrictEqual(viableActions(actions, { stage: 'qa' }), []);
+});
