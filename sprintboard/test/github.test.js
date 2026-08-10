@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { fetchReviewsRequested, fetchMyPRs, classifyCI } = require('../lib/github.js');
+const { fetchReviewsRequested, fetchMyPRs, classifyCI, fetchRepoPRs } = require('../lib/github.js');
 
 const SEARCH_RESULT = JSON.stringify([
   {
@@ -101,4 +101,69 @@ test('fetchMyPRs degrades gracefully on per-item enrichment failure', async () =
   assert.strictEqual(items[1].ci, 'none');
   assert.strictEqual(items[1].reviewDecision, '');
   assert.strictEqual(items[1].mergeable, 'UNKNOWN');
+});
+
+const LIST_RESULT = JSON.stringify([
+  {
+    number: 9,
+    title: 'ENG-77 add caching',
+    url: 'https://github.com/acme/widgets/pull/9',
+    updatedAt: '2026-08-05T00:00:00Z',
+    isDraft: false,
+    headRefName: 'eng-77-add-caching',
+    author: { login: 'teammate' },
+    mergeable: 'MERGEABLE',
+    reviewDecision: 'REVIEW_REQUIRED',
+    latestReviews: [{ author: { login: 'Nathan-Schwartz' }, state: 'COMMENTED' }],
+    statusCheckRollup: [{ conclusion: 'FAILURE' }],
+  },
+]);
+
+test('fetchRepoPRs makes one gh pr list call per repoPaths repo', async () => {
+  const calls = [];
+  const fakeRun = async (cmd, args) => { calls.push([cmd, args]); return LIST_RESULT; };
+  const { items, truncated } = await fetchRepoPRs(fakeRun, { repoPaths: { 'acme/widgets': '~/code/widgets' } });
+  assert.strictEqual(calls.length, 1);
+  assert.strictEqual(calls[0][0], 'gh');
+  assert.deepStrictEqual(calls[0][1].slice(0, 4), ['pr', 'list', '-R', 'acme/widgets']);
+  assert.ok(calls[0][1].includes('--limit'));
+  assert.deepStrictEqual(truncated, []);
+  assert.strictEqual(items.length, 1);
+  assert.deepStrictEqual(items[0], {
+    key: 'acme/widgets#9', type: 'pr', repo: 'acme/widgets', number: 9,
+    title: 'ENG-77 add caching', url: 'https://github.com/acme/widgets/pull/9',
+    updatedAt: '2026-08-05T00:00:00Z', isDraft: false,
+    author: 'teammate', headRefName: 'eng-77-add-caching',
+    ci: 'failing', reviewDecision: 'REVIEW_REQUIRED', mergeable: 'MERGEABLE',
+    latestReviews: [{ author: { login: 'Nathan-Schwartz' }, state: 'COMMENTED' }],
+  });
+});
+
+test('fetchRepoPRs with empty repoPaths makes no calls and returns nothing', async () => {
+  const calls = [];
+  const out = await fetchRepoPRs(async (...a) => { calls.push(a); return '[]'; }, { repoPaths: {} });
+  assert.deepStrictEqual(out, { items: [], truncated: [] });
+  assert.strictEqual(calls.length, 0);
+});
+
+test('fetchRepoPRs flattens multiple repos and defaults missing enrichment fields', async () => {
+  const sparse = JSON.stringify([{ number: 1, title: 't', url: 'u', updatedAt: 'x', isDraft: true }]);
+  const fakeRun = async () => sparse;
+  const { items } = await fetchRepoPRs(fakeRun, { repoPaths: { 'a/one': '/1', 'a/two': '/2' } });
+  assert.deepStrictEqual(items.map((i) => i.repo), ['a/one', 'a/two']);
+  assert.strictEqual(items[0].author, '');
+  assert.strictEqual(items[0].headRefName, '');
+  assert.strictEqual(items[0].ci, 'none');
+  assert.strictEqual(items[0].reviewDecision, '');
+  assert.strictEqual(items[0].mergeable, 'UNKNOWN');
+  assert.deepStrictEqual(items[0].latestReviews, []);
+});
+
+test('fetchRepoPRs flags repos whose result hit the fetch limit', async () => {
+  const full = JSON.stringify(Array.from({ length: 100 }, (_, i) => (
+    { number: i + 1, title: 't', url: 'u', updatedAt: 'x', isDraft: false }
+  )));
+  const { items, truncated } = await fetchRepoPRs(async () => full, { repoPaths: { 'a/big': '/b' } });
+  assert.strictEqual(items.length, 100);
+  assert.deepStrictEqual(truncated, ['a/big']);
 });

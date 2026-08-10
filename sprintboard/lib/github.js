@@ -61,4 +61,33 @@ async function fetchMyPRs(run, { repoPaths = {} } = {}) {
   }));
 }
 
-module.exports = { fetchReviewsRequested, fetchMyPRs, classifyCI, toItem, SEARCH_FIELDS };
+const LIST_FIELDS = 'number,title,url,updatedAt,isDraft,headRefName,author,'
+  + 'mergeable,reviewDecision,latestReviews,statusCheckRollup';
+const REPO_PR_LIMIT = 100;
+
+// One batched call per repo: gh pr list returns review/CI fields that
+// gh search prs cannot, so no per-PR enrichment calls are needed.
+async function fetchRepoPRs(run, { repoPaths = {} } = {}) {
+  const repos = Object.keys(repoPaths);
+  const truncated = [];
+  const lists = await Promise.all(repos.map(async (repo) => {
+    const out = await run('gh', [
+      'pr', 'list', '-R', repo, '--state', 'open',
+      '--limit', String(REPO_PR_LIMIT), '--json', LIST_FIELDS,
+    ]);
+    const prs = JSON.parse(out);
+    if (prs.length >= REPO_PR_LIMIT) truncated.push(repo);
+    return prs.map((pr) => ({
+      ...toItem({ ...pr, repository: { nameWithOwner: repo } }),
+      author: pr.author?.login || '',
+      headRefName: pr.headRefName || '',
+      ci: classifyCI(pr.statusCheckRollup),
+      reviewDecision: pr.reviewDecision || '',
+      mergeable: pr.mergeable || 'UNKNOWN',
+      latestReviews: pr.latestReviews || [],
+    }));
+  }));
+  return { items: lists.flat(), truncated };
+}
+
+module.exports = { fetchReviewsRequested, fetchMyPRs, fetchRepoPRs, classifyCI, toItem, SEARCH_FIELDS };
