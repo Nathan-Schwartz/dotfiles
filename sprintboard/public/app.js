@@ -17,6 +17,46 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+const HIDDEN_KEY = 'sprintboard-hidden-prs';
+let lastData = null;
+let pendingHideUrl = null;
+
+function loadHidden() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(HIDDEN_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHidden(urls) {
+  localStorage.setItem(HIDDEN_KEY, JSON.stringify(urls));
+}
+
+const hideDialog = document.getElementById('hide-confirm');
+document.getElementById('hide-confirm-yes').addEventListener('click', () => {
+  if (pendingHideUrl) saveHidden([...loadHidden(), pendingHideUrl]);
+  pendingHideUrl = null;
+  hideDialog.close();
+  if (lastData) renderBoard(lastData);
+});
+document.getElementById('hide-confirm-no').addEventListener('click', () => {
+  pendingHideUrl = null;
+  hideDialog.close();
+});
+
+function hideButton(item) {
+  const btn = el('button', { class: 'hide-btn', text: '✕', title: 'hide PR' });
+  btn.addEventListener('click', () => {
+    pendingHideUrl = item.url;
+    document.getElementById('hide-confirm-title').textContent =
+      `${item.repo}#${item.number} ${item.title}`;
+    hideDialog.showModal();
+  });
+  return btn;
+}
+
 function badges(item) {
   const out = [];
   if (item.type === 'pr') {
@@ -83,8 +123,9 @@ function renderCard(item, allNames, prRows = []) {
   const link = el('a', { href: item.url, target: '_blank', text: item.title });
   const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
   const cls = `card${item.needsMyReview ? ' attention' : ''}`;
+  const head = item.type === 'pr' ? [hideButton(item), link] : [link];
   return el('article', { class: cls, 'data-key': item.key }, [
-    link, meta, el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames), ...prRows,
+    ...head, meta, el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames), ...prRows,
   ]);
 }
 
@@ -98,9 +139,12 @@ function cardOrder(a, b) {
 }
 
 function renderBoard(data) {
+  lastData = data;
   document.getElementById('fetched-at').textContent = `fetched ${new Date(data.fetchedAt).toLocaleTimeString()}`;
   const errBox = document.getElementById('errors');
   errBox.replaceChildren(...data.errors.map((e) => el('p', { class: 'error', text: `${e.source}: ${e.message}` })));
+  const hiddenUrls = Hidden.pruneHidden(loadHidden(), data.items, data.errors.length > 0);
+  saveHidden(hiddenUrls);
   const allNames = data.actionNames || [];
   const tickets = new Map(data.items.filter((i) => i.type === 'jira').map((t) => [t.key, t]));
   const nested = new Map(); // ticketKey -> PR items rendered inside that ticket's card
@@ -114,10 +158,11 @@ function renderBoard(data) {
   );
   const board = document.getElementById('board');
   board.replaceChildren(...stageDefs.map((def) => {
-    const items = topLevel.filter((i) => i.stage === def.id).sort(cardOrder);
+    const laneItems = topLevel.filter((i) => i.stage === def.id).sort(cardOrder);
+    const { visible, hidden } = Hidden.partitionLane(laneItems, hiddenUrls);
     return el('section', { class: 'lane', id: `lane-${def.id}` }, [
-      el('h2', { text: `${def.title} (${items.length})` }),
-      ...items.map((i) => renderCard(i, allNames, (nested.get(i.key) || []).map((pr) => renderPRRow(pr, allNames)))),
+      el('h2', { text: `${def.title} (${visible.length})` }),
+      ...visible.map((i) => renderCard(i, allNames, (nested.get(i.key) || []).map((pr) => renderPRRow(pr, allNames)))),
     ]);
   }));
 }
