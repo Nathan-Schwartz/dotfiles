@@ -5,12 +5,18 @@
 // so lookalikes (UTF-8) and longer keys (ENG-12346 vs ENG-1234) never map.
 const KEY_RE = /([A-Za-z][A-Za-z0-9]*-\d+)/g;
 
-function extractTicketKey(pr, knownKeys) {
+// Shared helper: yields all uppercased Jira keys found in a PR's text fields.
+function* keysInPR(pr) {
   for (const text of [pr.headRefName, pr.title]) {
     for (const m of String(text || '').matchAll(KEY_RE)) {
-      const key = m[1].toUpperCase();
-      if (knownKeys.has(key)) return key;
+      yield m[1].toUpperCase();
     }
+  }
+}
+
+function extractTicketKey(pr, knownKeys) {
+  for (const key of keysInPR(pr)) {
+    if (knownKeys.has(key)) return key;
   }
   return '';
 }
@@ -22,11 +28,8 @@ function extractCandidateKeys(prs, projectKey) {
   const prefix = `${String(projectKey).toUpperCase()}-`;
   const keys = new Set();
   for (const pr of prs) {
-    for (const text of [pr.headRefName, pr.title]) {
-      for (const m of String(text || '').matchAll(KEY_RE)) {
-        const key = m[1].toUpperCase();
-        if (key.startsWith(prefix)) keys.add(key);
-      }
+    for (const key of keysInPR(pr)) {
+      if (key.startsWith(prefix)) keys.add(key);
     }
   }
   return [...keys];
