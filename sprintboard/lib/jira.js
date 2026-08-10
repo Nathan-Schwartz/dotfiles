@@ -25,12 +25,12 @@ function toItem(raw, site) {
   };
 }
 
-async function fetchJiraItems(run, cfg) {
+async function search(run, cfg, jql, limit) {
   const out = await run('acli', [
     'jira', 'workitem', 'search',
-    '--jql', buildJQL(cfg),
+    '--jql', jql,
     '--fields', 'key,summary,status,priority,issuetype',
-    '--json', '--limit', '50',
+    '--json', '--limit', String(limit),
   ]);
   const parsed = JSON.parse(out);
   let list;
@@ -45,4 +45,17 @@ async function fetchJiraItems(run, cfg) {
   return list.map((raw) => toItem(raw, cfg.site)).filter((item) => item.key);
 }
 
-module.exports = { buildJQL, fetchJiraItems };
+async function fetchJiraItems(run, cfg) {
+  return search(run, cfg, buildJQL(cfg), 50);
+}
+
+function buildTeamJQL({ project }) {
+  return `project = ${project} AND statusCategory != Done ORDER BY updated DESC`;
+}
+
+// Mapping index for the team-prs join; deliberately independent of cfg.jql.
+async function fetchTeamTickets(run, cfg) {
+  return search(run, cfg, buildTeamJQL(cfg), 100);
+}
+
+module.exports = { buildJQL, buildTeamJQL, fetchJiraItems, fetchTeamTickets };

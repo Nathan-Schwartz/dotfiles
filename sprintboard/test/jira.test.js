@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { buildJQL, fetchJiraItems } = require('../lib/jira.js');
+const { buildJQL, fetchJiraItems, buildTeamJQL, fetchTeamTickets } = require('../lib/jira.js');
 
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'acli-search.json'), 'utf8');
 
@@ -86,4 +86,32 @@ test('fetchJiraItems filters out entries with no key', async () => {
   assert.ok(items.every(it => it.key && it.key !== 'undefined'));
   const keys = items.map(it => it.key);
   assert.deepStrictEqual(keys, ['PROJ-101', 'PROJ-102']);
+});
+
+test('buildTeamJQL is project-wide: no assignee clause', () => {
+  const jql = buildTeamJQL({ project: 'PROJ' });
+  assert.ok(jql.includes('project = PROJ'));
+  assert.ok(jql.includes('statusCategory != Done'));
+  assert.ok(!jql.includes('assignee'));
+});
+
+test('fetchTeamTickets queries acli with the team JQL and a raised limit', async () => {
+  const calls = [];
+  const fakeRun = async (cmd, args) => { calls.push([cmd, args]); return FIXTURE; };
+  const items = await fetchTeamTickets(fakeRun, { site: 'co.atlassian.net', project: 'PROJ', user: 'me@co.com', jql: '' });
+  assert.strictEqual(calls[0][0], 'acli');
+  const args = calls[0][1];
+  const jql = args[args.indexOf('--jql') + 1];
+  assert.ok(!jql.includes('assignee'));
+  assert.strictEqual(args[args.indexOf('--limit') + 1], '100');
+  assert.strictEqual(items.length, 2);
+  assert.strictEqual(items[0].type, 'jira');
+});
+
+test('fetchTeamTickets ignores any user jql override (that only shapes the jira lane)', async () => {
+  const calls = [];
+  const fakeRun = async (cmd, args) => { calls.push([cmd, args]); return FIXTURE; };
+  await fetchTeamTickets(fakeRun, { site: 's', project: 'PROJ', user: 'u', jql: 'sprint in openSprints()' });
+  const args = calls[0][1];
+  assert.ok(args[args.indexOf('--jql') + 1].includes('project = PROJ'));
 });
