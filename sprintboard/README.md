@@ -18,23 +18,23 @@ context-primed `claude` session in a tmux window for any item.
 
 No credentials are stored — auth lives entirely in the CLIs.
 
-## Lanes
+## Stages
 
-- Needs my review (`needs-review`) — open PRs where my review is requested
-- My open PRs (`my-prs`) — open PRs I authored (filtered to `repoPaths` repos
-  when any are configured; empty `repoPaths` shows all)
-- Changes requested (`changes-requested`) / Failed CI (`failed-ci`) / Mergeable
-  (`mergeable`) — derived views of my open PRs
-- Team PRs (`team-prs`) — every other open PR in the `repoPaths` repos
-  (anything not already on the board), fetched in one batched `gh pr list`
-  call per repo (up to 100 PRs each; a board error notes any repo that hits
-  the cap). Each PR maps to a Jira ticket when the branch name or title
-  contains the key of an open ticket in the configured `project` (team-wide
-  lookup, independent of `jql`). PRs without a matching key render
-  unmapped, and if the ticket lookup fails (e.g. `acli` unauthenticated)
-  the lane still renders with a board error noting mapping is unavailable.
-- Jira (`jira`) — open work items for the configured project + user (or
-  custom `jql`)
+The board is a kanban: four columns, each item appears exactly once.
+
+- Todo → In Progress → In Review → QA (right-most; QA also holds
+  merge-ready PRs)
+- Jira work items place by status. Common names map automatically
+  (To Do/Todo, In Progress, Review/In Review, QA/Testable); add a top-level
+  `stageMap` in `~/.sprintboard.json` (e.g. `{"Blocked": "in-progress"}`)
+  for anything else. Unmapped statuses land in In Progress with an
+  `unknown status` badge.
+- A PR mapped to one of my tickets renders inside that ticket's card and
+  follows the ticket. Other PRs place by their own state: draft → In
+  Progress; mergeable with CI not failing → QA; else In Review.
+- Former columns are now badges: failing CI, changes requested, approved
+  (green), and a `needs my review` marker that also sorts those cards to
+  the top of their column.
 
 ## Actions
 
@@ -49,18 +49,21 @@ always pick — nothing launches automatically. Define actions in
 
 Match semantics: every key must be satisfied; scalar = equality, array =
 one-of; a field the item lacks never matches; `match: {}` matches
-everything. `lanes` (see above) is matchable, e.g. `{ "lanes": "failed-ci" }`.
+everything. A match may also be an ARRAY of objects — the action is viable
+if any one matches. Matching controls which buttons appear on the card;
+every configured action stays launchable from the card's `⋯` overflow menu
+regardless (you always pick — nothing launches automatically).
 
 `{placeholder}` in `prompt` expands from any item field. Every placeholder
 must resolve to a non-empty value or the launch fails with an error on the
-card. Fields by type — pr: `key`, `type`, `repo`, `number`, `title`, `url`,
-`updatedAt`, `isDraft`, `lanes` on every PR; `ci`, `reviewDecision`,
-`mergeable` on authored-PR items (lanes `my-prs` / `changes-requested`
-/ `failed-ci` / `mergeable`) and on `team-prs` items, absent on
-`needs-review` items; `team-prs` items also carry `author`, `headRefName`,
-and `latestReviews`, plus `ticketKey` and `ticketStatus` only when mapped
-to a ticket; jira: `key`, `type`, `title`, `status`, `priority`,
-`issuetype`, `url`, `lanes`.
+card. Shared fields: `lanes`, `stage` (todo / in-progress / in-review /
+qa), `source`. PR fields: `key`, `type`, `repo`, `number`, `title`, `url`,
+`updatedAt`, `isDraft`, `mine`, `approvedByMe`, `ciFailing`,
+`needsMyReview`; `ci`, `reviewDecision`, `mergeable`, `author`,
+`headRefName`, `latestReviews` when the data source provides them, and
+`ticketKey`/`ticketStatus` only when mapped to a ticket. Jira fields:
+`key`, `type`, `title`, `status`, `priority`, `issuetype`, `assignee`,
+`unclaimed`, `claimedByMe`, `url`.
 
 ## Launching sessions
 
