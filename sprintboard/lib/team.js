@@ -15,6 +15,23 @@ function extractTicketKey(pr, knownKeys) {
   return '';
 }
 
+// Reverse-join candidate set: every project-prefixed key any PR references.
+// This becomes the exact key list queried from Jira, so mapping completeness
+// depends on the board's PRs, not on project backlog size.
+function extractCandidateKeys(prs, projectKey) {
+  const prefix = `${String(projectKey).toUpperCase()}-`;
+  const keys = new Set();
+  for (const pr of prs) {
+    for (const text of [pr.headRefName, pr.title]) {
+      for (const m of String(text || '').matchAll(KEY_RE)) {
+        const key = m[1].toUpperCase();
+        if (key.startsWith(prefix)) keys.add(key);
+      }
+    }
+  }
+  return [...keys];
+}
+
 function joinTickets(prs, tickets) {
   const byKey = new Map(tickets.map((t) => [t.key, t]));
   const known = new Set(byKey.keys());
@@ -25,4 +42,4 @@ function joinTickets(prs, tickets) {
   });
 }
 
-module.exports = { extractTicketKey, joinTickets };
+module.exports = { extractTicketKey, joinTickets, extractCandidateKeys };

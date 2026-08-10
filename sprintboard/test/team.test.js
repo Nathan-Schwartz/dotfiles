@@ -1,7 +1,7 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { extractTicketKey, joinTickets } = require('../lib/team.js');
+const { extractTicketKey, joinTickets, extractCandidateKeys } = require('../lib/team.js');
 
 const KNOWN = new Set(['ENG-1234', 'PROJ-7']);
 
@@ -51,4 +51,26 @@ test('joinTickets annotates mapped PRs and leaves unmapped PRs untouched', () =>
 test('joinTickets with no tickets returns PRs unchanged', () => {
   const prs = [{ key: 'a/b#1', headRefName: 'eng-1234-x', title: '' }];
   assert.deepStrictEqual(joinTickets(prs, []), prs);
+});
+
+test('extractCandidateKeys collects unique project-prefixed keys from branch and title', () => {
+  const prs = [
+    { headRefName: 'proj-12-fix-login', title: 'Fix login' },
+    { headRefName: 'feature/retry', title: 'PROJ-345: retry queue' },
+    { headRefName: 'gpt-4-experiment', title: 'OTHER-9 unrelated project' },
+    { headRefName: 'proj-12-alt', title: 'duplicate branch key' },
+  ];
+  assert.deepStrictEqual(extractCandidateKeys(prs, 'PROJ'), ['PROJ-12', 'PROJ-345']);
+});
+
+test('extractCandidateKeys lowercased config project key still matches', () => {
+  assert.deepStrictEqual(
+    extractCandidateKeys([{ headRefName: 'PROJ-7-x', title: '' }], 'proj'),
+    ['PROJ-7'],
+  );
+});
+
+test('extractCandidateKeys tolerates missing text fields and empty input', () => {
+  assert.deepStrictEqual(extractCandidateKeys([], 'PROJ'), []);
+  assert.deepStrictEqual(extractCandidateKeys([{ title: null, headRefName: undefined }], 'PROJ'), []);
 });
