@@ -44,16 +44,10 @@
     {
       "name": "start-work",
       "match": [
-        { "type": "jira", "stage": ["todo", "in-progress"], "unclaimed": true },
         { "type": "jira", "stage": ["todo", "in-progress"], "claimedByMe": true }
       ],
       "prompt": "/brainstorm in grounded mode: start work on ticket {key}: \"{title}\" ({url}) — read the ticket and its acceptance criteria first. Do not claim or transition the ticket; I will.",
       "cwd": "~"
-    },
-    {
-      "name": "work-on",
-      "match": {},
-      "prompt": "You are picking up work item {key}: \"{title}\" ({url}). Investigate the current state and address what needs attention."
     }
   ],
   "launch": {
