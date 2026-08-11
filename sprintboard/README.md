@@ -18,6 +18,41 @@ context-primed `claude` session in a tmux window for any item.
 
 No credentials are stored — auth lives entirely in the CLIs.
 
+## State
+
+Mutable state lives in `~/.sprintboard-state.json` (`SPRINTBOARD_STATE`
+overrides the path). It sits in `$HOME` beside the config rather than in the
+repo, is machine-local, and is never committed. It holds the hide and unhide
+lists, the last error-free board payload, and the timestamp of the one-time
+localStorage import.
+
+- The file is rewritten after every board fetch and every hide click. If the
+  write fails the server logs a warning and carries on with in-memory state —
+  persistence never takes the board down.
+- A file that will not parse is moved aside to `~/.sprintboard-state.json.corrupt`
+  and the server starts from empty state. Hide lists are your data, so nothing
+  is deleted.
+- Only error-free fetches overwrite the saved payload, so a degraded fetch
+  cannot clobber the last good snapshot.
+- On startup that snapshot seeds the cache, so the board paints the last
+  known state immediately instead of waiting on `gh` and `acli`. The page
+  loads the cached copy first, then a normal load refreshes it; the header
+  reads `fetched … (stale)` while the copy on screen is older than
+  `cacheSeconds`.
+
+Endpoints behind this state:
+
+- `POST /api/hide`, `POST /api/unhide` — body `{ "key": "..." }`, answering
+  with the updated `{ hidden, unhidden }` lists, or 404 when the key is not
+  on the board.
+- `POST /api/migrate-hidden` — one-time import of a browser's legacy
+  localStorage lists. It runs only while the `migratedAt` stamp is unset and
+  both lists are still empty, so a stale browser cannot resurrect entries
+  unhidden since.
+- `GET /api/board?stale=1` — the cached payload at any age, flagged `stale`
+  when older than `cacheSeconds`. It never fetches, and 404s when nothing is
+  cached.
+
 ## Stages
 
 The board is a kanban: four columns, each item appears exactly once.
@@ -35,6 +70,15 @@ The board is a kanban: four columns, each item appears exactly once.
 - Former columns are now badges: failing CI, changes requested, approved
   (green), and a `needs my review` marker that also sorts those cards to
   the top of their column.
+
+Ticket mapping runs backwards from the PRs. Every Jira-shaped key in a PR
+branch name or title is collected, and exactly those keys are fetched with a
+`key in (...)` query, chunked at 50 keys per call — so a PR referencing a
+long-untouched ticket still gets its badge no matter how large the project
+backlog is. A PR maps only on an exact match against the returned keys. If
+the key query fails, the board falls back to the older bulk project query
+(capped at 100 tickets) and says so; only that fallback can report
+`ticket query cap reached`.
 
 ## Actions
 
@@ -71,8 +115,11 @@ when mapped to a ticket. Jira fields:
 Cards can be hidden two ways; both land in a collapsed per-lane
 `N hidden` group where they stay expandable and unhide-able.
 
-- **Manually**: the `✕` on a PR card (persisted per browser in
-  localStorage, pruned when the PR closes).
+- **Manually**: the `✕` on a PR card. Hides are stored server-side in the
+  state file, so they are per machine rather than per browser and survive a
+  restart. They are pruned once the PR stops appearing on the board, though
+  never on a fetch that reported errors — a partial feed must not wipe the
+  list.
 - **By config**: a top-level `hide` key — an array of match objects with
   the same semantics as action `match`, evaluated after derived fields
   exist, so anything listed above is usable:
@@ -83,11 +130,15 @@ Cards can be hidden two ways; both land in a collapsed per-lane
       ]
 
   An empty or absent `hide` hides nothing. Unhiding a config-hidden card
-  stores a per-browser override that outlives refreshes; its `✕` removes
-  the override so the rule applies again.
+  stores an override in the state file; its `✕` removes the override so the
+  rule applies again.
 
 Bot author logins are normalized across gh's two spellings
 (`dependabot[bot]` and `app/dependabot` both match `"dependabot"`).
+
+Both lists used to live in the browser's localStorage. The first page load
+after upgrading imports whatever is there into the state file and clears the
+browser copy; the import happens once and never again.
 
 ## Launching sessions
 
