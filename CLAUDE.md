@@ -167,7 +167,7 @@ Prefix is `Ctrl-Space`. Key bindings use vi-style navigation. Solarized dark the
 `sprintboard/` is a zero-dependency Node webapp (localhost:1337) that aggregates
 Jira (acli) and GitHub (gh) into attention lanes and launches context-primed
 claude tmux windows. Config lives in `~/.sprintboard.json` (not checked in —
-override pattern). Tests run via `node --test sprintboard/test/` (wired into
+override pattern). Tests run via `node --test sprintboard/test/*.test.js` (wired into
 `test.sh`). See `sprintboard/README.md`.
 
 ## Claude Code (`claude/` stow module)
