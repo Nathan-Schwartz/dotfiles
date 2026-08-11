@@ -71,9 +71,10 @@ The board is a kanban: four columns, each item appears exactly once.
   (green), and a `needs my review` marker that also sorts those cards to
   the top of their column.
 
-Ticket mapping runs backwards from the PRs. Every Jira-shaped key in a PR
-branch name or title is collected, and exactly those keys are fetched with a
-`key in (...)` query, chunked at 50 keys per call — so a PR referencing a
+Ticket mapping runs backwards from the PRs. Every key matching the configured
+project's prefix in a PR branch name or title is collected — keys belonging to
+other projects are dropped — and exactly those keys are fetched with a
+`key in (...)` query, chunked at 50 keys per call, so a PR referencing a
 long-untouched ticket still gets its badge no matter how large the project
 backlog is. A PR maps only on an exact match against the returned keys. If
 the key query fails, the board falls back to the older bulk project query
