@@ -604,7 +604,7 @@ test('a failing state save degrades to in-memory state instead of taking the boa
   const app = createApp({
     config: CFG,
     store: {
-      state: { hidden: [], unhidden: [], board: null, migratedAt: '' },
+      state: { hidden: [], unhidden: [], board: null, migratedAt: '', notes: [] },
       save() { throw new Error('disk full'); },
       path: '',
     },
@@ -761,4 +761,78 @@ test('a rehydrated cache within TTL serves GET /api/board without refetching', a
   t.after(() => app.close());
   assert.strictEqual((await fetch(`http://127.0.0.1:${port}/api/board`)).status, 200);
   assert.strictEqual(fetches, 0);
+});
+
+function notesApp(t, store) {
+  const app = createApp({
+    config: CFG,
+    store,
+    fetchers: { reviewsRequested: async () => [], myPRs: async () => [], jira: async () => [] },
+  });
+  t.after(() => app.close());
+  return app;
+}
+
+function poster(port) {
+  return async (p, body) => {
+    const res = await fetch(`http://127.0.0.1:${port}${p}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return { status: res.status, body: await res.json() };
+  };
+}
+
+test('notes CRUD round-trips through the state file and board payload', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sb-notes-'));
+  const store = createStore(path.join(dir, 'state.json'));
+  const port = await listen(notesApp(t, store));
+  const post = poster(port);
+
+  const created = await post('/api/notes', { title: 'water plants', details: 'the ferns', stage: 'todo' });
+  assert.strictEqual(created.status, 201);
+  assert.strictEqual(created.body.notes.length, 1);
+  assert.strictEqual(created.body.notes[0].title, 'water plants');
+  const id = created.body.notes[0].id;
+
+  const moved = await post('/api/notes/update', { id, stage: 'qa' });
+  assert.strictEqual(moved.status, 200);
+  assert.strictEqual(moved.body.notes[0].stage, 'qa');
+
+  const board = await (await fetch(`http://127.0.0.1:${port}/api/board`)).json();
+  assert.strictEqual(board.notes.length, 1);
+  assert.strictEqual(board.notes[0].id, id);
+
+  const deleted = await post('/api/notes/delete', { id });
+  assert.strictEqual(deleted.status, 200);
+  assert.deepStrictEqual(deleted.body.notes, []);
+
+  // Soft delete: the tombstone survives on disk with its deletedAt stamp.
+  const onDisk = JSON.parse(fs.readFileSync(store.path, 'utf8'));
+  assert.strictEqual(onDisk.notes.length, 1);
+  assert.ok(onDisk.notes[0].deletedAt);
+});
+
+test('note endpoints answer 400 on bad input and 404 on unknown ids', async (t) => {
+  const port = await listen(notesApp(t)); // storeless app: inert in-memory default
+  const post = poster(port);
+  assert.strictEqual((await post('/api/notes', { title: '', stage: 'todo' })).status, 400);
+  assert.strictEqual((await post('/api/notes', { title: 'x', stage: 'someday' })).status, 400);
+  assert.strictEqual((await post('/api/notes/update', { id: 'ghost', title: 'y' })).status, 404);
+  assert.strictEqual((await post('/api/notes/delete', { id: 'ghost' })).status, 404);
+});
+
+test('stale board route carries notes', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sb-notes-'));
+  const store = createStore(path.join(dir, 'state.json'));
+  const port = await listen(notesApp(t, store));
+  const post = poster(port);
+  await post('/api/notes', { title: 'remember', stage: 'in-progress' });
+  await fetch(`http://127.0.0.1:${port}/api/board`); // populate the cache
+  const res = await fetch(`http://127.0.0.1:${port}/api/board?stale=1`);
+  assert.strictEqual(res.status, 200);
+  const body = await res.json();
+  assert.strictEqual(body.notes.length, 1);
+  assert.strictEqual(body.notes[0].title, 'remember');
 });

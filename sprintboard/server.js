@@ -11,6 +11,7 @@ const { deriveFields } = require('./lib/derive.js');
 const { matches, viableActions, fillTemplate } = require('./lib/actions.js');
 const Hidden = require('./public/hidden.js');
 const stateLib = require('./lib/state.js');
+const Notes = require('./lib/notes.js');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
@@ -188,6 +189,17 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
     return sendJSON(res, 200, { hidden: next.hidden, unhidden: next.unhidden });
   }
 
+  // All three note ops share one shape: apply the pure op, persist, answer
+  // with the live list so the client re-renders without a board refetch.
+  async function handleNoteOp(req, res, op, okStatus = 200) {
+    const body = await readBody(req);
+    const result = op(store.state.notes, body);
+    if (result.error) return sendJSON(res, result.notFound ? 404 : 400, { error: result.error });
+    store.state.notes = result.notes;
+    persist();
+    return sendJSON(res, okStatus, { notes: Notes.liveNotes(store.state.notes) });
+  }
+
   // One-time import of the client's legacy localStorage lists. The migratedAt
   // stamp — not list emptiness alone — is what distinguishes "never migrated"
   // from "deliberately cleared", so a stale browser can never resurrect
@@ -241,16 +253,25 @@ function createApp({ config, fetchers, tmux = tmuxLib, getLogin = async () => ''
             stale: Date.now() - cache.at >= config.cacheSeconds * 1000,
             hidden: store.state.hidden,
             unhidden: store.state.unhidden,
+            notes: Notes.liveNotes(store.state.notes),
           });
         }
         // Attached at the route layer, not baked into the cached payload: the
         // lists change on every hide click, the cache does not.
         const payload = await board(url.searchParams.has('refresh'));
-        return sendJSON(res, 200, { ...payload, hidden: store.state.hidden, unhidden: store.state.unhidden });
+        return sendJSON(res, 200, {
+          ...payload,
+          hidden: store.state.hidden,
+          unhidden: store.state.unhidden,
+          notes: Notes.liveNotes(store.state.notes),
+        });
       }
       if (req.method === 'POST' && url.pathname === '/api/hide') return await handleHideToggle(req, res, Hidden.applyHide);
       if (req.method === 'POST' && url.pathname === '/api/unhide') return await handleHideToggle(req, res, Hidden.applyUnhide);
       if (req.method === 'POST' && url.pathname === '/api/migrate-hidden') return await handleMigrate(req, res);
+      if (req.method === 'POST' && url.pathname === '/api/notes') return await handleNoteOp(req, res, Notes.createNote, 201);
+      if (req.method === 'POST' && url.pathname === '/api/notes/update') return await handleNoteOp(req, res, Notes.updateNote);
+      if (req.method === 'POST' && url.pathname === '/api/notes/delete') return await handleNoteOp(req, res, Notes.deleteNote);
       if (req.method === 'POST' && url.pathname === '/api/launch') return await handleLaunch(req, res);
       if (req.method === 'GET' && url.pathname === '/api/sessions') return await handleSessions(res);
       if (req.method === 'GET' && url.pathname === '/api/sessions/tail') return await handleTail(url, res);
