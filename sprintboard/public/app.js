@@ -246,15 +246,6 @@ function renderHiddenGroup(hidden) {
   ]);
 }
 
-// needs-my-review first, failing CI next, then most recently updated.
-function cardOrder(a, b) {
-  const n = Number(!!b.needsMyReview) - Number(!!a.needsMyReview);
-  if (n) return n;
-  const c = Number(!!b.ciFailing) - Number(!!a.ciFailing);
-  if (c) return c;
-  return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
-}
-
 function renderBoard(data) {
   lastData = data;
   document.getElementById('fetched-at').textContent =
@@ -276,7 +267,7 @@ function renderBoard(data) {
   );
   const board = document.getElementById('board');
   board.replaceChildren(...stageDefs.map((def) => {
-    const laneItems = topLevel.filter((i) => i.stage === def.id).sort(cardOrder);
+    const laneItems = topLevel.filter((i) => i.stage === def.id).sort(Order.cardOrder);
     const { visible, hidden } = Hidden.partitionLane(laneItems, hiddenUrls, unhiddenUrls);
     const addBtn = el('button', { class: 'add-note-btn', text: '+', title: 'add note' });
     addBtn.addEventListener('click', () => openNoteDialog({ stage: def.id }));
