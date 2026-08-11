@@ -33,7 +33,11 @@ localStorage import.
   and the server starts from empty state. Hide lists are your data, so nothing
   is deleted.
 - Only error-free fetches overwrite the saved payload, so a degraded fetch
-  cannot clobber the last good snapshot.
+  cannot clobber the last good snapshot. The bar is every error and every
+  warning, so a source that warns on each fetch — a repo with more than a
+  hundred open pull requests tripping the truncation warning, or a dead entry
+  in `repoPaths` — stops the snapshot from ever updating, and startup
+  rehydration keeps serving the last wholly clean fetch.
 - On startup that snapshot seeds the cache, so the board paints the last
   known state immediately instead of waiting on `gh` and `acli`. The page
   loads the cached copy first, then a normal load refreshes it; the header
