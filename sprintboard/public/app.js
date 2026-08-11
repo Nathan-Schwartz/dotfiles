@@ -58,6 +58,100 @@ function hideButton(item) {
   return btn;
 }
 
+const noteDialog = document.getElementById('note-edit');
+const noteDeleteDialog = document.getElementById('note-delete-confirm');
+let noteDialogCtx = null; // { stage } when creating, { id } when editing
+let pendingDeleteNote = null;
+
+async function postNotes(endpoint, payload) {
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return false;
+    const body = await res.json();
+    if (lastData) renderBoard({ ...lastData, notes: body.notes });
+    return true;
+  } catch {
+    // Network failure or malformed body — the edit is kept on screen (the
+    // dialog stays open) so the text is not lost.
+    return false;
+  }
+}
+
+function openNoteDialog(ctx, note = null) {
+  noteDialogCtx = ctx;
+  document.getElementById('note-edit-heading').textContent = note ? 'Edit note' : 'New note';
+  document.getElementById('note-title').value = note ? note.title : '';
+  document.getElementById('note-details').value = note ? note.details : '';
+  noteDialog.showModal();
+}
+
+document.getElementById('note-save').addEventListener('click', async () => {
+  const titleInput = document.getElementById('note-title');
+  const title = titleInput.value.trim();
+  if (!title) return titleInput.focus();
+  const details = document.getElementById('note-details').value;
+  const ok = noteDialogCtx.id
+    ? await postNotes('/api/notes/update', { id: noteDialogCtx.id, title, details })
+    : await postNotes('/api/notes', { title, details, stage: noteDialogCtx.stage });
+  if (ok) {
+    noteDialogCtx = null;
+    noteDialog.close();
+  }
+});
+document.getElementById('note-cancel').addEventListener('click', () => {
+  noteDialogCtx = null;
+  noteDialog.close();
+});
+document.getElementById('note-delete-yes').addEventListener('click', async () => {
+  if (pendingDeleteNote) await postNotes('/api/notes/delete', { id: pendingDeleteNote.id });
+  pendingDeleteNote = null;
+  noteDeleteDialog.close();
+});
+document.getElementById('note-delete-no').addEventListener('click', () => {
+  pendingDeleteNote = null;
+  noteDeleteDialog.close();
+});
+
+function noteControl(text, title, onClick, danger = false) {
+  const btn = el('button', { class: `note-btn${danger ? ' danger' : ''}`, text, title });
+  btn.addEventListener('click', onClick);
+  return btn;
+}
+
+function renderNoteCard(note) {
+  const idx = stageDefs.findIndex((d) => d.id === note.stage);
+  const controls = [];
+  if (idx > 0) {
+    controls.push(noteControl('‹', `move to ${stageDefs[idx - 1].title}`,
+      () => postNotes('/api/notes/update', { id: note.id, stage: stageDefs[idx - 1].id })));
+  }
+  if (idx >= 0 && idx < stageDefs.length - 1) {
+    controls.push(noteControl('›', `move to ${stageDefs[idx + 1].title}`,
+      () => postNotes('/api/notes/update', { id: note.id, stage: stageDefs[idx + 1].id })));
+  }
+  controls.push(noteControl('✎', 'edit', () => openNoteDialog({ id: note.id }, note)));
+  controls.push(noteControl('✕', 'delete', () => {
+    pendingDeleteNote = note;
+    document.getElementById('note-delete-title').textContent = note.title;
+    noteDeleteDialog.showModal();
+  }, true));
+  const kids = [
+    el('span', { class: 'note-controls' }, controls),
+    el('div', { class: 'note-title', text: note.title }),
+  ];
+  if (note.details) {
+    kids.push(el('details', { class: 'note-details' }, [
+      el('summary', { text: 'details' }),
+      el('div', { text: note.details }),
+    ]));
+  }
+  return el('article', { class: 'card note', 'data-id': note.id }, kids);
+}
+
 function badges(item) {
   const out = [];
   if (item.type === 'pr') {
@@ -178,8 +272,12 @@ function renderBoard(data) {
   board.replaceChildren(...stageDefs.map((def) => {
     const laneItems = topLevel.filter((i) => i.stage === def.id).sort(cardOrder);
     const { visible, hidden } = Hidden.partitionLane(laneItems, hiddenUrls, unhiddenUrls);
+    const addBtn = el('button', { class: 'add-note-btn', text: '+', title: 'add note' });
+    addBtn.addEventListener('click', () => openNoteDialog({ stage: def.id }));
+    const noteCards = (data.notes || []).filter((n) => n.stage === def.id).map(renderNoteCard);
     return el('section', { class: 'lane', id: `lane-${def.id}` }, [
-      el('h2', { text: `${def.title} (${visible.length})` }),
+      el('h2', {}, [el('span', { text: `${def.title} (${visible.length})` }), addBtn]),
+      ...noteCards,
       ...visible.map((i) => renderCard(i, allNames, (nested.get(i.key) || []).map((pr) => renderPRRow(pr, allNames)))),
       ...(hidden.length > 0 ? [renderHiddenGroup(hidden)] : []),
     ]);

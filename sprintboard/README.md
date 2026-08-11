@@ -23,8 +23,8 @@ No credentials are stored — auth lives entirely in the CLIs.
 Mutable state lives in `~/.sprintboard-state.json` (`SPRINTBOARD_STATE`
 overrides the path). It sits in `$HOME` beside the config rather than in the
 repo, is machine-local, and is never committed. It holds the hide and unhide
-lists, the last error-free board payload, and the timestamp of the one-time
-localStorage import.
+lists, the last error-free board payload, the timestamp of the one-time
+localStorage import, and your reminder notes (including soft-deleted ones).
 
 - The file is rewritten after every board fetch and every hide click. If the
   write fails the server logs a warning and carries on with in-memory state —
@@ -53,6 +53,10 @@ Endpoints behind this state:
   localStorage lists. It runs only while the `migratedAt` stamp is unset and
   both lists are still empty, so a stale browser cannot resurrect entries
   unhidden since.
+- `POST /api/notes` (create; body `{ "title": "...", "details": "...", "stage": "todo" }`),
+  `POST /api/notes/update` (body: `id` plus any of `title`/`details`/`stage`),
+  `POST /api/notes/delete` (body `{ "id": "..." }`) — all answer with the live
+  notes list; 400 on invalid input, 404 on an unknown id.
 - `GET /api/board?stale=1` — the cached payload at any age, flagged `stale`
   when older than `cacheSeconds`. It never fetches, and 404s when nothing is
   cached.
@@ -144,6 +148,18 @@ Bot author logins are normalized across gh's two spellings
 Both lists used to live in the browser's localStorage. The first page load
 after upgrading imports whatever is there into the state file and clears the
 browser copy; the import happens once and never again.
+
+## Reminder notes
+
+Personal reminders that belong to no tracker. The `+` in a column header
+creates a note in that column; each note is its own card (sticky-note tint)
+pinned above the tracker cards, newest first. `✎` edits title and details,
+`‹`/`›` move it one column at a time, `✕` deletes after confirmation.
+
+Notes live in the state file, so they are machine-local like the hide lists.
+Deleting is soft: the note keeps a `deletedAt` tombstone in
+`~/.sprintboard-state.json` and disappears from the board. There is no
+undelete button — to resurrect one, edit the file and blank its `deletedAt`.
 
 ## Launching sessions
 

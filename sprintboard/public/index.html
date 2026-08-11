@@ -22,5 +22,21 @@
     <button id="hide-confirm-no">cancel</button>
   </div>
 </dialog>
+<dialog id="note-edit">
+  <h3 id="note-edit-heading"></h3>
+  <input id="note-title" placeholder="title">
+  <textarea id="note-details" rows="4" placeholder="details (optional)"></textarea>
+  <div class="actions">
+    <button id="note-save">save</button>
+    <button id="note-cancel">cancel</button>
+  </div>
+</dialog>
+<dialog id="note-delete-confirm">
+  <p>Delete note <strong id="note-delete-title"></strong>?</p>
+  <div class="actions">
+    <button id="note-delete-yes">delete</button>
+    <button id="note-delete-no">cancel</button>
+  </div>
+</dialog>
 <script src="/hidden.js"></script>
 <script src="/app.js"></script>
