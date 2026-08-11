@@ -1,4 +1,4 @@
-:root { --bg: #fdf6e3; --fg: #073642; --muted: #93a1a1; --bad: #dc322f; --good: #859900; --card: #eee8d5; --card-pr: #dce8ea; --card-note: #f3ecc4; }
+:root { --bg: #fdf6e3; --fg: #073642; --muted: #93a1a1; --bad: #dc322f; --good: #859900; --card: #eee8d5; --card-jira: #dce8ea; --card-note: #f3ecc4; }
 * { box-sizing: border-box; }
 body { margin: 0; font: 14px/1.4 -apple-system, sans-serif; background: var(--bg); color: var(--fg); }
 header { display: flex; gap: 1rem; align-items: baseline; padding: 0.75rem 1rem; }
@@ -6,8 +6,8 @@ header h1 { margin: 0; font-size: 1.1rem; }
 #fetched-at { color: var(--muted); font-size: 0.8rem; }
 main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 0 1rem 2rem; }
 .lane h2 { font-size: 0.9rem; border-bottom: 1px solid var(--muted); padding-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: baseline; }
-.card { background: var(--card); border-radius: 6px; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
-.card.pr { background: var(--card-pr); }
+.card { background: var(--card-jira); border-radius: 6px; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
+.card.pr { background: var(--card); }
 .card a { color: var(--fg); font-weight: 600; text-decoration: none; }
 .card a:hover { text-decoration: underline; }
 .meta { color: var(--muted); font-size: 0.8rem; margin: 0.15rem 0; }
@@ -27,7 +27,7 @@ main { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr
 .actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 .badge.attn { background: var(--bad); color: var(--bg); border-color: var(--bad); }
 .card.attention, .pr-row.attention { border-left: 3px solid var(--bad); padding-left: 0.5rem; }
-.pr-row { background: var(--card-pr); border-radius: 4px; margin-top: 0.4rem; padding: 0.35rem 0.5rem; }
+.pr-row { background: var(--card); border-radius: 4px; margin-top: 0.4rem; padding: 0.35rem 0.5rem; }
 .pr-row a { font-weight: 500; font-size: 0.85rem; color: var(--fg); text-decoration: none; }
 .pr-row a:hover { text-decoration: underline; }
 details.more { display: inline-block; }
