@@ -167,7 +167,6 @@ function badges(item) {
     if (item.reviewDecision) out.push([item.reviewDecision.toLowerCase().replace(/_/g, ' '), item.reviewDecision === 'CHANGES_REQUESTED' ? 'bad' : item.reviewDecision === 'APPROVED' ? 'good' : 'muted']);
     if (item.mergeable === 'CONFLICTING') out.push(['conflicts', 'bad']);
     if (item.ticketKey) out.push([`${item.ticketKey}${item.ticketStatus ? `: ${item.ticketStatus}` : ''}`, 'muted']);
-    if (item.author) out.push([item.author, 'muted']);
   } else {
     if (item.status) out.push([item.status, 'muted']);
     if (item.priority) out.push([item.priority, 'muted']);
@@ -213,22 +212,34 @@ function actionsRow(item, allNames) {
   return el('div', { class: 'actions' }, kids);
 }
 
+function authorSpan(item) {
+  return el('span', { class: 'author', text: `@${item.author}` });
+}
+
+function metaLine(item) {
+  const kids = [document.createTextNode(item.type === 'pr' ? `${item.repo}#${item.number}` : item.key)];
+  if (item.type === 'pr' && item.author) {
+    kids.push(document.createTextNode(' — '), authorSpan(item));
+  }
+  return el('div', { class: 'meta' }, kids);
+}
+
 function renderPRRow(item, allNames) {
   const link = el('a', { href: item.url, target: '_blank', text: `${item.repo}#${item.number} ${item.title}` });
-  return el('div', { class: `pr-row${item.needsMyReview ? ' attention' : ''}` }, [
-    link, el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames),
-  ]);
+  const kids = [link];
+  if (item.author) kids.push(document.createTextNode(' '), authorSpan(item));
+  kids.push(el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames));
+  return el('div', { class: `pr-row${item.needsMyReview ? ' attention' : ''}` }, kids);
 }
 
 function renderCard(item, allNames, prRows = []) {
   const link = el('a', { href: item.url, target: '_blank', text: item.title });
-  const meta = el('div', { class: 'meta', text: item.type === 'pr' ? `${item.repo}#${item.number}` : item.key });
   const cls = `card${item.type === 'pr' ? ' pr' : ''}${item.needsMyReview ? ' attention' : ''}`;
   // Config-hidden non-PR cards also get the ✕ so an unhidden override can
   // be undone in place (applyHide routes it back to the override list).
   const head = item.type === 'pr' || item.hiddenByConfig ? [hideButton(item), link] : [link];
   return el('article', { class: cls, 'data-key': item.key }, [
-    ...head, meta, el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames), ...prRows,
+    ...head, metaLine(item), el('div', { class: 'badges' }, badges(item)), actionsRow(item, allNames), ...prRows,
   ]);
 }
 
