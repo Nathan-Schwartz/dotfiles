@@ -21,19 +21,19 @@ let lastData = null;
 let pendingHideItem = null;
 
 async function postHideToggle(endpoint, item) {
+  let body = null;
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ key: item.key }),
     });
-    if (res.ok && lastData) {
-      const body = await res.json();
-      renderBoard({ ...lastData, hidden: body.hidden, unhidden: body.unhidden });
-    }
+    if (res.ok && lastData) body = await res.json();
   } catch {
-    // Server unreachable — the click is lost; the next successful action syncs.
+    // fetch rejects on network failure, res.json() on a malformed body. Either
+    // way the click is lost; the next successful action syncs.
   }
+  if (body) renderBoard({ ...lastData, hidden: body.hidden, unhidden: body.unhidden });
 }
 
 const hideDialog = document.getElementById('hide-confirm');
@@ -219,12 +219,15 @@ async function migrateLocalStorage() {
 }
 
 async function loadStale() {
+  let data = null;
   try {
     const res = await fetch('/api/board?stale=1');
-    if (res.ok) renderBoard(await res.json());
+    if (res.ok) data = await res.json();
   } catch {
-    // No cached board — the fresh load below paints first.
+    // fetch rejects on network failure, res.json() on a malformed body. An
+    // absent cache answers 404, which does not throw and leaves data null.
   }
+  if (data) renderBoard(data);
 }
 
 migrateLocalStorage().then(loadStale).then(() => load(false));

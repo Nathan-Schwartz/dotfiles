@@ -47,6 +47,35 @@ test('a corrupt file is quarantined, not deleted, and yields defaults', () => {
   assert.strictEqual(fs.readFileSync(`${p}.corrupt`, 'utf8'), '{not json');
 });
 
+test('hand-edited fields of the wrong shape load as defaults', () => {
+  const p = tmpFile();
+  fs.writeFileSync(p, JSON.stringify({ hidden: null, unhidden: 'nope', board: { bogus: true }, migratedAt: 7, keepMe: 1 }));
+  const store = createStore(p);
+  assert.deepStrictEqual(store.state.hidden, []);
+  assert.deepStrictEqual(store.state.unhidden, []);
+  assert.strictEqual(store.state.board, null);
+  assert.strictEqual(store.state.migratedAt, '');
+  assert.strictEqual(store.state.keepMe, 1);
+});
+
+test('a board snapshot missing at or payload is dropped', () => {
+  const p = tmpFile();
+  fs.writeFileSync(p, JSON.stringify({ board: { at: '123', payload: {} } }));
+  assert.strictEqual(createStore(p).state.board, null);
+  fs.writeFileSync(p, JSON.stringify({ board: { at: 123 } }));
+  assert.strictEqual(createStore(p).state.board, null);
+  fs.writeFileSync(p, JSON.stringify({ board: { at: 123, payload: { items: [] } } }));
+  assert.deepStrictEqual(createStore(p).state.board, { at: 123, payload: { items: [] } });
+});
+
+test('save persists the current store.state even after reassignment', () => {
+  const p = tmpFile();
+  const store = createStore(p);
+  store.state = { hidden: ['https://x/2'], unhidden: [], board: null, migratedAt: '' };
+  store.save();
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(p, 'utf8')).hidden, ['https://x/2']);
+});
+
 test('save is atomic: no lingering tmp file, valid JSON on disk', () => {
   const p = tmpFile();
   const store = createStore(p);
