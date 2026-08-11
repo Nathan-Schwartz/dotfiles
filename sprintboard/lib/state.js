@@ -7,7 +7,7 @@ function statePath() {
   return process.env.SPRINTBOARD_STATE || path.join(os.homedir(), '.sprintboard-state.json');
 }
 
-const EMPTY = { hidden: [], unhidden: [], board: null, migratedAt: '' };
+const EMPTY = { hidden: [], unhidden: [], board: null, migratedAt: '', notes: [] };
 
 function isSnapshot(v) {
   return !!v && typeof v === 'object' && typeof v.at === 'number' && !!v.payload && typeof v.payload === 'object';
@@ -33,6 +33,7 @@ function createStore(p = statePath()) {
   if (!Array.isArray(state.unhidden)) state.unhidden = [];
   if (!isSnapshot(state.board)) state.board = null;
   if (typeof state.migratedAt !== 'string') state.migratedAt = '';
+  if (!Array.isArray(state.notes)) state.notes = [];
 
   const store = {
     state,

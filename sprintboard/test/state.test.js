@@ -19,7 +19,14 @@ test('statePath honors SPRINTBOARD_STATE and defaults to ~/.sprintboard-state.js
 
 test('a missing file yields empty defaults', () => {
   const store = createStore(tmpFile());
-  assert.deepStrictEqual(store.state, { hidden: [], unhidden: [], board: null, migratedAt: '' });
+  assert.deepStrictEqual(store.state, { hidden: [], unhidden: [], board: null, migratedAt: '', notes: [] });
+});
+
+test('a non-array notes field is coerced back to an empty list', () => {
+  const p = tmpFile();
+  fs.writeFileSync(p, JSON.stringify({ notes: 'scribbles' }));
+  const store = createStore(p);
+  assert.deepStrictEqual(store.state.notes, []);
 });
 
 test('save/load round-trips and unknown fields in an older file do not crash', () => {
