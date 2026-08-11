@@ -94,9 +94,12 @@ document.getElementById('note-save').addEventListener('click', async () => {
   const title = titleInput.value.trim();
   if (!title) return titleInput.focus();
   const details = document.getElementById('note-details').value;
+  const saveBtn = document.getElementById('note-save');
+  saveBtn.disabled = true;
   const ok = noteDialogCtx.id
     ? await postNotes('/api/notes/update', { id: noteDialogCtx.id, title, details })
     : await postNotes('/api/notes', { title, details, stage: noteDialogCtx.stage });
+  saveBtn.disabled = false;
   if (ok) {
     noteDialogCtx = null;
     noteDialog.close();
@@ -107,7 +110,10 @@ document.getElementById('note-cancel').addEventListener('click', () => {
   noteDialog.close();
 });
 document.getElementById('note-delete-yes').addEventListener('click', async () => {
+  const deleteBtn = document.getElementById('note-delete-yes');
+  deleteBtn.disabled = true;
   if (pendingDeleteNote) await postNotes('/api/notes/delete', { id: pendingDeleteNote.id });
+  deleteBtn.disabled = false;
   pendingDeleteNote = null;
   noteDeleteDialog.close();
 });
