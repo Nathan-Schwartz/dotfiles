@@ -13,7 +13,7 @@ function isSnapshot(v) {
   return !!v && typeof v === 'object' && typeof v.at === 'number' && !!v.payload && typeof v.payload === 'object';
 }
 
-// Machine-local mutable state (manual hide lists + last good board payload).
+// Machine-local mutable state (manual hide lists, reminder notes + last good board payload).
 // Lives in $HOME beside ~/.sprintboard.json — never inside the repo, where
 // `git clean -fdx` would destroy it.
 function createStore(p = statePath()) {

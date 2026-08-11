@@ -9,7 +9,7 @@ const { STAGES } = require('./derive.js');
 
 function liveNotes(notes) {
   return notes
-    .filter((n) => !n.deletedAt)
+    .filter((n) => n && !n.deletedAt)
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
 }
 

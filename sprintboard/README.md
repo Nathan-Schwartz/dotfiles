@@ -26,9 +26,9 @@ repo, is machine-local, and is never committed. It holds the hide and unhide
 lists, the last error-free board payload, the timestamp of the one-time
 localStorage import, and your reminder notes (including soft-deleted ones).
 
-- The file is rewritten after every board fetch and every hide click. If the
-  write fails the server logs a warning and carries on with in-memory state —
-  persistence never takes the board down.
+- The file is rewritten after every board fetch, every hide click, and every
+  note edit. If the write fails the server logs a warning and carries on with
+  in-memory state — persistence never takes the board down.
 - A file that will not parse is moved aside to `~/.sprintboard-state.json.corrupt`
   and the server starts from empty state. Hide lists are your data, so nothing
   is deleted.

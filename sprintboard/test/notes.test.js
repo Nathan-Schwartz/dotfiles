@@ -70,3 +70,8 @@ test('liveNotes filters tombstones and sorts newest first', () => {
   ({ notes } = deleteNote(notes, { id: notes.find((n) => n.title === 'gone').id }, T1));
   assert.deepStrictEqual(liveNotes(notes).map((n) => n.title), ['new', 'old']);
 });
+
+test('liveNotes skips null entries from a hand-edited file', () => {
+  const { notes } = createNote([], { title: 'a', stage: 'todo' }, T0);
+  assert.deepStrictEqual(liveNotes([null, ...notes]).map((n) => n.title), ['a']);
+});
