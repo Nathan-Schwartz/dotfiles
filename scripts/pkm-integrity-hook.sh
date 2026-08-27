@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # PKM integrity hook for compound-extension markdown files.
-# Validates frontmatter schemas and triggers qmd index updates.
+# Validates frontmatter schemas and body structure, and triggers qmd index updates.
+#
+# Body checks (structural only — they confirm a slot exists, not that it is filled well):
+#   - no phantom sources: every frontmatter `sources` entry is cited in the body
+#   - synths carry a section stating what is unverified
 #
 # Usage:
 #   pkm-integrity-hook.sh file1.synth.md [file2.ref.md ...]
@@ -53,6 +57,39 @@ extract_frontmatter() {
     return 1
   fi
   awk 'NR==1 && /^---$/{next} /^---$/{exit} {print}' "$file"
+}
+
+extract_body() {
+  local file="$1"
+  awk 'NR==1 && /^---$/{next} f{print} /^---$/{if(!f){f=1}}' "$file"
+}
+
+# Body-level checks. Structural only — these confirm a slot exists, never that
+# its contents are correct.
+validate_body() {
+  local file="$1" doc_type="$2" fm_json="$3"
+  local body src
+  local errors=()
+
+  body=$(extract_body "$file")
+
+  # No phantom sources: every frontmatter `sources` entry must be cited in the
+  # body. Schema rule for all four types; previously unenforced.
+  while IFS= read -r src; do
+    [[ -z "$src" ]] && continue
+    grep -qF -- "$src" <<<"$body" ||
+      errors+=("phantom source: \"$src\" is listed in frontmatter but never cited in the body")
+  done < <(jq -r '.sources[]? // empty' <<<"$fm_json" 2>/dev/null)
+
+  # Synths must state what is unverified. A synth carries Inferred claims by
+  # design, so the gap statement is what makes it checkable by a reader.
+  if [[ "$doc_type" == "synth" ]]; then
+    grep -qiE '^#{2,} .*(unverified|limitation|not checked)' <<<"$body" ||
+      errors+=("missing a section stating what is unverified (heading matching: unverified / limitations / not checked)")
+  fi
+
+  [[ ${#errors[@]} -eq 0 ]] && return 0
+  printf '%s\n' "${errors[@]}"
 }
 
 validate_file() {
@@ -125,6 +162,15 @@ validate_file() {
     while IFS= read -r err; do
       echo "$file: $err"
     done <<< "$errors"
+    return 1
+  fi
+
+  local body_errors
+  body_errors=$(validate_body "$file" "$doc_type" "$fm_json")
+  if [[ -n "$body_errors" ]]; then
+    while IFS= read -r err; do
+      echo "$file: $err"
+    done <<< "$body_errors"
     return 1
   fi
 

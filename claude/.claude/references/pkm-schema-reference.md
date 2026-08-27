@@ -52,7 +52,7 @@ Analysis, decisions, designs, proposals. Expensive to verify.
 
 **Optional:** `ai_reviewed_at`, `human_reviewed_at`, `id`
 
-**Content rules:** Original thinking: analysis, decisions, designs, proposals. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body, anchoring it to the content it supports. Do not restate facts from refs; link to them.
+**Content rules:** Original thinking: analysis, decisions, designs, proposals. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body, anchoring it to the content it supports. Do not restate facts from refs; link to them. Every synth must carry a section stating what is unverified — a heading matching unverified, limitations, or not checked. A synth carries Inferred claims by design, so the gap statement is what lets a reader judge them.
 
 **Must NOT contain:**
 - Raw facts or source documentation that belong in a .ref.md (extract and cite instead)

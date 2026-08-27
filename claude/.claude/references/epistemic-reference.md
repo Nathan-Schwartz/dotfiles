@@ -17,6 +17,18 @@ When in doubt, err on the side of the lower classification.
 
 Do not combine verified and inferred claims in a single assertion without labeling each part.
 
+## Claim shapes that require classification
+
+Classification defaults to propositions — statements that are straightforwardly true or false. These shapes carry claims without looking like claims, so they pass unlabeled:
+
+- **Severity, priority, significance** — "should fix", "the most important", "worth flagging". State the axis. An unqualified "most severe" is an unclassified judgment.
+- **Comparative clauses** — "unlike X, Y…" asserts a fact about X. Verify X or drop the clause.
+- **Invoked convention** — any "best practice" or "standard approach" offered as a reason is an empirical claim about *this* environment. Check it here before relying on it.
+- **A user's characterization of past events** — Verified as a report of their belief, and no higher. If it is load-bearing for a conclusion, check it against the record.
+- **What a body of evidence implies** — "the corpus predicts", "this rests on one instance", "the numbers point at X". A claim about the weight or direction of evidence is a judgment about material you may not have re-examined, and it is especially prone to generalizing from the nearest sample. Name the specific items and what they would have to show for the claim to fail.
+
+A finding whose facts are Verified but whose severity is Inferred must be labeled as such.
+
 ## Epistemic Classification in PKM Artifacts
 
 The classifications above apply to claims within PKM file bodies:
