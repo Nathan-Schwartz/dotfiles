@@ -26,6 +26,7 @@ Classification defaults to propositions — statements that are straightforwardl
 - **Invoked convention** — any "best practice" or "standard approach" offered as a reason is an empirical claim about *this* environment. Check it here before relying on it.
 - **A user's characterization of past events** — Verified as a report of their belief, and no higher. If it is load-bearing for a conclusion, check it against the record.
 - **What a body of evidence implies** — "the corpus predicts", "this rests on one instance", "the numbers point at X". A claim about the weight or direction of evidence is a judgment about material you may not have re-examined, and it is especially prone to generalizing from the nearest sample. Name the specific items and what they would have to show for the claim to fail.
+- **An absence** — "no rate limiter", "nothing consumes this", "there is no such route", "X does not appear anywhere". A search that returns nothing looks identical whether the thing is absent or the pattern was wrong. **Verified** requires four things: the exact command, the paths it covered, the pattern variants tried, and what the search could not see. Short of all four, it is *Inferred from absence* — say so in those words. An absence assembled from several sources each failing to mention something is the weakest claim class there is; name the single search that would refute it.
 
 A finding whose facts are Verified but whose severity is Inferred must be labeled as such.
 

@@ -33,9 +33,10 @@
           "Proposed code changes, implementation sketches, or 'minimal change sets'",
           "Comparative analysis or trade-off discussion between alternatives",
           "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.",
-          "Catalogs or listings of many external sources with only light summaries (extract the substantive facts, or split into individual refs per source)"
+          "Catalogs or listings of many external sources with only light summaries (extract the substantive facts, or split into individual refs per source)",
+          "Composed claims — conclusions whose evidence spans two or more independent source scopes (separate repos, services, or document sets) and which no single scope states on its own. Composition is reasoning, not extraction: it belongs in a .synth.md that cites each contributing ref and labels the claim as composed."
         ],
-        "when_in_doubt": "Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in. If the body reads like a list of links with one-line descriptions rather than extracted facts, either deepen the extraction or split into individual refs."
+        "when_in_doubt": "Split the file. Facts stay in .ref.md, analysis and proposals go in a .synth.md that cites it. A short ref that is 100% verifiable is worth more than a long ref with synthesis mixed in. If the body reads like a list of links with one-line descriptions rather than extracted facts, either deepen the extraction or split into individual refs. A ref stays inside one source scope — if a claim needs evidence from a second repo or service to hold, it is a synth claim."
       }
     },
     "synth": {
@@ -63,14 +64,15 @@
         "status": "draft, partial, or complete"
       },
       "content_rules": {
-        "principle": "Original thinking: analysis, decisions, designs, proposals. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body, anchoring it to the content it supports. Do not restate facts from refs; link to them. Every synth must carry a section stating what is unverified — a heading matching unverified, limitations, or not checked. A synth carries Inferred claims by design, so the gap statement is what lets a reader judge them.",
+        "principle": "Original thinking: analysis, decisions, designs, proposals. Cite sources as inline markdown links (`[text](path)`) — every frontmatter `sources` entry must appear as a link in the body, anchoring it to the content it supports. Do not restate facts from refs; link to them. Every synth must carry a section stating what is unverified — a heading matching unverified, limitations, or not checked. A synth carries Inferred claims by design, so the gap statement is what lets a reader judge them. This is where composed claims live: a conclusion drawn from two or more independent source scopes must say that it is composed, cite the ref backing each contributing scope, and state what breaks if either side is wrong.",
         "must_not_contain": [
           "Raw facts or source documentation that belong in a .ref.md (extract and cite instead)",
           "Navigation structures, file listings, or cross-reference maps (use .index.md)",
           "Unstructured scratch notes or questions without analysis (use .temp.md)",
-          "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant."
+          "Phantom sources — frontmatter `sources:` entries that never appear as inline markdown links in the body. Every source must be cited where it's relevant.",
+          "Composed claims presented as single-source facts — a conclusion spanning two or more scopes stated without naming the composition or citing a ref per scope. Two facts each correctly Verified in its own scope can weld into a false conclusion; the label is what makes that checkable."
         ],
-        "when_in_doubt": "If a section is purely factual and verifiable against an external source, extract it to a .ref.md and cite it. Synths should be lean — reasoning and conclusions, not restated evidence."
+        "when_in_doubt": "If a section is purely factual and verifiable against an external source, extract it to a .ref.md and cite it. Synths should be lean — reasoning and conclusions, not restated evidence. Audit composed claims harder than single-scope ones: they are the likeliest to be wrong and the least likely to be caught by re-reading either source alone."
       }
     },
     "temp": {

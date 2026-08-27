@@ -41,7 +41,15 @@ Before assembling the manifest, discover any epistemic-explore research docs pro
 
 where `<project-root>` is `git rev-parse --show-toplevel` (or `$PWD` if not in a git repo). Each subdirectory is a topic slug. Reconciliation (step 6) is the only step that reads these files.
 
-If `qmd` is available and the target directory is a registered qmd collection, search for semantically related existing files using `qmd query <concept> -c <collection>` (hybrid lex+vec+rerank). Include matches in the manifest as a separate "possibly related" tier (distinct from the certain cross-references between files created in the same invocation).
+**Fallback — do not skip this.** An agent handed an explicit scratch destination may have written outside the session directory, so the session path can be missing or empty while research docs exist. If it is, `ls` the parent:
+
+`<project-root>/.claude/scratch/epistemic-explore/`
+
+Directories there whose names are not session UUIDs are unscoped topic folders. Present them in the manifest as a **separate tier requiring explicit opt-in** — they may belong to this session or to an earlier one, and you cannot tell from the path. Name the tier so the ambiguity is visible, e.g. "UNSCOPED RESEARCH DOCS (session unknown — confirm each)". Never fold them in silently.
+
+Reporting nothing found when a sibling directory holds a session's entire research output is the failure this fallback exists to prevent.
+
+**Do not search the existing corpus for related or duplicate notes.** This skill captures what the conversation produced; it does not reconcile that against what the knowledge base already holds. Deciding two notes cover the same ground requires a view of the whole corpus and is a destructive-by-implication call, so it belongs to a deliberate audit pass — see the `pkm-audit` skill, which does overlap and duplication as a distinct step. Cross-references between files created *in this invocation* are still expected; those are certain, not inferred from a similarity search.
 
 Present a numbered list inline in the conversation. Each conversation-derived item shows:
 
@@ -76,8 +84,11 @@ EPISTEMIC-EXPLORE RESEARCH DOCS (from this session, copied as-is):
 - topic-foo/
 - topic-bar/
 
+UNSCOPED RESEARCH DOCS (session unknown — confirm each):
+- topic-baz/
+
 Reply with any changes, or confirm to write all. Examples:
-  "drop 3" / "2 → ref" / "drop topic-bar" / "looks good"
+  "drop 3" / "2 → ref" / "drop topic-bar" / "keep topic-baz" / "looks good"
 ```
 
 **Stop and wait for the user's response.** Do not write any files until confirmation.
@@ -100,6 +111,8 @@ For each confirmed research doc folder, copy it into the target directory using 
 
 Source: `<project-root>/.claude/scratch/epistemic-explore/$CLAUDE_CODE_SESSION_ID/<topic-slug>/`
 Destination: `<target>/<topic-slug>/`
+
+For a confirmed unscoped folder, the source is `<project-root>/.claude/scratch/epistemic-explore/<topic-slug>/` and the destination is the same.
 
 If a destination path already exists, prompt the user before overwriting.
 

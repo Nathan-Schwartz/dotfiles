@@ -2,7 +2,8 @@
 name: epistemic-pkm-research
 description: >-
   Reference material for producing epistemically classified PKM artifacts during research.
-  Covers epistemic classification, PKM schema, behavioral guidance, and qmd duplicate checking.
+  Covers epistemic classification, PKM schema, and behavioral guidance for choosing between
+  ref, synth, and temp.
 user-invocable: false
 ---
 
@@ -50,17 +51,6 @@ A `.ref.md` does factual extraction — it captures the substance of its sources
 - **Split**: Create individual refs per source (or per logical grouping) so each one does meaningful extraction.
 
 The test: if someone deleted the source URLs, would the ref still contain useful knowledge? If not, it's a catalog, not a reference.
-
-## Duplicate Checking
-
-This may be skipped if `qmd` is not on PATH, but you must check.
-
-Before writing any `.ref.md`, search qmd for semantically similar existing files:
-
-1. Use `qmd search <key terms>` for a lexical (BM25) match
-2. Use `qmd query <concept>` for a hybrid semantic match (lex + vec + rerank)
-3. If near-duplicates exist (score > 0.7), report them instead of creating redundant files
-4. If partial overlap, reference the existing file and write only the new facts
 
 ## File Naming
 

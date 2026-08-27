@@ -6,13 +6,27 @@
 #   - no phantom sources: every frontmatter `sources` entry is cited in the body
 #   - synths carry a section stating what is unverified
 #
+# Lint checks (--lint only, never block a write):
+#   - weak citation: source cited in prose but not as a markdown link target
+#   - unresolvable source path: a path-shaped source that does not exist on disk
+#   - untagged claims: prose in a ref/synth carrying no epistemic classification
+#
+# The three lint checks are deliberately out of the blocking tier. Weak citation is
+# high-volume across the existing corpus; path resolution depends on which sibling
+# repos happen to be checked out, which is machine state rather than file
+# correctness; untagged-claim detection is a heuristic. Blocking on any of them
+# would trade a precise signal for a noisy one.
+#
 # Usage:
 #   pkm-integrity-hook.sh file1.synth.md [file2.ref.md ...]
+#   pkm-integrity-hook.sh --lint [file-or-directory ...]
 #   pkm-integrity-hook.sh --post-hook  (PostToolUse: validates, updates qmd, exit 2 on failure)
+#
+# Directory arguments are walked for compound-extension files.
 #
 # Exit codes:
 #   0 — all files valid (or no compound-extension files to check)
-#   1 — validation errors found (CLI mode)
+#   1 — validation errors found (CLI mode; in --lint mode, any finding)
 #   2 — validation errors found (hook mode — signals block to Claude)
 #
 # Environment:
@@ -90,6 +104,138 @@ validate_body() {
 
   [[ ${#errors[@]} -eq 0 ]] && return 0
   printf '%s\n' "${errors[@]}"
+}
+
+# Strip a citation target down to a comparable path: drop URL fragments and
+# trailing :NN or :NN-NN line anchors.
+normalize_target() {
+  awk '{ sub(/#.*$/, ""); sub(/:[0-9]+(-[0-9]+)?$/, ""); print }'
+}
+
+# Markdown link targets appearing in the body, normalized.
+link_targets() {
+  grep -oE '\]\([^) ]+' <<<"$1" | awk '{ sub(/^\]\(/, ""); print }' | normalize_target
+}
+
+# Paragraphs in a ref/synth body carrying no epistemic classification. A heading
+# that names a classification tags every paragraph beneath it, which is how
+# epistemic-explore structures its output — so section-level tagging counts.
+untagged_paragraphs() {
+  local body="$1" offset="$2"
+  awk -v offset="$offset" '
+    # A marker counts only when delimited by whitespace, punctuation, or markup —
+    # never when it is part of a longer identifier. Without this, a paragraph
+    # documenting a field named `is_email_verified` or `verified_at` reads as
+    # classified on the strength of the identifier alone, which silences the check
+    # precisely on the files that discuss verification state most.
+    #
+    # Padding the string lets one expression cover markers at either end. Letters,
+    # digits and underscore block a match; hyphen does not, so `Inferred-from-absence`
+    # still counts while `is_email_verified` does not. Residual gap: a hyphenated
+    # compound such as `non-verified` still reads as tagged.
+    function is_marker(s) {
+      s = " " tolower(s) " "
+      return s ~ /[^a-z0-9_](verified|unverified|inferred|guess|guesses|not checked|limitation|limitations|disproof|disproofs|refuted|narrowed|intact|outside my scope|composed)[^a-z0-9_]/
+    }
+    function flush() {
+      if (buf != "" && !heading_tagged && !is_marker(buf)) {
+        untagged++
+        if (shown < 3) { lines[shown++] = bufstart + offset }
+      }
+      buf = ""
+    }
+    /^[[:space:]]*```/          { flush(); fence = 1 - fence; next }
+    fence                       { next }
+    /^[[:space:]]*$/            { flush(); next }
+    /^#{1,6}[[:space:]]/        { flush(); heading_tagged = is_marker($0); next }
+    /^[[:space:]]*\|/           { flush(); next }
+    /^[[:space:]]*>/            { flush(); next }
+    /^[[:space:]]*(-{3,}|={3,}|\*{3,})[[:space:]]*$/ { flush(); next }
+    /^[[:space:]]*<!--/         { flush(); next }
+    {
+      if (buf == "") bufstart = NR
+      buf = buf " " $0
+    }
+    END {
+      flush()
+      if (untagged > 0) {
+        s = ""
+        for (i = 0; i < shown; i++) s = s (i ? ", " : "") lines[i]
+        print untagged "\t" s
+      }
+    }
+  ' <<<"$body"
+}
+
+# Non-blocking checks. Output is prefixed `lint:` by the caller.
+lint_body() {
+  local file="$1" doc_type="$2" fm_json="$3"
+  local body targets dir src target candidate fm_lines
+  local findings=()
+
+  body=$(extract_body "$file")
+  targets=$(link_targets "$body")
+  dir=$(dirname "$file")
+
+  while IFS= read -r src; do
+    [[ -z "$src" ]] && continue
+
+    target=$(normalize_target <<<"$src")
+
+    # Weak citation: present in the body (so not a phantom) but never a link target.
+    if grep -qF -- "$src" <<<"$body" && ! grep -qF -- "$target" <<<"$targets"; then
+      findings+=("weak citation: \"$src\" is mentioned in the body but never as a markdown link target")
+    fi
+
+    # Unresolvable path. Restricted to sources that explicitly assert where they
+    # resolve from — `./`, `../`, or absolute. A bare `app/models/user.rb` is
+    # conventionally repo-root-relative, not note-relative, and flagging those
+    # would bury this check under a naming convention rather than a defect.
+    case "$src" in
+      ./*|../*|/*) ;;
+      *) continue ;;
+    esac
+    [[ "$target" == /* ]] && candidate="$target" || candidate="$dir/$target"
+    [[ -e "$candidate" ]] ||
+      findings+=("source path does not resolve: \"$src\" (looked for $candidate)")
+  done < <(jq -r '.sources[]? // empty' <<<"$fm_json" 2>/dev/null)
+
+  # Untagged claims. Refs and synths only — temps carry no epistemic burden and
+  # indexes carry no claims.
+  if [[ "$doc_type" == "ref" || "$doc_type" == "synth" ]]; then
+    fm_lines=$(extract_frontmatter "$file" | wc -l | tr -d ' ')
+    local untagged count where
+    untagged=$(untagged_paragraphs "$body" "$((fm_lines + 2))")
+    if [[ -n "$untagged" ]]; then
+      count=${untagged%%$'\t'*}
+      where=${untagged#*$'\t'}
+      findings+=("$count untagged paragraph(s) — no Verified/Inferred/Guess marker on the text or its heading (first at line $where)")
+    fi
+  fi
+
+  [[ ${#findings[@]} -eq 0 ]] && return 0
+  printf '%s\n' "${findings[@]}"
+}
+
+lint_file() {
+  local file="$1"
+  local doc_type
+  doc_type=$(get_doc_type "$file")
+  [[ -z "$doc_type" ]] && return 0
+  [[ -f "$file" ]] || return 0
+
+  local frontmatter fm_json
+  frontmatter=$(extract_frontmatter "$file") || return 0
+  fm_json=$(echo "$frontmatter" | yq -o=json '.' 2>/dev/null) || return 0
+  [[ -z "$fm_json" ]] && return 0
+
+  local findings
+  findings=$(lint_body "$file" "$doc_type" "$fm_json")
+  [[ -z "$findings" ]] && return 0
+  while IFS= read -r f; do
+    echo "$file: lint: $f"
+  done <<< "$findings"
+  return 1
 }
 
 validate_file() {
@@ -191,13 +337,29 @@ qmd_update() {
 check_deps
 
 mode="cli"
-files=()
+lint=0
+args=()
 
 for arg in "$@"; do
   case "$arg" in
     --post-hook) mode="post" ;;
-    *)           files+=("$arg") ;;
+    --lint)      lint=1 ;;
+    *)           args+=("$arg") ;;
   esac
+done
+
+# Expand directory arguments into the compound-extension files beneath them.
+files=()
+for arg in "${args[@]+"${args[@]}"}"; do
+  if [[ -d "$arg" ]]; then
+    while IFS= read -r found; do
+      files+=("$found")
+    done < <(find "$arg" -type f \
+      \( -name '*.ref.md' -o -name '*.synth.md' -o -name '*.temp.md' -o -name '*.index.md' \) \
+      | sort)
+  else
+    files+=("$arg")
+  fi
 done
 
 # PostToolUse hook: validate after write, then update qmd index
@@ -226,7 +388,7 @@ fi
 
 # CLI mode
 if [[ ${#files[@]} -eq 0 ]]; then
-  echo "usage: pkm-integrity-hook.sh [--post-hook] [file ...]" >&2
+  echo "usage: pkm-integrity-hook.sh [--post-hook] [--lint] [file-or-directory ...]" >&2
   exit 1
 fi
 
@@ -236,6 +398,9 @@ for file in "${files[@]}"; do
   if [[ -n "$errors" ]]; then
     echo "$errors"
     exit_code=1
+  fi
+  if [[ "$lint" -eq 1 ]]; then
+    lint_file "$file" || exit_code=1
   fi
 done
 
