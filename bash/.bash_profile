@@ -12,7 +12,6 @@ source ~/.bash/settings.sh
 source ~/.bash/functions.sh
 source ~/.bash/aliases.sh
 source ~/.bash/powerline.sh
-source ~/.bash/ralph.sh
 
 # Create directories if they don't exist
 mkdir -p "$PROJECTS_DIR"
