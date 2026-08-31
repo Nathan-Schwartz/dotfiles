@@ -12,6 +12,7 @@
       "Bash(which *)",
       "Bash(pwd)",
       "Bash(file *)",
+      "Bash(echo $CLAUDE_CODE_SESSION_ID)",
       "Bash(wc *)",
       "Bash(tree *)",
       "Bash(git rev-parse *)",
@@ -19,18 +20,37 @@
       "Bash(git remote -v)",
       "Bash(tk *)",
       "Bash(git status)",
+      "Bash(mkdir -p *)",
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(ls *)",
       "Bash(stat *)",
       "Bash(cat ~/.claude/references/*)",
       "Read(~/.claude/references/*)",
+      "Read(~/.claude/references/pkm-schema-reference.md)",
       "Bash(bash ~/dotfiles/scripts/tk-triage-context.sh *)",
-      "Bash(qmd *)"
+      "Bash(qmd *)",
+      "Bash(gh:*)",
+      "Bash(git:*)",
+      "Bash(find:*)",
+      "Bash(jq:*)",
+      "Bash(rg:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(which:*)",
+      "Bash(stat:*)",
+      "Bash(date:*)",
+      "Bash(pwd)",
+      "Bash(whoami)",
+      "Bash(acli:*)"
     ],
     "defaultMode": "auto"
   },
-  "model": "fable",
+  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -96,12 +116,13 @@
     "command": "~/.claude/statusline.sh",
     "padding": 0
   },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
   "outputStyle": "explanatory",
   "effortLevel": "high",
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": false,
   "editorMode": "vim",
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
-  }
+  "autoCompactEnabled": false
 }
