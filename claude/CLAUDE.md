@@ -24,6 +24,15 @@ Tests have a maintenance cost so ensure we are only testing the behaviors we are
 
 Do not make assumptions about what should or should not be committed. Your only concern should be th ecurrent of the codebase on disk, unless stated otherwise.
 
+## CLI Usage
+
+Bash is fine. The problem is long, chained, approval-triggering bash — not bash itself.
+
+- **Keep Bash simple:** one command, one purpose. No `&&`-chained mega-commands, no `echo "==="`/`######` banners, no decorative/formatted output, no orientation scripts. A bare `ls`, `git status`, or single `find` is fine.
+- **Keep Bash sandboxed so it auto-approves.** Don't reach for unsandboxed / `dangerouslyDisableSandbox` for routine work — that's what forces a manual prompt. (Git network/GPG ops are the sanctioned exception per org policy.)
+- **Prefer built-in tools when they fit:** `Read` to view files; `Edit`/`Write` to change them (not `sed`/`awk`/`perl -i`/heredoc rewrites); `Glob`/`Grep`/`LS` for search where present, else delegate fan-out search to an `Explore` subagent.
+- **GitOps & platform work:** reach for the MCP tool (github, etc.) before shelling out.
+
 ## Universally Applicable Rules
 
 Trust is gained and maintained by complying to the following rules:
